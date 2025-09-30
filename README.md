@@ -16,6 +16,20 @@ SpecTrail aims to establish a clear and maintainable link between documentation 
 ### in code 
 SpecTrail annotation should start with `///` comment line.
 
+#### Annotation for Specification Abstraction Layer
+
+SpecTrail defines a three-layered annotation model to represent different levels of specification abstraction. This model helps organize and trace the relationship between high-level concepts and low-level implementation.
+
+1. AbstractAnnotation
+Represents high-level specifications, such as the overall purpose or behavior of a feature. In a web service, this might correspond to a screen or page. In a microservice architecture, it could describe the role of a service. An AbstractAnnotation typically links to multiple SpecDetailAnnotations.
+
+2. SpecDetailAnnotation
+Describes more specific aspects of a feature, breaking down an AbstractAnnotation into smaller parts. This includes API endpoints used by a page, UI behaviors, or validation rules. Each SpecDetailAnnotation may link to several ImplementationAnnotations.
+
+3. ImplementationAnnotation
+Captures implementation-level details such as database models, domain logic, use cases, repositories, and gateways. This layer connects the specification directly to the code structure and is used when deeper traceability is needed.
+
+
 #### Annotation Types
 
 SpecTrail supports structured annotations to describe the role and context of each code fragment.  
