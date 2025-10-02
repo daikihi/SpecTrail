@@ -69,6 +69,9 @@ It represents a concrete specification that guides implementation.
 In the context of a web service,  
 a SpecDetailAnnotation often corresponds to an API specification, a user interaction flow, or a page-level behavior.
 
+In the context of a one-shot batch process, a SpecDetailAnnotation often corresponds to a batch specification such as loading master data from a filesystem and inserting it into a database.
+
+
 #### 1.2.4 ImplementationAnnotation
 
 
