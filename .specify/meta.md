@@ -42,16 +42,16 @@ This concept answers questions like:
 - Why does the team want to create the software?  
 - What kind of use cases or user needs are being prioritized?
 
-In the context of a web service,  an AbstractAnnotation often corresponds to a single web page or screen-level concept.  
+In the context of a web service, an AbstractAnnotation often corresponds to a single web page or screen-level concept.  
 It represents the overall purpose or user-facing role of that page within the system.
 
+In addition, an AbstractAnnotation may also describe what kinds of components are involved—such as APIs, batch processes, or background jobs.
+
 An AbstractAnnotation may contain several SpecDetailAnnotations.  
-These detail annotations emerge when the abstract concept is split into sub-specifications—  
-similar to how a task is broken down into subtasks.
+These detail annotations emerge when the abstract concept is split into sub-specifications—similar to how a task is broken down into subtasks.
 
 We will define SpecDetailAnnotation separately,  
 but it's important to note that each SpecDetailAnnotation is structurally linked to an AbstractAnnotation via `@spec`.
-
 
 ```
 A = {a₁, a₂, ..., aₙ} is a finite set of AbstractAnnotations.
@@ -61,8 +61,13 @@ a = {n, s}, where n ∈ AbstractName and　S ⊆ SpecDetailName
 and AbstractName identifies the individual AbstractAnnotation,　while S is the set of SpecDetailAnnotations associated with a.
 ```
 
+/// @MetaAnnotation @MetaName="Definition of SpecDetailAnnotation" #MetaType=Philosophy
 #### 1.2.3 SpecDetailAnnotation
-SpecDetailAnnotation is details of 
+SpecDetailAnnotation defines a specific behavior or functional aspect derived from an AbstractAnnotation.  
+It represents a concrete specification that guides implementation.
+
+In the context of a web service,  
+a SpecDetailAnnotation often corresponds to an API specification, a user interaction flow, or a page-level behavior.
 
 #### 1.2.4 ImplementationAnnotation
 
