@@ -35,9 +35,34 @@ m = {n, t}, where n ∈ MetaName, t ∈ MetaType.
 
 MetaType can take the following values: `Philosophy`, `Guideline`, `Convention`, `Structure`, `Rule`.
 
+/// @MetaAnnotation @MetaName="Definition of AbstractAnnotation" #MetaType=Philosophy
 #### 1.2.2 AbstractAnnotation
+AbstractAnnotation defines the high-level concept of the target software.  
+This concept answers questions like:  
+- Why does the team want to create the software?  
+- What kind of use cases or user needs are being prioritized?
+
+In the context of a web service,  an AbstractAnnotation often corresponds to a single web page or screen-level concept.  
+It represents the overall purpose or user-facing role of that page within the system.
+
+An AbstractAnnotation may contain several SpecDetailAnnotations.  
+These detail annotations emerge when the abstract concept is split into sub-specifications—  
+similar to how a task is broken down into subtasks.
+
+We will define SpecDetailAnnotation separately,  
+but it's important to note that each SpecDetailAnnotation is structurally linked to an AbstractAnnotation via `@spec`.
+
+
+```
+A = {a₁, a₂, ..., aₙ} is a finite set of AbstractAnnotations.
+
+For each a ∈ A:  
+a = {n, s}, where n ∈ AbstractName and　S ⊆ SpecDetailName
+and AbstractName identifies the individual AbstractAnnotation,　while S is the set of SpecDetailAnnotations associated with a.
+```
 
 #### 1.2.3 SpecDetailAnnotation
+SpecDetailAnnotation is details of 
 
 #### 1.2.4 ImplementationAnnotation
 
