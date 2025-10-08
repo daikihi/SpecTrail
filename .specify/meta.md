@@ -57,8 +57,12 @@ but it's important to note that each SpecDetailAnnotation is structurally linked
 A = {a₁, a₂, ..., aₙ} is a finite set of AbstractAnnotations.
 
 For each a ∈ A:  
-a = {n, s}, where n ∈ AbstractName and　S ⊆ SpecDetailName
-and AbstractName identifies the individual AbstractAnnotation,　while S is the set of SpecDetailAnnotations associated with a.
+a = {na, sa}, where  
+- na ∈ AbstractName  
+- sa ⊆ SpecDetailName  
+
+Here, `na` identifies the individual AbstractAnnotation,  
+and `sa` is the set of SpecDetailAnnotations that belong to `a`.
 ```
 
 /// @MetaAnnotation @MetaName="Definition of SpecDetailAnnotation" #MetaType=Philosophy
@@ -71,6 +75,12 @@ a SpecDetailAnnotation often corresponds to an API specification, a user interac
 
 In the context of a one-shot batch process, a SpecDetailAnnotation often corresponds to a batch specification such as loading master data from a filesystem and inserting it into a database.
 
+```
+SD = {sd1, sd2, sd3,....,sdn} is a finite set of SpecDetailAnnotation.
+
+for each sd ∈ SD:
+sd = 
+```
 
 #### 1.2.4 ImplementationAnnotation
 
@@ -86,18 +96,6 @@ In the context of a one-shot batch process, a SpecDetailAnnotation often corresp
 
 -----WIP
 ----
-
-
-/// @MetaAnnotation ( @Name "Definition of Name", @Type Data Structure, Layer null)
-Each specification should have a clear and readable name to identify it. While many software systems use sequential numbers or random UUIDs for identification, SpecTrail takes a different approach.
-
-SpecTrail annotations are applied not only to implementation code, but also to specification documents. Therefore, using opaque identifiers like UUIDs makes it difficult to understand the meaning and context of a specification when reading the document.
-
-To ensure clarity and traceability, SpecTrail uses human-readable names as identifiers for specifications.
-
-define type
-
-define layer
 
 
 SpecTrailAnnotation consists of two disjoint sets:
