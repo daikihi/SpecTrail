@@ -1,0 +1,7 @@
+[source]
+head = ".specify/"
+extension = ".md"
+
+[document]
+head = "src/"
+extension = ".rs"
