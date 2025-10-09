@@ -15,9 +15,77 @@ It is difficult to map between software specifications and software implementati
 SpecTrail supports mappig / bridging such gaps.
 
 
-### 1.2 User Assamption and Use Case
+### 1.2 User Assumption and Use Case
+In this subsection, we describe the types of users SpecTrail is designed for and introduce example use cases.
+
+#### Target Users
+Software development involves many kinds of engineers. Backend engineers build server-side systems, frontend engineers design user interfaces and user experiences, and many others—such as QA engineers, infrastructure specialists, and technical writers—contribute to the overall process.
+
+SpecTrail is designed to support all of these roles by bridging the gap between specifications and implementation. It helps teams maintain clarity, traceability, and alignment between what is planned and what is built.
+
+In addition, SpecTrail assists project managers in tracking progress and ensuring that development stays aligned with the original specifications.
+
+#### Use Case Examples
+In this section, we describe about some use case of SpecTrail.
+
+#### SpecTrail
+First use case is SpecTrail project.
+
+SpecTrail project has no visual user interface.  Most user persona is software designer and developer.
+
+At the first time, designer and developer discuss about SpecTrail System.
+
+And then, designer starts to describe a specification about SpecTrail. 
+
+Sometime, bouthe of designer and developer makes disscussion about specification.
+
+All engineers repeat this cycle.
+
+Last of a term of a cycle, engineers should discuss about annotation marking.
+
+#### Web Server
+
+
 
 ### 1.3 System Abstraction
+
+In this subsection, we describe the abstraction of SpecTrail's system model.
+
+#### 1.3.1 SpecTrail Compoenents
+
+In this Subsection , we describe about what kind of components the SpecTrail contains.
+
+- SpecTrail Batchs ( entry point of the system )
+- SpecTrail Reporter
+
+SpecTrail Batchs contains following services.
+In this context, the batches are like as CLI.
+- 
+-
+
+
+In the future, there are several more tools as following
+
+- SpecTrail Engine
+- SpecTrail Server
+
+#### 1.3.2 Annotation Structure Overview
+
+SpecTrail uses a three-layered annotation model to bridge specifications and implementation. Both specification documents and source code are tagged with corresponding annotations to enable traceability and alignment.
+
+SpecTrail annotations are categorized into three types: AbstractAnnotation, SpecDetailAnnotation, and ImplementationAnnotation. Each serves a different level of abstraction and purpose within the system. The details of these annotation categories will be discussed in Section 3: Data Model.
+
+#### 1.3.3 How to map specification between Specification and Implementation
+In this subsection, we decribe about how to map a specification among the documents and the codes.
+
+SpecTrail uses annotation on both of specitifcation documents and implementation codes.
+And those annotations should be maped on SpecTrail Engine.
+Basically, both of those annotations should be exact same name for readability to engineers.
+
+#### 1.3.4 Design Concept
+
+
+
 
 ## 2. Functional Specifications
 
