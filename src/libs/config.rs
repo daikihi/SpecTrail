@@ -1,5 +1,5 @@
 use serde::Deserialize;
-use std::fs;
+use std::{fs, io};
 use std::path::Path;
 
 #[derive(Debug, Deserialize)]
@@ -10,9 +10,23 @@ pub struct SpecTrailConfig {
 
 impl SpecTrailConfig {
     pub fn from_file<P: AsRef<Path>>(path: P) -> Result<Self, Box<dyn std::error::Error>> {
-        let content = fs::read_to_string(path)?;
-        let config: SpecTrailConfig = toml::from_str(&content)?;
-        Ok(config)
+        let content_res: io::Result<String> = fs::read_to_string(path);
+        match content_res {
+            Ok(content) => {
+                let config_res: Result<SpecTrailConfig, toml::de::Error> = toml::from_str(&content);
+                match config_res {
+                    Ok(config) => Ok(config),
+                    Err(e) => {
+                        println!("{:?}", e);
+                        Err(Box::new(e))
+                    }
+                }
+            },
+            Err(e) => {
+                println!("{:?}", e);
+                Err(Box::new(e))
+            }
+        }
     }
 }
 
