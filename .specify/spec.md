@@ -35,7 +35,7 @@ SpecTrail project has no visual user interface.  Most user persona is software d
 
 At the first time, designer and developer discuss about SpecTrail System.
 
-And then, designer starts to describe a specification about SpecTrail. 
+And then, designer starts to describe a specification about SpecTrail.
 
 Sometime, bouthe of designer and developer makes disscussion about specification.
 

@@ -50,19 +50,22 @@ In addition, an AbstractAnnotation may also describe what kinds of components ar
 An AbstractAnnotation may contain several SpecDetailAnnotations.  
 These detail annotations emerge when the abstract concept is split into sub-specifications—similar to how a task is broken down into subtasks.
 
+Each AbstractAnnotation must include a `@name` tag to identify its concept.  
+We recommend using a consistent naming convention—such as `CamelCase` or screen-level identifiers (e.g., `UserAuthPage`, `ProductListView`)—to ensure clarity and traceability across the project.
+
 We will define SpecDetailAnnotation separately,  
 but it's important to note that each SpecDetailAnnotation is structurally linked to an AbstractAnnotation via `@spec`.
 
 ```
 A = {a₁, a₂, ..., aₙ} is a finite set of AbstractAnnotations.
 
-For each a ∈ A:  
-a = {na, sa}, where  
-- na ∈ AbstractName  
-- sa ⊆ SpecDetailName  
+For each a ∈ A: a = {na, sa}, where
 
-Here, `na` identifies the individual AbstractAnnotation,  
-and `sa` is the set of SpecDetailAnnotations that belong to `a`.
+na ∈ AbstractName
+
+sa ⊆ SpecDetailName
+
+Here, na identifies the individual AbstractAnnotation, and sa is the set of SpecDetailAnnotations that belong to a.
 ```
 
 /// @MetaAnnotation @MetaName="Definition of SpecDetailAnnotation" #MetaType=Philosophy
@@ -76,10 +79,19 @@ a SpecDetailAnnotation often corresponds to an API specification, a user interac
 In the context of a one-shot batch process, a SpecDetailAnnotation often corresponds to a batch specification such as loading master data from a filesystem and inserting it into a database.
 
 ```
-SD = {sd1, sd2, sd3,....,sdn} is a finite set of SpecDetailAnnotation.
+D = {d₁, d₂, ..., dₖ} is a finite set of SpecDetailAnnotations.
 
-for each sd ∈ SD:
-sd = 
+For each d ∈ D:  
+d = {nd, ad, td, impls}, where  
+- nd ∈ SpecDetailName  
+- ad ∈ AbstractName  
+- td ∈ SpecDetailType  
+- impls ⊆ ImplName  
+
+Here, `nd` identifies the individual SpecDetailAnnotation,  
+`ad` links it to its parent AbstractAnnotation via `@spec`,  
+`td` defines the type of specification—such as `func`, `non-func`, `test`, or `infra`,  
+and `impls` is the set of ImplementationAnnotations that realize this detail.
 ```
 
 #### 1.2.4 ImplementationAnnotation
@@ -91,6 +103,18 @@ sd =
 
 
 
+/// @MetaAnnotation @MetaName="SpecDetailType Vocabulary" #MetaType=Structure
+#### 2.1.1 SpecDetailType
+
+SpecDetailType defines the structural category of a SpecDetailAnnotation.  
+It helps clarify what kind of implementation or behavior the detail refers to.
+
+Available types include:
+
+- `func`: Functional specification—describes logic, behavior, and expected outcomes.  
+- `non-func`: Non-functional specification—covers static structures such as enums, data types, and configuration schemas.  
+- `test`: Test specification—defines validation logic, test cases, and expected assertions.  
+- `infra`: Infrastructure specification—includes database schemas, gateways, file formats, and system-level configurations.
 
 
 
