@@ -129,6 +129,7 @@ Web API design and data model definitions
 
 Any other conceptually distinct technical realization of a specification
 
+```
 I = {i₁, i₂, ..., iₗ} is a finite set of ImplementationAnnotations.
 
 For each i ∈ I:  
@@ -138,6 +139,7 @@ i = {ni, ti, link, art, status}, where
 - link ⊆ {SpecDetailAnnotation ∪ AbstractAnnotation}
 - art ∈ ImplementationArtifact  
 - status ∈ ImplementationStatus
+```
 
 Here,
 - ni identifies the ImplementationAnnotation.
@@ -153,6 +155,7 @@ Here,
 #### 1.2.5 Annotation Trace
 In combination with link references, Traces form the formal mapping between conceptual, detailed, and implementation layers, ensuring full bidirectional traceability within the SpecTrail system.
 
+```
 T = {t₁, t₂, ..., tₘ} is a finite set of Traces.
 
 For each t ∈ T:  
@@ -160,6 +163,7 @@ t = {src, dst, kind}, where
 - src ∈ {A ∪ D ∪ I}  
 - dst ∈ {A ∪ D ∪ I}  
 - kind ∈ TraceKind
+```
 
 Here,
 
