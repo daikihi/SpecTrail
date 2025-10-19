@@ -39,7 +39,8 @@ MetaType can take the following values: `Philosophy`, `Guideline`, `Convention`,
 #### 1.2.2 AbstractAnnotation
 AbstractAnnotation defines the high-level concept of the target software.  
 This concept answers questions like:  
-- Why does the team want to create the software?  
+
+- Why does the team want to create the software?
 - What kind of use cases or user needs are being prioritized?
 
 In the context of a web service, an AbstractAnnotation often corresponds to a single web page or screen-level concept.  
@@ -59,13 +60,19 @@ but it's important to note that each SpecDetailAnnotation is structurally linked
 ```
 A = {a₁, a₂, ..., aₙ} is a finite set of AbstractAnnotations.
 
-For each a ∈ A: a = {na, sa}, where
+For each a ∈ A:  
+a = {na, ta, link}, where  
+- na ∈ AbstractName  
+- ta ∈ AbstractType  
+- link ⊆ SpecDetailAnnotation
 
-na ∈ AbstractName
+Here,
 
-sa ⊆ SpecDetailName
+na identifies the abstract concept.
 
-Here, na identifies the individual AbstractAnnotation, and sa is the set of SpecDetailAnnotations that belong to a.
+ta represents its type, such as domain concept, use case, or system role.
+
+link connects this abstract concept to one or more SpecDetailAnnotations that concretize it.
 ```
 
 /// @MetaAnnotation @MetaName="Definition of SpecDetailAnnotation" #MetaType=Philosophy
@@ -82,26 +89,84 @@ In the context of a one-shot batch process, a SpecDetailAnnotation often corresp
 D = {d₁, d₂, ..., dₖ} is a finite set of SpecDetailAnnotations.
 
 For each d ∈ D:  
-d = {nd, ad, td, impls}, where  
+d = {nd, td, link}, where  
 - nd ∈ SpecDetailName  
-- ad ∈ AbstractName  
 - td ∈ SpecDetailType  
-- impls ⊆ ImplName  
+- link ⊆ {AbstractAnnotation ∪ ImplementationAnnotation}
 
-Here, `nd` identifies the individual SpecDetailAnnotation,  
-`ad` links it to its parent AbstractAnnotation via `@spec`,  
-`td` defines the type of specification—such as `func`, `non-func`, `test`, or `infra`,  
-and `impls` is the set of ImplementationAnnotations that realize this detail.
+Here,
+
+nd identifies the detailed specification.
+
+td specifies its type, such as entity, relation, operation, or rule.
+
+link connects this detail both upward (to AbstractAnnotation) and downward (to ImplementationAnnotation), forming a bidirectional specification trace.
 ```
 
 #### 1.2.4 ImplementationAnnotation
 
+ImplementationAnnotation defines a concrete implementation-level specification that realizes a particular SpecDetailAnnotation.
+It provides the semantic bridge between specification and source code, representing how a detailed specification is technically realized.
 
+Unlike SpecDetailAnnotation, which describes what should be done,
+ImplementationAnnotation focuses on the conceptual role of the implementation rather than its physical code location or language.
+Information such as file paths or programming languages is managed separately by CodeAnnotation and connected through trace relations.
 
+A single SpecDetailAnnotation may correspond to multiple ImplementationAnnotations,
+each describing a distinct implementation aspect (e.g., database access, repository design, gateway integration).
 
+ImplementationAnnotation is typically used to express:
 
+Database-related implementation semantics (tables, columns, constraints)
 
+Design of data access layers (DAO modules)
 
+Structure definitions for domain entities
+
+Repository or gateway interface specifications
+
+Web API design and data model definitions
+
+Any other conceptually distinct technical realization of a specification
+
+I = {i₁, i₂, ..., iₗ} is a finite set of ImplementationAnnotations.
+
+For each i ∈ I:  
+i = {ni, ti, link, art, status}, where  
+- ni ∈ ImplementationSpecName  
+- ti ∈ ImplementationType  
+- link ⊆ {SpecDetailAnnotation ∪ AbstractAnnotation}
+- art ∈ ImplementationArtifact  
+- status ∈ ImplementationStatus
+
+Here,
+- ni identifies the ImplementationAnnotation.
+
+- ti classifies its role, such as DAO, Repository, Gateway, or API.
+
+- link associates this implementation with its related SpecDetailAnnotation(s) and AbstractAnnotation(s).
+
+- art defines the semantic target of the implementation, such as database, domain, external_system, or web_interface.
+
+- status represents the implementation’s maturity or verification state, such as draft, implemented, or verified.
+
+#### 1.2.5 Annotation Trace
+In combination with link references, Traces form the formal mapping between conceptual, detailed, and implementation layers, ensuring full bidirectional traceability within the SpecTrail system.
+
+T = {t₁, t₂, ..., tₘ} is a finite set of Traces.
+
+For each t ∈ T:  
+t = {src, dst, kind}, where  
+- src ∈ {A ∪ D ∪ I}  
+- dst ∈ {A ∪ D ∪ I}  
+- kind ∈ TraceKind
+
+Here,
+
+src and dst denote the source and destination of the trace link.
+
+kind indicates the semantics of the relationship (e.g., refines, implements, verifies, derives).
+Traces thus form the structural backbone of the SpecTrail, enabling complete bidirectional traceability across all layers.
 
 /// @MetaAnnotation @MetaName="SpecDetailType Vocabulary" #MetaType=Structure
 #### 2.1.1 SpecDetailType
@@ -115,53 +180,3 @@ Available types include:
 - `non-func`: Non-functional specification—covers static structures such as enums, data types, and configuration schemas.  
 - `test`: Test specification—defines validation logic, test cases, and expected assertions.  
 - `infra`: Infrastructure specification—includes database schemas, gateways, file formats, and system-level configurations.
-
-
-
------WIP
-----
-
-
-SpecTrailAnnotation consists of two disjoint sets:
-
-C = { c₁, c₂, ..., cₙ } : the set of all possible CodeAnnotations
-
-D = { d₁, d₂, ..., dₘ } : the set of all possible DocumentAnnotations
-
-Constraint: CNc ∩ DNd = ∅. // complete s
-
-Each annotation a ∈ (C ∪ D) is defined as a structured tuple:
-
-a = { spec_id, type, layer }
-
-Where:
-
-spec_id ∈ SpecID
-
-type ∈ Type
-
-layer ∈ Layer
-
-2. Annotation Matching
-Let M ⊆ C × D be the set of matched annotations.
-
-For any pair (c, d) ∈ M:
-
-c.spec_id = d.spec_id
-
-Then we define:
-
-UnmatchedCode = C \ { c | ∃ d ∈ D, (c, d) ∈ M }
-
-UnmatchedDocument = D \ { d | ∃ c ∈ C, (c, d) ∈ M }
-
-These subsets represent implementation without specification, and specification without implementation, respectively.
-
-3. Annotation Graph
-Let G = (V, E) be a directed graph where:
-
-V = C ∪ D
-
-E = { (d → c) | (c, d) ∈ M }
-
-This graph represents the traceability between documentation and code. Disconnected nodes in G correspond to unmatched annotations.
