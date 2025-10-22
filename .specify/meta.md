@@ -14,10 +14,70 @@ that together form a traceable unit within the SpecTrail system.
 
 /// @MetaAnnotation @MetaName="Definition of SpecTrailAnnotation" @MetaType=Philosophy
 ### 1.2 SpecTrailAnnotation
-Let SpecTrailAnnotation = {MetaAnnotation, AbstractAnnotation, SpecDetailAnnotation, ImplementationAnnotation}
+SpecTrail defines two complementary annotation spaces:
+
+Let  
+SpecTrailUnit = { DocumentAnnotation, CodeAnnotation }
+
+Both represent collections of annotations that share a common structural schema
+(MetaAnnotation, AbstractAnnotation, SpecDetailAnnotation),
+but exist in different ontological domains.
+
+- **DocumentAnnotation** exists in the *specification domain* —  
+  annotations written within natural language or semi-structured documents.
+
+- **CodeAnnotation** exists in the *implementation domain* —  
+  annotations embedded within programming code or related metadata.
+
+Formally:
+
+```
+DocumentAnnotation = { Mᴰ, Aᴰ, Dᴰ }
+CodeAnnotation = { Mᶜ, Aᶜ, Dᶜ }
+```
+
+where each set corresponds to the three core layers of annotation structure:
+
+- **MetaAnnotation (M)** — expresses design principles and conventions.  
+- **AbstractAnnotation (A)** — expresses conceptual or domain-level intent.  
+- **SpecDetailAnnotation (D)** — expresses concrete functional or structural specifications.
+
+Each of these annotation types shares a *common schema* across spaces,  
+but instances differ because they belong to distinct representation domains (textual vs code).
+
+---
+
+#### 1.2.1 Structural Mapping
+
+A **Trace relation** establishes correspondence between DocumentAnnotation and CodeAnnotation.  
+That is, each annotation in DocumentAnnotation may have one or more semantic counterparts in CodeAnnotation.
+
+```
+∀ aᴰ ∈ DocumentAnnotation,
+∃ aᶜ ∈ CodeAnnotation such that Trace(aᴰ, aᶜ)
+```
+
+
+The mapping is **not required to be one-to-one**;  
+it allows partial, compositional, or derived mappings to represent real-world divergence  
+between written specifications and implemented systems.
+
+---
+
+#### 1.2.2 Philosophical Note
+
+The DocumentAnnotation and CodeAnnotation spaces are *isomorphic by structure* but *distinct by substance*.
+
+They share the same logical annotation model but live in different ontological strata:
+- The **Document space** describes *what is intended*.
+- The **Code space** describes *what exists*.
+
+SpecTrail does not collapse these into a single ontology.  
+Instead, it maintains both and enforces structural symmetry and semantic traceability between them.
+
 
 /// @MetaAnnotation @MetaName="Definition of MetaType" @MetaType=Philosophy
-#### 1.2.1 MetaAnnotation
+#### 1.2.3 MetaAnnotation
 MetaAnnotation is an annotation used to describe design directions, naming rules, and system management principles.  
 It does not define features directly, but supports the structure and philosophy behind specification design.
 
@@ -36,7 +96,7 @@ m = {n, t}, where n ∈ MetaName, t ∈ MetaType.
 MetaType can take the following values: `Philosophy`, `Guideline`, `Convention`, `Structure`, `Rule`.
 
 /// @MetaAnnotation @MetaName="Definition of AbstractAnnotation" #MetaType=Philosophy
-#### 1.2.2 AbstractAnnotation
+#### 1.2.4 AbstractAnnotation
 AbstractAnnotation defines the high-level concept of the target software.  
 This concept answers questions like:  
 
@@ -76,7 +136,7 @@ link connects this abstract concept to one or more SpecDetailAnnotations that co
 ```
 
 /// @MetaAnnotation @MetaName="Definition of SpecDetailAnnotation" #MetaType=Philosophy
-#### 1.2.3 SpecDetailAnnotation
+#### 1.2.5 SpecDetailAnnotation
 SpecDetailAnnotation defines a specific behavior or functional aspect derived from an AbstractAnnotation.  
 It represents a concrete specification that guides implementation.
 
@@ -103,7 +163,7 @@ td specifies its type, such as entity, relation, operation, or rule.
 link connects this detail both upward (to AbstractAnnotation) and downward (to ImplementationAnnotation), forming a bidirectional specification trace.
 ```
 
-#### 1.2.4 ImplementationAnnotation
+#### 1.2.6 ImplementationAnnotation
 
 ImplementationAnnotation defines a concrete implementation-level specification that realizes a particular SpecDetailAnnotation.
 It provides the semantic bridge between specification and source code, representing how a detailed specification is technically realized.
@@ -152,7 +212,7 @@ Here,
 
 - status represents the implementation’s maturity or verification state, such as draft, implemented, or verified.
 
-#### 1.2.5 Annotation Trace
+#### 1.2.7 Annotation Trace
 In combination with link references, Traces form the formal mapping between conceptual, detailed, and implementation layers, ensuring full bidirectional traceability within the SpecTrail system.
 
 ```
