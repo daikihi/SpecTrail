@@ -163,6 +163,7 @@ td specifies its type, such as entity, relation, operation, or rule.
 link connects this detail both upward (to AbstractAnnotation) and downward (to ImplementationAnnotation), forming a bidirectional specification trace.
 ```
 
+/// @MetaAnnotation @MetaName="Definition of ImplementationAnnotation" #MetaType=Philosophy
 #### 1.2.6 ImplementationAnnotation
 
 ImplementationAnnotation defines a concrete implementation-level specification that realizes a particular SpecDetailAnnotation.
