@@ -1,247 +1,312 @@
-# Specification Model: Formal Definition
+Specification Model: Formal Definition
 
-## 1. SpecTrailAnnotation
+1. SpecTrailAnnotation
+1.1 SpecTrailUnit
 
-/// @MetaAnnotation @MetaName="Definition of SpecTrailUnit" @MetaType=Philosophy
-### 1.1 SpecTrailUnit
-Let SpecTrailUnit = { CodeAnnotation, DocumentAnnotation }
+```
+SpecTrailUnit = { CodeAnnotation, DocumentAnnotation }
+```
 
-CodeAnnotation is an entity of SpecTrail annotation written in actual programming code.  
-DocumentAnnotation is an entity of SpecTrail annotation written in specification documents.
+A SpecTrailUnit represents a traceable conceptual pair consisting of:
 
-SpecTrailUnit represents a pair of annotations—one from code, one from documentation—  
-that together form a traceable unit within the SpecTrail system.
+- CodeAnnotation — an annotation appearing in source code or code-related metadata.
+- DocumentAnnotation — an annotation appearing in natural-language or semi-structured specification documents.
 
-/// @MetaAnnotation @MetaName="Definition of SpecTrailAnnotation" @MetaType=Philosophy
-### 1.2 SpecTrailAnnotation
-SpecTrail defines two complementary annotation spaces:
+Together, these two components form the dual representation of a single conceptual specification element within the SpecTrail system.
 
-Let  
+1.2 SpecTrailAnnotation
+
+SpecTrail defines two parallel annotation domains that share a common structural schema:
+
+```
 SpecTrailUnit = { DocumentAnnotation, CodeAnnotation }
+```
 
-Both represent collections of annotations that share a common structural schema
-(MetaAnnotation, AbstractAnnotation, SpecDetailAnnotation),
-but exist in different ontological domains.
+Both domains are constructed from the same three-layer annotation structure:
 
-- **DocumentAnnotation** exists in the *specification domain* —  
-  annotations written within natural language or semi-structured documents.
+- MetaAnnotation (M)
+- AbstractAnnotation (A)
+- SpecDetailAnnotation (D)
 
-- **CodeAnnotation** exists in the *implementation domain* —  
-  annotations embedded within programming code or related metadata.
+Although they share the same schema, they exist in different ontological strata:
+
+- DocumentAnnotation resides in the specification domain (textual representation).
+- CodeAnnotation resides in the implementation domain (executable or machine-verified representation).
 
 Formally:
 
 ```
 DocumentAnnotation = { Mᴰ, Aᴰ, Dᴰ }
-CodeAnnotation = { Mᶜ, Aᶜ, Dᶜ }
+CodeAnnotation     = { Mᶜ, Aᶜ, Dᶜ }
 ```
 
-where each set corresponds to the three core layers of annotation structure:
+Each component (M, A, D) follows the same structural definition across the two domains while being instantiated differently according to its representational medium.
 
-- **MetaAnnotation (M)** — expresses design principles and conventions.  
-- **AbstractAnnotation (A)** — expresses conceptual or domain-level intent.  
-- **SpecDetailAnnotation (D)** — expresses concrete functional or structural specifications.
 
-Each of these annotation types shares a *common schema* across spaces,  
-but instances differ because they belong to distinct representation domains (textual vs code).
+1.2.1 Structural Mapping
 
----
-
-#### 1.2.1 Structural Mapping
-
-A **Trace relation** establishes correspondence between DocumentAnnotation and CodeAnnotation.  
-That is, each annotation in DocumentAnnotation may have one or more semantic counterparts in CodeAnnotation.
+A Trace relation establishes semantic correspondence between document-space annotations and code-space annotations.
 
 ```
 ∀ aᴰ ∈ DocumentAnnotation,
 ∃ aᶜ ∈ CodeAnnotation such that Trace(aᴰ, aᶜ)
 ```
 
+The mapping is not required to be 1-to-1.
+This accommodates partial mappings, composite mappings, and real-world divergences between intended specifications and implemented systems.
 
-The mapping is **not required to be one-to-one**;  
-it allows partial, compositional, or derived mappings to represent real-world divergence  
-between written specifications and implemented systems.
+1.2.2 Philosophical Note
 
----
+DocumentAnnotation and CodeAnnotation are structurally isomorphic but ontologically distinct:
 
-#### 1.2.2 Philosophical Note
+- The Document space describes intent.
+- The Code space describes realization.
 
-The DocumentAnnotation and CodeAnnotation spaces are *isomorphic by structure* but *distinct by substance*.
+SpecTrail purposely does not collapse these spaces into a single ontology.
+Instead, the system maintains their distinction while enforcing traceability between them.
 
-They share the same logical annotation model but live in different ontological strata:
-- The **Document space** describes *what is intended*.
-- The **Code space** describes *what exists*.
+1.2.3 MetaAnnotation
 
-SpecTrail does not collapse these into a single ontology.  
-Instead, it maintains both and enforces structural symmetry and semantic traceability between them.
+MetaAnnotation describes design principles, naming conventions, and management-level guidelines.
+It supports the structure of the specification but does not define system functionality directly.
 
-
-/// @MetaAnnotation @MetaName="Definition of MetaType" @MetaType=Philosophy
-#### 1.2.3 MetaAnnotation
-MetaAnnotation is an annotation used to describe design directions, naming rules, and system management principles.  
-It does not define features directly, but supports the structure and philosophy behind specification design.
-
-In most cases, MetaAnnotations do not appear in programming code.  
-However, they help readers of specification documents understand why certain specifications are not reflected in the source code.
+MetaAnnotations generally do not appear in source code.
 
 ```
-M = {m₁, m₂, ..., mₙ} is a finite set of all possible MetaAnnotations.
+M = {m₁, ..., mₙ}
 
-∀m ∈ M:  
-MetaName is a finite set of identifiers for MetaAnnotations.  
-MetaType is a finite set of conceptual categories.  
-m = {n, t}, where n ∈ MetaName, t ∈ MetaType.
+∀ m ∈ M:
+    m = {n, t}  
+    n ∈ MetaName  
+    t ∈ MetaType
 ```
 
-MetaType can take the following values: `Philosophy`, `Guideline`, `Convention`, `Structure`, `Rule`.
-
-/// @MetaAnnotation @MetaName="Definition of AbstractAnnotation" #MetaType=Philosophy
-#### 1.2.4 AbstractAnnotation
-AbstractAnnotation defines the high-level concept of the target software.  
-This concept answers questions like:  
-
-- Why does the team want to create the software?
-- What kind of use cases or user needs are being prioritized?
-
-In the context of a web service, an AbstractAnnotation often corresponds to a single web page or screen-level concept.  
-It represents the overall purpose or user-facing role of that page within the system.
-
-In addition, an AbstractAnnotation may also describe what kinds of components are involved—such as APIs, batch processes, or background jobs.
-
-An AbstractAnnotation may contain several SpecDetailAnnotations.  
-These detail annotations emerge when the abstract concept is split into sub-specifications—similar to how a task is broken down into subtasks.
-
-Each AbstractAnnotation must include a `@name` tag to identify its concept.  
-We recommend using a consistent naming convention—such as `CamelCase` or screen-level identifiers (e.g., `UserAuthPage`, `ProductListView`)—to ensure clarity and traceability across the project.
-
-We will define SpecDetailAnnotation separately,  
-but it's important to note that each SpecDetailAnnotation is structurally linked to an AbstractAnnotation via `@spec`.
+MetaType includes:
 
 ```
-A = {a₁, a₂, ..., aₙ} is a finite set of AbstractAnnotations.
-
-For each a ∈ A:  
-a = {na, ta, link}, where  
-- na ∈ AbstractName  
-- ta ∈ AbstractType  
-- link ⊆ SpecDetailAnnotation
-
-Here,
-
-na identifies the abstract concept.
-
-ta represents its type, such as domain concept, use case, or system role.
-
-link connects this abstract concept to one or more SpecDetailAnnotations that concretize it.
+Philosophy | Guideline | Convention | Structure | Rule
 ```
 
-/// @MetaAnnotation @MetaName="Definition of SpecDetailAnnotation" #MetaType=Philosophy
-#### 1.2.5 SpecDetailAnnotation
-SpecDetailAnnotation defines a specific behavior or functional aspect derived from an AbstractAnnotation.  
-It represents a concrete specification that guides implementation.
+AbstractAnnotation defines high-level conceptual units of the system:
 
-In the context of a web service,  
-a SpecDetailAnnotation often corresponds to an API specification, a user interaction flow, or a page-level behavior.
+- Why the system or component exists
+- Which user needs or use cases it addresses
+- What role it plays within the overall architecture
 
-In the context of a one-shot batch process, a SpecDetailAnnotation often corresponds to a batch specification such as loading master data from a filesystem and inserting it into a database.
+In web systems, it typically corresponds to:
 
-```
-D = {d₁, d₂, ..., dₖ} is a finite set of SpecDetailAnnotations.
+- a page-level concept (e.g., ProductListPage)
+- an application-level concept (e.g., UserAuthFlow)
+- background components (API groups, batch processes, scheduled jobs)
 
-For each d ∈ D:  
-d = {nd, td, link}, where  
-- nd ∈ SpecDetailName  
-- td ∈ SpecDetailType  
-- link ⊆ {AbstractAnnotation ∪ ImplementationAnnotation}
-
-Here,
-
-nd identifies the detailed specification.
-
-td specifies its type, such as entity, relation, operation, or rule.
-
-link connects this detail both upward (to AbstractAnnotation) and downward (to ImplementationAnnotation), forming a bidirectional specification trace.
-```
-
-/// @MetaAnnotation @MetaName="Definition of ImplementationAnnotation" #MetaType=Philosophy
-#### 1.2.6 ImplementationAnnotation
-
-ImplementationAnnotation defines a concrete implementation-level specification that realizes a particular SpecDetailAnnotation.
-It provides the semantic bridge between specification and source code, representing how a detailed specification is technically realized.
-
-Unlike SpecDetailAnnotation, which describes what should be done,
-ImplementationAnnotation focuses on the conceptual role of the implementation rather than its physical code location or language.
-Information such as file paths or programming languages is managed separately by CodeAnnotation and connected through trace relations.
-
-A single SpecDetailAnnotation may correspond to multiple ImplementationAnnotations,
-each describing a distinct implementation aspect (e.g., database access, repository design, gateway integration).
-
-ImplementationAnnotation is typically used to express:
-
-Database-related implementation semantics (tables, columns, constraints)
-
-Design of data access layers (DAO modules)
-
-Structure definitions for domain entities
-
-Repository or gateway interface specifications
-
-Web API design and data model definitions
-
-Any other conceptually distinct technical realization of a specification
+Each AbstractAnnotation owns multiple SpecDetailAnnotations.
 
 ```
-I = {i₁, i₂, ..., iₗ} is a finite set of ImplementationAnnotations.
+A = {a₁, ..., aₙ}
 
-For each i ∈ I:  
-i = {ni, ti, link, art, status}, where  
-- ni ∈ ImplementationSpecName  
-- ti ∈ ImplementationType  
-- link ⊆ {SpecDetailAnnotation ∪ AbstractAnnotation}
-- art ∈ ImplementationArtifact  
-- status ∈ ImplementationStatus
+∀ a ∈ A:
+    a = {na, ta, link}
+    na ∈ AbstractName
+    ta ∈ AbstractType
+    link ⊆ SpecDetailAnnotation
 ```
 
-Here,
-- ni identifies the ImplementationAnnotation.
+1.2.5 SpecDetailAnnotation
 
-- ti classifies its role, such as DAO, Repository, Gateway, or API.
+SpecDetailAnnotation represents concrete functional or structural specification derived from an AbstractAnnotation.
 
-- link associates this implementation with its related SpecDetailAnnotation(s) and AbstractAnnotation(s).
+Examples include:
 
-- art defines the semantic target of the implementation, such as database, domain, external_system, or web_interface.
-
-- status represents the implementation’s maturity or verification state, such as draft, implemented, or verified.
-
-#### 1.2.7 Annotation Trace
-In combination with link references, Traces form the formal mapping between conceptual, detailed, and implementation layers, ensuring full bidirectional traceability within the SpecTrail system.
+- API behavior
+- data validation rules
+- user interaction flows
+- batch processing steps
+- database structure definitions
 
 ```
-T = {t₁, t₂, ..., tₘ} is a finite set of Traces.
+D = {d₁, ..., dₖ}
 
-For each t ∈ T:  
-t = {src, dst, kind}, where  
-- src ∈ {A ∪ D ∪ I}  
-- dst ∈ {A ∪ D ∪ I}  
-- kind ∈ TraceKind
+∀ d ∈ D:
+    d = {nd, td, link}
+    nd ∈ SpecDetailName
+    td ∈ SpecDetailType
+    link ⊆ {AbstractAnnotation ∪ ImplementationAnnotation}
 ```
 
-Here,
+The link forms a bidirectional trace between:
 
-src and dst denote the source and destination of the trace link.
+- abstract concept (upward)
+- implementation realization (downward)
 
-kind indicates the semantics of the relationship (e.g., refines, implements, verifies, derives).
-Traces thus form the structural backbone of the SpecTrail, enabling complete bidirectional traceability across all layers.
+1.2.6 ImplementationAnnotation
 
-/// @MetaAnnotation @MetaName="SpecDetailType Vocabulary" #MetaType=Structure
-#### 2.1.1 SpecDetailType
+ImplementationAnnotation describes how a SpecDetailAnnotation is realized at the technical level.
 
-SpecDetailType defines the structural category of a SpecDetailAnnotation.  
-It helps clarify what kind of implementation or behavior the detail refers to.
+It expresses conceptual implementation information without binding to physical file paths or language syntax.
+Actual code metadata is managed by CodeAnnotation.
 
-Available types include:
+Examples:
 
-- `func`: Functional specification—describes logic, behavior, and expected outcomes.  
-- `non-func`: Non-functional specification—covers static structures such as enums, data types, and configuration schemas.  
-- `test`: Test specification—defines validation logic, test cases, and expected assertions.  
-- `infra`: Infrastructure specification—includes database schemas, gateways, file formats, and system-level configurations.
+- Database schema / table / field semantics
+- DAO / repository structures
+- domain entity definitions
+- external API gateway design
+- web interface data model
+
+```
+I = {i₁, ..., iₗ}
+
+∀ i ∈ I:
+    i = {ni, ti, link, art, status}
+    ni ∈ ImplementationSpecName
+    ti ∈ ImplementationType
+    link ⊆ {SpecDetailAnnotation ∪ AbstractAnnotation}
+    art ∈ ImplementationArtifact
+    status ∈ ImplementationStatus
+```
+
+1.2.7 Annotation Trace
+
+Traces define explicit semantic relationships across all annotation layers.
+
+```
+T = {t₁, ..., tₘ}
+
+∀ t ∈ T:
+    t = {src, dst, kind}
+    src ∈ (A ∪ D ∪ I)
+    dst ∈ (A ∪ D ∪ I)
+    kind ∈ TraceKind
+```
+
+TraceKind expresses semantics such as:
+
+- refines
+- implements
+- verifies
+- derives
+
+Traces are the structural backbone of SpecTrail, ensuring full bidirectional traceability.
+
+
+2. Vocabulary
+2.1 SpecDetailType
+
+Defines the structural classification of a SpecDetailAnnotation.
+
+```
+func      : Functional specification (behavior, state transitions, logic)
+non-func  : Structural, static, or non-behavioral specifications
+test      : Validation logic and test case specifications
+infra     : Infrastructure-level specifications (DB, gateway, file formats)
+```
+
+3. metamodel diagrams
+
+```mermaid
+classDiagram
+    direction LR
+
+    %% -------------------------
+    %% Core Annotation Domains
+    %% -------------------------
+    class DocumentAnnotation {
+        +Mᴰ : MetaAnnotation[*]
+        +Aᴰ : AbstractAnnotation[*]
+        +Dᴰ : SpecDetailAnnotation[*]
+    }
+
+    class CodeAnnotation {
+        +Mᶜ : MetaAnnotation[*]
+        +Aᶜ : AbstractAnnotation[*]
+        +Dᶜ : SpecDetailAnnotation[*]
+    }
+
+    %% -------------------------
+    %% MetaAnnotation
+    %% -------------------------
+    class MetaAnnotation {
+        +name : MetaName
+        +type : MetaType
+    }
+
+    class MetaType {
+    }
+
+    %% -------------------------
+    %% AbstractAnnotation
+    %% -------------------------
+    class AbstractAnnotation {
+        +name : AbstractName
+        +type : AbstractType
+    }
+
+    AbstractAnnotation "1" --> "0..*" SpecDetailAnnotation : link
+
+    %% -------------------------
+    %% SpecDetailAnnotation
+    %% -------------------------
+    class SpecDetailAnnotation {
+        +name : SpecDetailName
+        +type : SpecDetailType
+    }
+
+    SpecDetailAnnotation "0..*" --> "0..*" ImplementationAnnotation : link
+
+    %% -------------------------
+    %% ImplementationAnnotation
+    %% -------------------------
+    class ImplementationAnnotation {
+        +name : ImplementationSpecName
+        +type : ImplementationType
+        +artifact : ImplementationArtifact
+        +status : ImplementationStatus
+    }
+
+    %% -------------------------
+    %% Traces
+    %% -------------------------
+    class Trace {
+        +kind : TraceKind
+    }
+
+    Trace "1" --> "1" AbstractAnnotation : src
+    Trace "1" --> "1" AbstractAnnotation : dst
+
+    Trace "1" --> "1" SpecDetailAnnotation : src
+    Trace "1" --> "1" SpecDetailAnnotation : dst
+
+    Trace "1" --> "1" ImplementationAnnotation : src
+    Trace "1" --> "1" ImplementationAnnotation : dst
+
+    %% -------------------------
+    %% Enumerations (as classes)
+    %% -------------------------
+    class SpecDetailType {
+        <<enumeration>>
+        func
+        non-func
+        test
+        infra
+    }
+
+    class MetaType {
+        <<enumeration>>
+        Philosophy
+        Guideline
+        Convention
+        Structure
+        Rule
+    }
+
+    class TraceKind {
+        <<enumeration>>
+        refines
+        implements
+        verifies
+        derives
+    }
+```
+
+
+
