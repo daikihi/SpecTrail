@@ -4,6 +4,11 @@
 # Cargo package files
 **/*.rs.bk
 
+# SpecKit
+.specify/
+.specify/**
+
+
 # MacOS-specific files
 .DS_Store
 
@@ -13,3 +18,5 @@
 *.swp
 
 .venv/
+.github/
+*.old/
