@@ -1,3 +1,5 @@
+/// @MetaAnnotation @MetaName="Implementation Plan" @MetaType=Guideline
+/// @AbstractAnnotation @name="PlanOverview" @type="Plan"
 # Implementation Plan: Spec-Impl-Annotations
 
 **Branch**: `001-spec-impl-annotations` | **Date**: 2025-12-31 | **Spec**: `spec.md`

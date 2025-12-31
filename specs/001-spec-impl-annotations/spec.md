@@ -7,10 +7,18 @@
 
 ---
 
+/// @MetaAnnotation @MetaName="Spec-Impl-Annotations Feature" @MetaType=Philosophy
+/// @AbstractAnnotation @name="SpecTrailFeature" @type="Feature" @spec="specs/001-spec-impl-annotations/spec.md"
+/// @SpecDetailAnnotation @id="FR-ROOT" @name="FeatureTrace" @type="func" @meta="feature-level"
+
+
+
+/// @AbstractAnnotation @name="Concept" @type="Overview"
 ## Concept / コンセプト
 
+/// @AbstractAnnotation @name="Goal" @type="Goal"
 ### 1.1 Goal of SpecTrail
-SpecTrail の目的は、ソフトウェア開発チーム（デザイナー、開発者、QA、インフラ担当など）を支援し、仕様書（ドキュメント）と実装（コード）の間のギャップを埋めることです。仕様は通常自然言語で記述され、そのままでは実装との整合性を保つのが難しいため、注釈（Annotation）を用いて仕様と実装を結び付け、追跡性と整合性を提供します。
+SpecTrail の目的は、ソフトウェア開発チーム（デザイナー、開発者、QA、インフラ担当など）を支援し、仕様書（ドキュメント）と実装（コード）の間のギャップを埋めることです。仕様は通常自然言語で記述され、そのままでは実装との整合性を保つのが難しいため、注釈（Annotation）を用いて仕様と実装を結び付け、追跡性と整合性を提供します.
 
 ### 1.2 User Assumption and Use Case
 **Target Users**: バックエンド/フロントエンド/QA/インフラ/テクニカルライター等、仕様と実装の対応を必要とするあらゆるロールを想定します。プロジェクトマネージャも進捗把握のために本機能を利用します。
@@ -93,15 +101,18 @@ SpecTrail の目的は、ソフトウェア開発チーム（デザイナー、�
 
 ### Functional Requirements (すべてテスト可能に記述)
 
+/// @SpecDetailAnnotation @id="FR-001" @name="AddAnnotation" @type="func" @spec_section="User Scenarios"
 - **FR-001**: 開発者が仕様（ドキュメント）の任意の項目に対して注釈（Annotation）を追加できること。
   - **Acceptance**: 仕様項目に注釈を追加後、一覧で該当項目が注釈付きとして表示される。
 
+/// @SpecDetailAnnotation @id="FR-002" @name="SupportDocumentAndCodeAnnotations" @type="func" @spec_section="Requirements"
 - **FR-002**: 注釈は**ソースコード内のインライン注釈（コメント/属性）とドキュメント内の注釈（本スペックに示した形式）の双方をサポートすること**（段階的に導入して両方を扱えることを目標とする）。
   - **Acceptance**:
     - ドキュメント注釈（DocumentAnnotation）とコード注釈（CodeAnnotation）が同じ正規化された識別子を持つ場合、それらは自動的にリンクされ、一覧／詳細画面で併記される。
     - どちらか一方のみ存在する（ドキュメントのみ／コードのみ）のケースは明示的に表示され、フィルタ可能である（例: 「ドキュメントのみ」「コードのみ」「未実装」）。
     - スキャン実行により「未リンク注釈（ドキュメントのみ／コードのみ）」の一覧と、同一識別子でも競合情報がある場合は手動レビュー用にフラグが出力される。
 
+/// @SpecDetailAnnotation @id="FR-003" @name="MultiStageStatusWithBatchDetection" @type="infra" @spec_section="Requirements"
 - **FR-003**: 注釈は**多段階のステータスモデル（例: 実装済み / 進行中 / 未実装 / 廃止 / 検証済み）を持ち、SpecTrail のバッチ実行による自律検出（ステータス推定）をサポートすること**。
   - **Acceptance**:
     - バッチ（スキャン）実行により、システムは注釈に対する「推定ステータス」を出力できる（例: 実装参照の有無、関連テストの存在、PR マージ状況等に基づく推定）。

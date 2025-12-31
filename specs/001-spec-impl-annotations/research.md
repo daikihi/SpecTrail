@@ -1,8 +1,11 @@
+/// @MetaAnnotation @MetaName="Research Notes" @MetaType=Guideline
+/// @AbstractAnnotation @name="Research" @type="Phase0"
 # research.md — Spec-Impl-Annotations
 
 **Created**: 2025-12-31
 **Purpose**: Resolve technical unknowns and record decisions, rationale, and alternatives.
 
+/// @SpecDetailAnnotation @id="R-001" @name="ParsingApproachDecision" @type="research"
 ## Task 1: Parsing approach for inline annotations
 - Decision: Start with a pragmatic, **regex-based scanner** for Markdown and simple inline annotation patterns in code (language-agnostic), and plan `tree-sitter` integration as a follow-up spike for languages where accuracy is required.
 - Rationale: Regex-based scanning is quick to implement and works well for clearly delimited annotation syntaxes (e.g., `/// @MetaAnnotation` or `@spec` blocks). It allows a working MVP sooner while keeping a clear migration path to `tree-sitter` for robust parsing.

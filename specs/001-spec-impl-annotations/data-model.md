@@ -1,9 +1,12 @@
+/// @MetaAnnotation @MetaName="Specification Data Model" @MetaType=Structure
+/// @AbstractAnnotation @name="DataModelOverview" @type="DataModel"
 # data-model.md — Spec-Impl-Annotations
 
 **Created**: 2025-12-31
 
 ## Entities
 
+/// @SpecDetailAnnotation @id="SPEC_ITEM" @name="SpecificationItem" @type="entity"
 ### SpecificationItem
 - id: string (unique within repository, e.g., `docs:Auth:LoginFlow`)
 - title: string
@@ -12,6 +15,7 @@
 - tags: [string]
 - created_at, updated_at
 
+/// @SpecDetailAnnotation @id="ANNOTATION" @name="Annotation" @type="entity"
 ### Annotation
 - annotation_id: string (UUID or human-readable stable id)
 - spec_item_id: string (links to SpecificationItem)

@@ -10,6 +10,7 @@
 cargo build --bin spec-trail
 ```
 
+/// @SpecDetailAnnotation @id="CLI-scan" @name="scan" @type="infra" @artifact="scanner"
 **Scan repository and output manifest**
 
 ```bash
