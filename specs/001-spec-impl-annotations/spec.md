@@ -1,9 +1,9 @@
-# Feature Specification: ドキュメントと実装を注釈(Annotation)で紐付ける仕組み
+# Feature Specification: Link Documents and Implementations with Annotations
 
 **Feature Branch**: `001-spec-impl-annotations`  
 **Created**: 2025-12-30  
 **Status**: Draft  
-**Input**: User description: "このプロジェクトでは、Document と implementation をAnnotation で結ぶことで、実装と仕様の関係を把握し、実装済み、未実装の有無なども把握できるようにしたい"
+**Input**: User description: "This project aims to link Documents and implementation with Annotations so teams can understand the relationship between specifications and code and track whether items are implemented or unimplemented."
 
 ---
 
@@ -14,142 +14,172 @@
 
 
 /// @AbstractAnnotation @name="Concept" @type="Overview"
-## Concept / コンセプト
+## Concept
 
 /// @AbstractAnnotation @name="Goal" @type="Goal"
 ### 1.1 Goal of SpecTrail
-SpecTrail の目的は、ソフトウェア開発チーム（デザイナー、開発者、QA、インフラ担当など）を支援し、仕様書（ドキュメント）と実装（コード）の間のギャップを埋めることです。仕様は通常自然言語で記述され、そのままでは実装との整合性を保つのが難しいため、注釈（Annotation）を用いて仕様と実装を結び付け、追跡性と整合性を提供します.
+SpecTrail's purpose is to help software development teams (designers, developers, QA, infrastructure/operations, etc.) by bridging the gap between specification documents and implementations (code). Specifications are usually written in natural language and can diverge from implementation; using Annotations to link specifications and implementations provides traceability and alignment.
 
 ### 1.2 User Assumption and Use Case
-**Target Users**: バックエンド/フロントエンド/QA/インフラ/テクニカルライター等、仕様と実装の対応を必要とするあらゆるロールを想定します。プロジェクトマネージャも進捗把握のために本機能を利用します。
+**Target Users**: Backend and frontend developers, QA, infrastructure/operations, technical writers, and any roles that need to map specifications to implementation. Project managers may also use this feature to track progress.
 
 **Use Case Examples**:
-- SpecTrail プロジェクト自体のように、UI を持たないツールチェーンの設計・開発において、デザイナーと開発者が仕様を議論し、注釈で実装対応を明示するサイクルを支援します。
-- Web サービス等の開発では、仕様項目ごとに注釈を付け、実装参照やステータスを追跡することでレビュー・保守を容易にします。
+- For toolchains without a UI (like the SpecTrail project itself), support the cycle where designers and developers discuss specifications and mark implementation intent with annotations.
+- In web service development, annotate specification items and track implementation references and status to simplify review and maintenance.
 
 ### 1.3 System Abstraction
 **1.3.1 SpecTrail Components**
-- SpecTrail Batches: CLI ベースのエントリポイント（スキャン、整合性チェック、レポート生成など）。
-- SpecTrail Reporter: 注釈カバレッジや参照切れを出力するレポート機能。
-- （将来的）SpecTrail Engine / SpecTrail Server: 注釈の集計・検索・同期を行うサービス。
+- SpecTrail Batches: CLI-based entry points (scan, integrity check, report generation, etc.).
+- SpecTrail Reporter: Reporting functions for annotation coverage and broken references.
+- (Future) SpecTrail Engine / SpecTrail Server: Service for aggregation, search, and synchronization of annotations.
 
 **1.3.2 Annotation Structure Overview**
-三層モデル（AbstractAnnotation、SpecDetailAnnotation、ImplementationAnnotation）を用いて、ドキュメント側とコード側の注釈を対応させることでトレースを実現します（詳細はデータモデル節参照）。
+A three-layer model (AbstractAnnotation, SpecDetailAnnotation, ImplementationAnnotation) is used to map document and code annotations for traceability (see Data Model section for details).
 
-**1.3.3 How to map specification between Specification and Implementation**
-ドキュメントとコードの双方に注釈を付与し、SpecTrail Engine が同名または紐づけルールに基づいてマッピングを行います。可読性確保のため、注釈名は明確かつ一貫した命名規約を採用することを推奨します。
+**1.3.3 How to Map Specification between Specification and Implementation**
+Add annotations to both documents and code; the SpecTrail Engine maps them by name or using configured linking rules. For readability, annotation names should follow a clear and consistent naming convention.
 
 **1.3.4 Design Concept**
-設計方針としては、まずは CLI ベースでの実用的なワークフロー（注釈の追加・スキャン・レポート出力・PR 差分表示）を MVP とし、将来的にサーバ/サービス化やエディタ統合を図る方針です。
+The design approach is to prioritize a practical CLI-based workflow as the MVP (adding annotations, scanning, report output, PR diff view), with future plans for server/service and editor integration.
 
 ---
 
 ## User Scenarios & Testing *(mandatory)*
 
-### User Story 1 - 開発者が仕様項目の実装状況をすばやく確認したい (Priority: P1)
+### User Story 1 - Developer wants to quickly check the implementation status of specification items (Priority: P1)
 
-開発者は仕様書の各項目に対して、どの実装が紐づいているか、現在の実装ステータス（実装済み／未実装／進行中 等）を一覧で確認したい。
+Developers want to see which implementations are associated with each specification item and view the current implementation status (e.g., Implemented / Unimplemented / In Progress) in a list.
 
-**Why this priority**: 日々の開発・レビューで最も直接的に価値を生むため。仕様と実装のズレを早期に発見できる。 
+**Why this priority**: Provides high daily value during development and reviews by enabling early detection of spec-implementation mismatches.
 
-**Independent Test**: リポジトリの仕様一覧ページで「未実装」フィルタを適用し、実装が存在しない項目のみが表示されることを確認する。
+**Independent Test**: Apply the 'Unimplemented' filter on the repository's specification list page and confirm only items without implementations are shown.
 
 **Acceptance Scenarios**:
 
-1. **Given** リポジトリに注釈された仕様が存在する、 **When** 開発者が「未実装」フィルタを適用する、 **Then** 未実装の仕様のみが一覧に表示される。
-2. **Given** 仕様項目に実装参照がある、 **When** 開発者が参照リンクをクリックする、 **Then** 対応する実装ファイル/位置に移動できる（IDE/エディタまたはブラウザで開ける）。
+1. **Given** annotated specifications exist in the repository, **When** a developer applies the 'Unimplemented' filter, **Then** only unimplemented specifications are listed.
+2. **Given** a specification item has an implementation reference, **When** the developer clicks the reference link, **Then** the corresponding file/line opens in the IDE/editor or browser.
 
 ---
 
-### User Story 2 - レビュアーが仕様と実装のマッピングをレビューしたい (Priority: P2)
+### User Story 2 - Reviewer wants to review the mapping between specification and implementation (Priority: P2)
 
-レビュアーはプルリクエストや変更セット内の注釈を使って、追加/変更された仕様とその実装を検証できるようにしたい。
+Reviewers should be able to use annotations in pull requests or changesets to verify added/changed specifications and their implementations.
 
-**Why this priority**: 品質向上と変更差分の追跡に有用。レビュー時間短縮に寄与する。
+**Why this priority**: Useful for quality assurance and tracking change diffs; reduces review time.
 
-**Independent Test**: PR の注釈一覧で、変更された仕様に対して参照先実装が正しく紐付いているかを確認する。
+**Independent Test**: In the PR annotation list, verify that changed specifications have correct implementation references.
 
 **Acceptance Scenarios**:
 
-1. **Given** PR に仕様注釈が含まれる、 **When** レビュアーが注釈一覧を確認する、 **Then** 注釈に対する実装参照（ファイル:行）または未実装のフラグが表示される。
+1. **Given** a PR contains specification annotations, **When** the reviewer checks the annotation list, **Then** each annotation shows its implementation reference (file:line) or an 'unimplemented' flag.
 
 ---
 
-### User Story 3 - メンテナが注釈の網羅率を把握したい (Priority: P3)
+### User Story 3 - Maintainer wants to understand annotation coverage (Priority: P3)
 
-メンテナは仕様に対する注釈のカバレッジ（何％の仕様に実装参照があるか）や未実装項目の一覧を定期的に確認したい。
+Maintainers want to periodically check annotation coverage (what percentage of specifications have implementation references) and lists of unimplemented items.
 
-**Why this priority**: 技術的負債の可視化と優先度付けに役立つ。
+**Why this priority**: Helps visualize technical debt and prioritize work.
 
-**Independent Test**: レポート機能で「注釈カバレッジ」を出力し、総仕様数に対する注釈付き仕様数の割合を検証する。
+**Independent Test**: Run the coverage report and verify the ratio of annotated items to total specification items.
 
 **Acceptance Scenarios**:
 
-1. **Given** リポジトリに仕様が100項目ある、 **When** メンテナがカバレッジレポートを実行する、 **Then** 何件が注釈され実装参照を持つかが数値として返される。
+1. **Given** the repository has 100 specification items, **When** the maintainer runs the coverage report, **Then** the report returns how many items are annotated and have implementation references.
 
 ---
 
 ### Edge Cases
 
-- 仕様側の行／ID が変更され、注釈の参照が古くなっている場合にどう扱うか（警告表示、再リンク提案など）。
-- 同一仕様に複数の実装参照（複数言語や複数実装パス）がある場合の取り扱い。
-- 大規模なリファクタで参照先が移動した場合の検知と更新方針。
+- What to do when a spec's line/ID changes and annotation references become stale (e.g., warn, suggest re-linking).
+- How to handle multiple implementation references for the same specification (multiple languages or multiple implementation paths).
+- Detection and update strategies when large refactors move referenced targets.
 
 ---
 
 ## Requirements *(mandatory)*
 
-### Functional Requirements (すべてテスト可能に記述)
+### Functional Requirements (all written to be testable)
 
 /// @SpecDetailAnnotation @id="FR-001" @name="AddAnnotation" @type="func" @spec_section="User Scenarios"
-- **FR-001**: 開発者が仕様（ドキュメント）の任意の項目に対して注釈（Annotation）を追加できること。
-  - **Acceptance**: 仕様項目に注釈を追加後、一覧で該当項目が注釈付きとして表示される。
+- **FR-001**: Developers can add annotations to any specification item (document).
+  - **Acceptance**: After adding an annotation to a specification item, the item appears in lists as annotated.
 
 /// @SpecDetailAnnotation @id="FR-002" @name="SupportDocumentAndCodeAnnotations" @type="func" @spec_section="Requirements"
-- **FR-002**: 注釈は**ソースコード内のインライン注釈（コメント/属性）とドキュメント内の注釈（本スペックに示した形式）の双方をサポートすること**（段階的に導入して両方を扱えることを目標とする）。
+- **FR-002**: Annotations must support both inline code annotations (comments/attributes) and document annotations (the format shown in this spec) — the goal is to handle both, possibly in phased adoption.
   - **Acceptance**:
-    - ドキュメント注釈（DocumentAnnotation）とコード注釈（CodeAnnotation）が同じ正規化された識別子を持つ場合、それらは自動的にリンクされ、一覧／詳細画面で併記される。
-    - どちらか一方のみ存在する（ドキュメントのみ／コードのみ）のケースは明示的に表示され、フィルタ可能である（例: 「ドキュメントのみ」「コードのみ」「未実装」）。
-    - スキャン実行により「未リンク注釈（ドキュメントのみ／コードのみ）」の一覧と、同一識別子でも競合情報がある場合は手動レビュー用にフラグが出力される。
+    - When a DocumentAnnotation and a CodeAnnotation share the same normalized identifier, they are automatically linked and displayed together in lists/details.
+    - Cases where only one side exists (document-only or code-only) are explicitly shown and filterable (e.g., "document-only", "code-only", "unimplemented").
+    - Scans produce a list of "unlinked annotations" (document-only/code-only), and any conflicts for the same identifier are flagged for manual review.
 
 /// @SpecDetailAnnotation @id="FR-003" @name="MultiStageStatusWithBatchDetection" @type="infra" @spec_section="Requirements"
-- **FR-003**: 注釈は**多段階のステータスモデル（例: 実装済み / 進行中 / 未実装 / 廃止 / 検証済み）を持ち、SpecTrail のバッチ実行による自律検出（ステータス推定）をサポートすること**。
+- **FR-003**: Annotations must support a multi-stage status model (e.g., Implemented / In Progress / Unimplemented / Deprecated / Verified) and support batch-based autonomous detection (status estimation) by SpecTrail.
   - **Acceptance**:
-    - バッチ（スキャン）実行により、システムは注釈に対する「推定ステータス」を出力できる（例: 実装参照の有無、関連テストの存在、PR マージ状況等に基づく推定）。
-    - 推定結果は一覧とレポートで「推定ステータス」として表示され、ユーザーは手動で最終ステータスを承認・変更できる。
-    - 自動推定で重大な不整合（例: 参照切れ、同一識別子での競合）が検出された場合、アラート/フラグが出力され、詳細確認のための一覧に含まれる。
+    - On batch (scan) execution, the system can output an "estimated status" for annotations (e.g., based on presence of implementation references, related tests, PR merge status).
+    - Estimated results are shown as "estimated status" in lists and reports; users can manually approve or modify the final status.
+    - If automatic estimation detects serious inconsistencies (e.g., broken references, identifier conflicts), alerts/flags are emitted and included in a detailed review list.
 
-- **FR-004**: リポジトリをスキャンして注釈の整合性チェック（参照先が存在するかの検証）を行い、レポートとして出力できること。
-  - **Acceptance**: 整合性チェック実行後、参照切れが検出されれば一覧に「参照切れ」として表示される。
+- **FR-004**: Ability to scan the repository, perform integrity checks on annotations (verify referenced targets exist), and output results as a report.
+  - **Acceptance**: After running integrity checks, any broken references are shown in a list labeled "broken reference".
 
-- **FR-005**: 注釈の検索・フィルタ（ステータス、仕様タグ、ファイル、未実装など）による一覧表示ができること。
-  - **Acceptance**: 例えば「未実装」をフィルタすると未実装の行のみが返る。
+- **FR-005**: Ability to list annotations with search and filters (status, spec tags, file, unimplemented, etc.).
+  - **Acceptance**: For example, filtering by "Unimplemented" returns only unimplemented items.
 
-- **FR-006**: 注釈はバージョン管理でき、PR単位で追加/変更された注釈の差分を確認できること。
-  - **Acceptance**: PR に追加された注釈が差分として表示される。
+- **FR-006**: Annotations must be versionable and support viewing diffs for annotations added/changed per PR.
+  - **Acceptance**: Annotations added in a PR are shown as diffs.
 
-### Key Entities *(include if feature involves data)*
+### Key Entities *(include if the feature involves data)*
 
-- **Specification Item**: ドキュメントや仕様の個別項目（ID, タイトル, 所属ドキュメント, 範囲）
-- **Annotation**: 仕様項目に紐づく注釈（注釈ID, 対象仕様ID, 実装参照／未実装フラグ, ステータス, メタデータ）
-- **Implementation Reference**: 実装を指す参照（ファイルパス, 行番号, シンボル名, リポジトリURL 等）
-- **Report / Coverage**: 注釈の網羅率や参照切れ等の集計データ
+- **Specification Item**: An individual item in a document or specification (ID, title, document, scope)
+- **Annotation**: An annotation attached to a specification item (annotation ID, target spec ID, implementation references / unimplemented flag, status, metadata)
+- **Implementation Reference**: A reference pointing to an implementation (file path, line number, symbol name, repository URL, etc.)
+- **Report / Coverage**: Aggregated data such as annotation coverage and broken references.
+
+---
+
+## Version Annotation (Recommended)
+
+**Purpose**: Trace the introduction and changes of annotations at PR/commit granularity and make diffs and introduction versions explicit.
+
+**Proposed fields**:
+- manifest level:
+  - `version`: string (semver or tag) — manifest snapshot identifier (optional).
+  - `generated_by`: { "tool": string, "tool_version": string, "timestamp": string (date-time) }
+- annotation level:
+  - `version`: string | null — annotation-specific introduction version (e.g., `v1.2.0`, `PR#123`, `2025-12-31`).
+  - `introduced_by`: { "type": "pr"|"commit"|"manual", "id": string, "author"?: string }
+  - `introduced_at`: string (ISO-8601 timestamp)
+  - `history`: array of { "version": string, "changed_by": string, "when": string, "note"?: string }
+
+**Schema proposal (addition to contracts/manifest.schema.json)**:
+- Add `version` and `generated_by` at the root (both optional).
+- Add `version`, `introduced_by`, `introduced_at`, and `history` to the annotation object.
+
+**Operational rules**:
+- When scanning in PR context (CI / pre-merge), the scanner sets `introduced_by` to the PR ID in the manifest output.
+- For local single scans, `version` may be omitted/null, but users may set it manually.
+- The diff feature uses differences in `annotation.version` and `introduced_by` to present changes.
+
+**Acceptance Criteria (additional proposals)**:
+- **SC-005**: `contracts/manifest.schema.json` accepts `version` and `generated_by`, and the scanner can emit them.
+- **SC-006**: In PR scans, newly added annotations get `introduced_by` and it is reflected in the manifest.
+- **SC-007**: Annotation diffs show additions/changes of `annotation.version`.
 
 ---
 
 ## Success Criteria *(mandatory, measurable & technology-agnostic)*
 
-- **SC-001**: 開発者が一覧で「未実装」項目を取得できる（フィルタ時間は体感で遅くないこと、目安: 2秒以内に結果が返ること）。
-- **SC-002**: レポートで注釈カバレッジが数値として出力される（例: 注釈付き項目数 / 総項目数）。
-- **SC-003**: 整合性チェックで参照切れを検出でき、重大な参照切れは一覧で可視化される。
-- **SC-004**: PR レビュー時に注釈差分が確認でき、レビューが行える（レビュープロセスで注釈を参照したうえでの承認が可能）。
+- **SC-001**: Developers can retrieve the list of 'Unimplemented' items (filter response should be fast; target: results returned within 2 seconds).
+- **SC-002**: Reports produce numeric annotation coverage (e.g., annotated items / total items).
+- **SC-003**: Integrity checks detect broken references and surface critical broken references in lists.
+- **SC-004**: Annotation diffs are viewable during PR review so annotations can be considered as part of approvals.
 
 ---
 
 ## Assumptions
 
-- 初期はこのリポジトリの主要言語/ドキュメント形式（例: Markdown、プロジェクトの主たる言語）にフォーカスする。将来的に多言語対応を検討する。
-- 注釈は人が追加することを想定するが、簡易な自動検出（コードベースのクラス/関数名と仕様のマッチ）を補助機能として想定する。
+- Initially focus on the repository's primary languages and document formats (e.g., Markdown); consider multi-language support later.
+- Annotations are expected to be added by humans, with lightweight automatic detection (matching class/function names to specs) provided as an assist feature.
 
 ---
 
@@ -404,15 +434,15 @@ Available types include:
 
 ## Open Questions / [NEEDS CLARIFICATION]
 
-- **Q1 (FR-002)**: 解決 — 注釈はソース内のインライン注釈とドキュメント注釈の**双方をサポート**する方針に決定しました（段階的導入可）。
+- **Q1 (FR-002)**: Resolved — Annotations will support both inline code annotations and document annotations (phased adoption possible).
 
-- **Q2 (FR-003)**: 解決 — ステータスは多段階（例: 実装済み / 進行中 / 未実装 / 廃止 / 検証済み）とし、SpecTrail のバッチによる自律検出（推定ステータス出力）をサポートする方針に決定しました。
+- **Q2 (FR-003)**: Resolved — Status will be multi-stage (e.g., Implemented / In Progress / Unimplemented / Deprecated / Verified) and SpecTrail will support batch-based autonomous detection (estimated status output).
 
 ---
 
 ## Next steps
 
-1. 上記の **Q1/Q2** の選択をお願いします。回答があれば仕様を確定して実装タスク分解に進みます。
-2. 優先度 P1 を実装するための最小の実装案（MVP）を定義して見積もりを作成します。
+1. Please confirm the above **Q1/Q2** choices. Once confirmed, finalize the specification and proceed to break down implementation tasks.
+2. Define the minimum implementation plan (MVP) to deliver priority P1 and prepare estimates.
 
 ```
