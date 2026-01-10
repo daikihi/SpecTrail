@@ -1,0 +1,23 @@
+{
+  "version": null,
+  "generated_by": {
+    "tool": "spectrail",
+    "tool_version": "0.1.0",
+    "timestamp": "2026-01-10T12:00:00Z"
+  },
+  "annotations": [
+    {
+      "id": "FR-001",
+      "name": "AddAnnotation",
+      "spec": "specs/001-spec-impl-annotations/spec.md#fr-001",
+      "type": "func",
+      "implementation_refs": [],
+      "version": null,
+      "introduced_by": null,
+      "introduced_at": null,
+      "history": [],
+      "status": "unimplemented",
+      "estimated_status": "unimplemented"
+    }
+  ]
+}

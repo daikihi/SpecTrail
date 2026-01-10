@@ -17,9 +17,13 @@ Tasks are ordered by priority. Work on one task at a time and update `specs/001-
 
 ## 2. Add manifest examples & fixtures
 - Path: `specs/001-spec-impl-annotations/examples/`
-- Description: Add typical manifests for (local scan, PR scan with `introduced_by`, broken reference case).
+- Description: Add typical manifests for (local scan, PR scan with `introduced_by`, broken reference case). Files added:
+  - `manifest.local.json` (developer local)
+  - `manifest.pr.json` (scan of a PR)
+  - `manifest.broken.json` (scan that detects broken references)
 - Acceptance: Fixtures used by contract and integration tests.
 - Est: 0.5 day
+- Status: completed
 
 ---
 
