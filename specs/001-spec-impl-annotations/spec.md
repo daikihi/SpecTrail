@@ -185,7 +185,9 @@ Maintainers want to periodically check annotation coverage (what percentage of s
 
 ## Specification Model: Formal Definition
 
-以下はサンプルの形式定義（Formal Definition）です。スペックの構造を厳密に記述し、ドキュメントと実装注釈の関係を数学的/論理的に表現します。
+**Canonical metamodel**: `specify_manual/meta.md` (main branch) is the authoritative source for the SpecTrail formal metamodel. A synced, convenience copy is available at `specs/001-spec-impl-annotations/metamodel.md` for local reference. Always treat the `specify_manual/meta.md` version as the master; changes to the metamodel should be made there and synchronized.
+
+The following is an example formal definition (Formal Definition). It describes the structure of the spec and expresses relationships between document and implementation annotations in a mathematical/logical way.
 
 /// @MetaAnnotation @MetaName="Definition of SpecTrailUnit" @MetaType=Philosophy
 ### 1.1 SpecTrailUnit
