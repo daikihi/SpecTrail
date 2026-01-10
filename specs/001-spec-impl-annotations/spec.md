@@ -185,8 +185,7 @@ Maintainers want to periodically check annotation coverage (what percentage of s
 
 ## Specification Model: Formal Definition
 
-**Canonical metamodel**: `specify_manual/meta.md` (main branch) is the authoritative source for the SpecTrail formal metamodel. A synced, convenience copy is available at `specs/001-spec-impl-annotations/metamodel.md` for local reference. Always treat the `specify_manual/meta.md` version as the master; changes to the metamodel should be made there and synchronized.
-
+**Canonical metamodel**: `specify_manual/meta.md` on the `main` branch is the authoritative source for the SpecTrail formal metamodel. A synced convenience copy is available at `specs/001-spec-impl-annotations/metamodel.md` for local reference; please edit the canonical `specify_manual/meta.md` (main) to make master changes and use the documented sync procedure to update this copy. Do not edit the convenience copy directly; use the sync process described in `specs/001-spec-impl-annotations/README.md` or `scripts/sync-metamodel.sh`.
 The following is an example formal definition (Formal Definition). It describes the structure of the spec and expresses relationships between document and implementation annotations in a mathematical/logical way.
 
 /// @MetaAnnotation @MetaName="Definition of SpecTrailUnit" @MetaType=Philosophy
