@@ -1,5 +1,25 @@
 Specification Model: Formal Definition
 
+> This document defines the formal metamodel and philosophical foundation
+> of the SpecTrail system.
+>
+> It is intended as a stable conceptual reference.
+> Implementation details, file formats, and tooling behavior
+> are intentionally out of scope.
+
+
+## Non-goals
+
+- This document does not define file formats.
+- This document does not prescribe programming languages.
+- This document does not define CLI behavior.
+
+## Document Status
+
+Status: Draft (Conceptually stable, subject to naming refinements)
+
+# Specification
+
 1. SpecTrailAnnotation
 1.1 SpecTrailUnit
 
@@ -181,10 +201,11 @@ T = {t₁, ..., tₘ}
 
 TraceKind expresses semantics such as:
 
-- refines
-- implements
-- verifies
-- derives
+- refines: narrows or specializes a higher-level concept
+- implements: realizes a specification in executable form
+- verifies: validates behavior through tests or checks
+- derives: is logically inferred from another annotation
+
 
 Traces are the structural backbone of SpecTrail, ensuring full bidirectional traceability.
 
