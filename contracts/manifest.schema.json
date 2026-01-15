@@ -1,0 +1,62 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SpecTrail manifest",
+  "type": "object",
+  "required": ["annotations", "generated_by"],
+  "properties": {
+    "version": {
+      "type": ["string", "null"],
+      "description": "Optional manifest semantic version (e.g., 'v0.1.1')"
+    },
+    "generated_by": {
+      "type": "object",
+      "required": ["tool", "tool_version", "timestamp"],
+      "properties": {
+        "tool": { "type": "string" },
+        "tool_version": { "type": "string" },
+        "timestamp": { "type": "string", "format": "date-time" }
+      }
+    },
+    "annotations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "name", "spec", "type", "status", "estimated_status"],
+        "properties": {
+          "id": { "type": "string" },
+          "name": { "type": "string" },
+          "spec": { "type": "string" },
+          "type": { "type": "string" },
+          "implementation_refs": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "version": { "type": ["string", "null"], "description": "Annotation semantic version" },
+          "introduced_by": {
+            "type": ["object", "null"],
+            "properties": {
+              "type": { "type": "string", "enum": ["local", "pr", "external"] },
+              "id": { "type": "string" },
+              "author": { "type": "string" }
+            }
+          },
+          "introduced_at": { "type": ["string", "null"], "format": "date-time" },
+          "history": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "version": { "type": "string" },
+                "changed_by": { "type": "string" },
+                "changed_at": { "type": "string", "format": "date-time" },
+                "note": { "type": "string" }
+              }
+            }
+          },
+          "status": { "type": "string" },
+          "estimated_status": { "type": "string" }
+        }
+      }
+    }
+  }
+}

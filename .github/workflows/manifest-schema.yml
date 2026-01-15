@@ -1,0 +1,27 @@
+name: Manifest schema validation
+
+on:
+  push:
+    paths:
+      - 'contracts/manifest.schema.json'
+      - 'specs/001-spec-impl-annotations/examples/**'
+  pull_request:
+    paths:
+      - 'contracts/manifest.schema.json'
+      - 'specs/001-spec-impl-annotations/examples/**'
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pytest jsonschema
+      - name: Run contract tests
+        run: python -m pytest tests/contracts -q

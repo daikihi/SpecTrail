@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "SpecTrail Annotation Manifest",
+  "type": "object",
+  "properties": {
+    "generated_at": { "type": "string", "format": "date-time" },
+    "annotations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "id": { "type": "string" },
+          "spec_item_id": { "type": ["string", "null"] },
+          "source": { "type": "string", "enum": ["document", "code"] },
+          "type": { "type": "string" },
+          "content": { "type": "string" },
+          "location": {
+            "type": "object",
+            "properties": {
+              "file": { "type": "string" },
+              "line": { "type": "integer" }
+            },
+            "required": ["file"]
+          },
+          "status": { "type": "string", "enum": ["implemented", "in-progress", "unimplemented", "deprecated", "verified"] },
+          "estimated_status": { "type": "string" },
+          "links": { "type": "array", "items": { "type": "string" } },
+          "meta": { "type": "object" }
+        },
+        "required": ["id", "source", "type", "content"]
+      }
+    }
+  },
+  "required": ["generated_at", "annotations"]
+}
