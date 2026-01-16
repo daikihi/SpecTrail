@@ -101,6 +101,7 @@ MetaType includes:
 ```
 Philosophy | Guideline | Convention | Structure | Rule
 ```
+#### 1.2.4 AbstractAnnotation
 
 AbstractAnnotation defines high-level conceptual units of the system:
 
