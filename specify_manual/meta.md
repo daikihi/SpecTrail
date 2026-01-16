@@ -1,12 +1,9 @@
-Specification Model: Formal Definition
+# Specification Model: Formal Definition
 
-> This document defines the formal metamodel and philosophical foundation
-> of the SpecTrail system.
+> This document defines the formal metamodel and philosophical foundation of the SpecTrail system.
 >
 > It is intended as a stable conceptual reference.
-> Implementation details, file formats, and tooling behavior
-> are intentionally out of scope.
-
+> Implementation details, file formats, and tooling behavior are intentionally out of scope.
 
 ## Non-goals
 
@@ -18,12 +15,15 @@ Specification Model: Formal Definition
 
 Status: Draft (Conceptually stable, subject to naming refinements)
 
-# Specification
+## Specification
 
-1. SpecTrailAnnotation
-1.1 SpecTrailUnit
+### 1. SpecTrailAnnotation
 
-```
+#### 1.1 SpecTrailUnit
+
+SpecTrail defines two parallel annotation domains that share a common structural schema:
+
+```ebnf
 SpecTrailUnit = { CodeAnnotation, DocumentAnnotation }
 ```
 
@@ -34,15 +34,9 @@ A SpecTrailUnit represents a traceable conceptual pair consisting of:
 
 Together, these two components form the dual representation of a single conceptual specification element within the SpecTrail system.
 
-1.2 SpecTrailAnnotation
+### 1.2 SpecTrailAnnotation
 
-SpecTrail defines two parallel annotation domains that share a common structural schema:
-
-```
-SpecTrailUnit = { DocumentAnnotation, CodeAnnotation }
-```
-
-Both domains are constructed from the same three-layer annotation structure:
+Both domains on `SpecTrailUnit` are constructed from the same three-layer annotation structure:
 
 - MetaAnnotation (M)
 - AbstractAnnotation (A)
@@ -55,13 +49,12 @@ Although they share the same schema, they exist in different ontological strata:
 
 Formally:
 
-```
+```ebnf
 DocumentAnnotation = { Mᴰ, Aᴰ, Dᴰ }
 CodeAnnotation     = { Mᶜ, Aᶜ, Dᶜ }
 ```
 
 Each component (M, A, D) follows the same structural definition across the two domains while being instantiated differently according to its representational medium.
-
 
 1.2.1 Structural Mapping
 
