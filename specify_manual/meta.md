@@ -54,7 +54,7 @@ DocumentAnnotation = { Mᴰ, Aᴰ, Dᴰ }
 CodeAnnotation     = { Mᶜ, Aᶜ, Dᶜ }
 ```
 
-Each component (M, A, D) follows the same structural definition across the two domains while being instantiated differently according to its representational medium.
+Each component (M, A, D) follows the same structural definition across the two domains, but each should be explicitly understood as instantiated separately in DocumentAnnotation (Mᴰ, Aᴰ, Dᴰ) and in CodeAnnotation (Mᶜ, Aᶜ, Dᶜ), according to their respective representational media.
 
 1.2.1 Structural Mapping
 
