@@ -56,19 +56,21 @@ CodeAnnotation     = { Mᶜ, Aᶜ, Dᶜ }
 
 Each component (M, A, D) follows the same structural definition across the two domains, but each should be explicitly understood as instantiated separately in DocumentAnnotation (Mᴰ, Aᴰ, Dᴰ) and in CodeAnnotation (Mᶜ, Aᶜ, Dᶜ), according to their respective representational media.
 
-1.2.1 Structural Mapping
+#### 1.2.1 Annotation Traceability
 
-A Trace relation establishes semantic correspondence between document-space annotations and code-space annotations.
+A Trace relation establishes semantic correspondence between DocumentAnnotation and CodeAnnotation.
 
-```
+```ebnf
 ∀ aᴰ ∈ DocumentAnnotation,
-∃ aᶜ ∈ CodeAnnotation such that Trace(aᴰ, aᶜ)
+∃ aᶜ ∈ CodeAnnotation 
+
+such that Trace(aᴰ, aᶜ)
 ```
 
 The mapping is not required to be 1-to-1.
 This accommodates partial mappings, composite mappings, and real-world divergences between intended specifications and implemented systems.
 
-1.2.2 Philosophical Note
+#### 1.2.2 Philosophical Note
 
 DocumentAnnotation and CodeAnnotation are structurally isomorphic but ontologically distinct:
 
@@ -78,7 +80,7 @@ DocumentAnnotation and CodeAnnotation are structurally isomorphic but ontologica
 SpecTrail purposely does not collapse these spaces into a single ontology.
 Instead, the system maintains their distinction while enforcing traceability between them.
 
-1.2.3 MetaAnnotation
+#### 1.2.3 MetaAnnotation
 
 MetaAnnotation describes design principles, naming conventions, and management-level guidelines.
 It supports the structure of the specification but does not define system functionality directly.
