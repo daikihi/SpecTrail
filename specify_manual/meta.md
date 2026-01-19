@@ -87,7 +87,7 @@ It supports the structure of the specification but does not define system functi
 
 MetaAnnotations generally do not appear in source code.
 
-```
+```ebnf
 M = {m₁, ..., mₙ}
 
 ∀ m ∈ M:
@@ -96,11 +96,23 @@ M = {m₁, ..., mₙ}
     t ∈ MetaType
 ```
 
-MetaType includes:
+** MetaType includes **:
 
-```
+```ebnf
 Philosophy | Guideline | Convention | Structure | Rule
 ```
+
+** MetaName **:
+
+MetaName is a string identifier for MetaAnnotation.  
+A MetaName should be a unique entity across all MetaAnnotations.
+
+** Semantics of MetaAnnotation **:
+
+```aiignore
+∀ m₁, m₂ ∈ MetaAnnotation, m₁ ≠ m₂ ⇒ m₁.MetaName ≠ m₂.MetaName
+```
+
 #### 1.2.4 AbstractAnnotation
 
 AbstractAnnotation defines high-level conceptual units of the system:
@@ -117,7 +129,7 @@ In web systems, it typically corresponds to:
 
 Each AbstractAnnotation owns multiple SpecDetailAnnotations.
 
-```
+```ebnf
 A = {a₁, ..., aₙ}
 
 ∀ a ∈ A:
@@ -127,7 +139,7 @@ A = {a₁, ..., aₙ}
     link ⊆ SpecDetailAnnotation
 ```
 
-1.2.5 SpecDetailAnnotation
+#### 1.2.5 SpecDetailAnnotation
 
 SpecDetailAnnotation represents concrete functional or structural specification derived from an AbstractAnnotation.
 
