@@ -1,3 +1,4 @@
+/// [@st-meta-model-doc] layer: meta, type: Philosophy, name: Specification Model: Formal Definition
 # Specification Model: Formal Definition
 
 > This document defines the formal metamodel and philosophical foundation of the SpecTrail system.
@@ -5,20 +6,25 @@
 > It is intended as a stable conceptual reference.
 > Implementation details, file formats, and tooling behavior are intentionally out of scope.
 
+/// [@st-meta-non-goals] layer: meta, type: Guideline, name: Non-goals
 ## Non-goals
 
 - This document does not define file formats.
 - This document does not prescribe programming languages.
 - This document does not define CLI behavior.
 
+/// [@st-meta-doc-status] layer: meta, type: Structure, name: Document Status
 ## Document Status
 
 Status: Draft (Conceptually stable, subject to naming refinements)
 
+/// [@st-meta-specification] layer: abstract, type: Structure, name: Specification
 ## Specification
 
+/// [@st-meta-spectrail-annotation] layer: abstract, type: Structure, name: SpecTrailAnnotation
 ### 1. SpecTrailAnnotation
 
+/// [@st-meta-spectrail-unit] layer: abstract, type: Convention, name: SpecTrailUnit
 #### 1.1 SpecTrailUnit
 
 SpecTrail defines two parallel annotation domains that share a common structural schema:
@@ -36,11 +42,12 @@ Together, these two components form the dual representation of a single conceptu
 
 ### 1.2 SpecTrailAnnotation
 
-Both domains on `SpecTrailUnit` are constructed from the same three-layer annotation structure:
+Both domains on `SpecTrailUnit` are constructed from the same four-layer annotation structure:
 
 - MetaAnnotation (M)
 - AbstractAnnotation (A)
 - SpecDetailAnnotation (D)
+- ImplementationAnnotation (I)
 
 Although they share the same schema, they exist in different ontological strata:
 
@@ -50,8 +57,8 @@ Although they share the same schema, they exist in different ontological strata:
 Formally:
 
 ```ebnf
-DocumentAnnotation = { Mᴰ, Aᴰ, Dᴰ }
-CodeAnnotation     = { Mᶜ, Aᶜ, Dᶜ }
+DocumentAnnotation = { Mᴰ, Aᴰ, Dᴰ, Iᴰ }
+CodeAnnotation     = { Mᶜ, Aᶜ, Dᶜ, Iᶜ }
 ```
 
 Each component (M, A, D) follows the same structural definition across the two domains, but each should be explicitly understood as instantiated separately in DocumentAnnotation (Mᴰ, Aᴰ, Dᴰ) and in CodeAnnotation (Mᶜ, Aᶜ, Dᶜ), according to their respective representational media.
@@ -91,15 +98,23 @@ MetaAnnotations generally do not appear in source code.
 M = {m₁, ..., mₙ}
 
 ∀ m ∈ M:
-    m = {n, t}  
+    m = {n, t, l, link}  
     n ∈ MetaName  
     t ∈ MetaType
+    l ∈ Layer
+    link ⊆ {MetaAnnotation}
 ```
 
 ** MetaType includes **:
 
 ```ebnf
 Philosophy | Guideline | Convention | Structure | Rule
+```
+
+** Layer **:
+
+```ebnf
+meta | abstract | spec-detail | implementation
 ```
 
 ** MetaName **:
@@ -133,9 +148,10 @@ Each AbstractAnnotation owns multiple SpecDetailAnnotations.
 A = {a₁, ..., aₙ}
 
 ∀ a ∈ A:
-    a = {na, ta, link}
+    a = {na, ta, l, link}
     na ∈ AbstractName
     ta ∈ AbstractType
+    l ∈ Layer
     link ⊆ SpecDetailAnnotation
 ```
 
@@ -155,9 +171,10 @@ Examples include:
 D = {d₁, ..., dₖ}
 
 ∀ d ∈ D:
-    d = {nd, td, link}
+    d = {nd, td, l, link}
     nd ∈ SpecDetailName
     td ∈ SpecDetailType
+    l ∈ Layer
     link ⊆ {AbstractAnnotation ∪ ImplementationAnnotation}
 ```
 
@@ -185,15 +202,28 @@ Examples:
 I = {i₁, ..., iₗ}
 
 ∀ i ∈ I:
-    i = {ni, ti, link, art, status}
+    i = {ni, ti, l, link, art, status}
     ni ∈ ImplementationSpecName
     ti ∈ ImplementationType
+    l ∈ Layer
     link ⊆ {SpecDetailAnnotation ∪ AbstractAnnotation}
     art ∈ ImplementationArtifact
     status ∈ ImplementationStatus
 ```
 
-1.2.7 Annotation Trace
+#### 1.2.7 ImplementationType
+
+Defines the technical classification of an ImplementationAnnotation.
+
+```
+DatabaseSchema        : Table and field definitions
+DaoRepository         : Data access logic
+DomainEntity          : Business logic entities
+ExternalApiGateway    : External system integration
+WebInterfaceDataModel : API or UI data structures
+```
+
+1.2.8 Annotation Trace
 
 Traces define explicit semantic relationships across all annotation layers.
 
@@ -218,18 +248,24 @@ TraceKind expresses semantics such as:
 Traces are the structural backbone of SpecTrail, ensuring full bidirectional traceability.
 
 
+/// [@st-meta-vocabulary] layer: meta, type: Convention, name: Vocabulary
 2. Vocabulary
+
+/// [@st-meta-specdetailtype] layer: spec-detail, type: Structure, name: SpecDetailType
 2.1 SpecDetailType
 
 Defines the structural classification of a SpecDetailAnnotation.
 
 ```
-func      : Functional specification (behavior, state transitions, logic)
-non-func  : Structural, static, or non-behavioral specifications
-test      : Validation logic and test case specifications
-infra     : Infrastructure-level specifications (DB, gateway, file formats)
+Func      : Functional specification (behavior, state transitions, logic)
+NonFunc   : Structural, static, or non-behavioral specifications
+Test      : Validation logic and test case specifications
+Infra     : Infrastructure-level specifications (DB, gateway, file formats)
+Convention: Standard patterns or recurring structures
+Rule      : Strict constraints or validation logic
 ```
 
+/// [@st-meta-metamodel-diagrams] layer: meta, type: Structure, name: metamodel diagrams
 3. metamodel diagrams
 
 ```mermaid
@@ -257,17 +293,15 @@ classDiagram
     class MetaAnnotation {
         +name : MetaName
         +type : MetaType
+        +layer : Layer
     }
 
-    class MetaType {
-    }
+    MetaAnnotation "1" --> "0..*" MetaAnnotation : link
 
-    %% -------------------------
-    %% AbstractAnnotation
-    %% -------------------------
     class AbstractAnnotation {
         +name : AbstractName
         +type : AbstractType
+        +layer : Layer
     }
 
     AbstractAnnotation "1" --> "0..*" SpecDetailAnnotation : link
@@ -278,6 +312,7 @@ classDiagram
     class SpecDetailAnnotation {
         +name : SpecDetailName
         +type : SpecDetailType
+        +layer : Layer
     }
 
     SpecDetailAnnotation "0..*" --> "0..*" ImplementationAnnotation : link
@@ -288,6 +323,7 @@ classDiagram
     class ImplementationAnnotation {
         +name : ImplementationSpecName
         +type : ImplementationType
+        +layer : Layer
         +artifact : ImplementationArtifact
         +status : ImplementationStatus
     }
@@ -308,15 +344,35 @@ classDiagram
     Trace "1" --> "1" ImplementationAnnotation : src
     Trace "1" --> "1" ImplementationAnnotation : dst
 
+    DocumentAnnotation "1" *-- "M" MetaAnnotation
+    DocumentAnnotation "1" *-- "A" AbstractAnnotation
+    DocumentAnnotation "1" *-- "D" SpecDetailAnnotation
+    DocumentAnnotation "1" *-- "I" ImplementationAnnotation
+
+    CodeAnnotation "1" *-- "M" MetaAnnotation
+    CodeAnnotation "1" *-- "A" AbstractAnnotation
+    CodeAnnotation "1" *-- "D" SpecDetailAnnotation
+    CodeAnnotation "1" *-- "I" ImplementationAnnotation
+
     %% -------------------------
     %% Enumerations (as classes)
     %% -------------------------
+    class Layer {
+        <<enumeration>>
+        meta
+        abstract
+        spec-detail
+        implementation
+    }
+
     class SpecDetailType {
         <<enumeration>>
-        func
-        non-func
-        test
-        infra
+        Func
+        NonFunc
+        Test
+        Infra
+        Convention
+        Rule
     }
 
     class MetaType {
@@ -335,7 +391,20 @@ classDiagram
         verifies
         derives
     }
+
+    class ImplementationType {
+        <<enumeration>>
+        DatabaseSchema
+        DaoRepository
+        DomainEntity
+        ExternalApiGateway
+        WebInterfaceDataModel
+    }
+
+    class ImplementationStatus {
+        <<enumeration>>
+        Planned
+        InProgress
+        Completed
+    }
 ```
-
-
-

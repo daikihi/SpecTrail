@@ -5,3 +5,6 @@ extension = ".md"
 [document]
 head = "src/"
 extension = ".rs"
+
+[annotation]
+prefix = "@st-"

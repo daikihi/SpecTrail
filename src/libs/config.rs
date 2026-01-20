@@ -9,6 +9,7 @@ use std::path::Path;
 pub struct SpecTrailConfig {
     pub source: SourceConfig,
     pub document: DocumentConfig,
+    pub annotation: AnnotationConfig,
 }
 
 impl SpecTrailConfig {
@@ -49,6 +50,14 @@ pub struct SourceConfig {
 pub struct DocumentConfig {
     pub head: String,
     pub extension: String,
+}
+
+/**
+ * Using for annotation specs
+ */
+#[derive(Debug, Deserialize)]
+pub struct AnnotationConfig {
+    pub prefix: String,
 }
 
 

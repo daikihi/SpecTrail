@@ -1,11 +1,12 @@
+/// [@st-spec-specification] layer: abstract, type: Structure, name: SpecTrail Specification
 # SpecTrail Specification
 
+/// [@st-spec-overview] layer: abstract, type: Convention, name: Overview
 ## 1. Overview
-- プロジェクトの目的
-- 想定する利用者・ユースケース
-- 全体構成図（Mermaidの簡単な図）
 
+/// [@st-spec-goal] layer: abstract, type: Philosophy, name: Goal of SpecTrail, links: [@st-meta-model-doc]
 ### 1.1 Goal of SpecTrail
+
 The goal of SpecTrail is supporting for a team of software developers and designers.
 
 Basically, a software specification is written in natural language as this document.
@@ -15,20 +16,28 @@ It is difficult to map between software specifications and software implementati
 SpecTrail supports mappig / bridging such gaps.
 
 
+/// [@st-spec-user-assumption] layer: abstract, type: Guideline, name: User Assumption and Use Case
 ### 1.2 User Assumption and Use Case
+
 In this subsection, we describe the types of users SpecTrail is designed for and introduce example use cases.
 
+/// [@st-spec-target-users] layer: abstract, type: Convention, name: Target Users
 #### Target Users
+
 Software development involves many kinds of engineers. Backend engineers build server-side systems, frontend engineers design user interfaces and user experiences, and many others—such as QA engineers, infrastructure specialists, and technical writers—contribute to the overall process.
 
 SpecTrail is designed to support all of these roles by bridging the gap between specifications and implementation. It helps teams maintain clarity, traceability, and alignment between what is planned and what is built.
 
 In addition, SpecTrail assists project managers in tracking progress and ensuring that development stays aligned with the original specifications.
 
+/// [@st-spec-usecase-examples] layer: abstract, type: Convention, name: Use Case Examples
 #### Use Case Examples
+
 In this section, we describe about some use case of SpecTrail.
 
+/// [@st-spec-usecase-spectrail] layer: spec-detail, type: Convention, name: SpecTrail Use Case, links: [@st-spec-usecase-examples]
 #### SpecTrail
+
 First use case is SpecTrail project.
 
 SpecTrail project has no visual user interface.  Most user persona is software designer and developer.
@@ -43,14 +52,15 @@ All engineers repeat this cycle.
 
 Last of a term of a cycle, engineers should discuss about annotation marking.
 
+/// [@st-spec-usecase-webserver] layer: spec-detail, type: Convention, name: Web Server Use Case, links: [@st-spec-usecase-examples]
 #### Web Server
 
 
 
+/// [@st-spec-system-abstraction] layer: abstract, type: Structure, name: System Abstraction
 ### 1.3 System Abstraction
 
-In this subsection, we describe the abstraction of SpecTrail's system model.
-
+/// [@st-spec-components] layer: abstract, type: Structure, name: SpecTrail Components
 #### 1.3.1 SpecTrail Compoenents
 
 In this Subsection , we describe about what kind of components the SpecTrail contains.
@@ -69,12 +79,14 @@ In the future, there are several more tools as following
 - SpecTrail Engine
 - SpecTrail Server
 
+/// [@st-spec-annotation-structure] layer: abstract, type: Structure, name: Annotation Structure Overview, links: [@st-meta-spectrail-annotation]
 #### 1.3.2 Annotation Structure Overview
 
 SpecTrail uses a three-layered annotation model to bridge specifications and implementation. Both specification documents and source code are tagged with corresponding annotations to enable traceability and alignment.
 
 SpecTrail annotations are categorized into three types: AbstractAnnotation, SpecDetailAnnotation, and ImplementationAnnotation. Each serves a different level of abstraction and purpose within the system. The details of these annotation categories will be discussed in Section 3: Data Model.
 
+/// [@st-spec-mapping] layer: spec-detail, type: Rule, name: Mapping Specification and Implementation
 #### 1.3.3 How to map specification between Specification and Implementation
 In this subsection, we decribe about how to map a specification among the documents and the codes.
 
@@ -82,59 +94,82 @@ SpecTrail uses annotation on both of specitifcation documents and implementation
 And those annotations should be maped on SpecTrail Engine.
 Basically, both of those annotations should be exact same name for readability to engineers.
 
+/// [@st-spec-design-concept] layer: meta, type: Philosophy, name: Design Concept
 #### 1.3.4 Design Concept
 
 
 
 
+/// [@st-spec-functional-specs] layer: abstract, type: Structure, name: Functional Specifications
 ## 2. Functional Specifications
 
+/// [@st-spec-cli] layer: spec-detail, type: Rule, name: Command Line Interface, links: [@st-spec-components]
 ### 2.1 Command Line Interface
-#### check-command `@spec: check-command`
+
+/// [@st-spec-cli-check-command] layer: spec-detail, type: Func, name: check-command, links: [@st-spec-cli]
+#### check-command
+
 - **概要**: ソースコードをスキャンして、仕様とコードの対応をチェック
 - **入力**: コマンドライン引数（パス、オプション）
 - **出力**: レポート（標準出力、ファイル出力）
 - **レイヤ**: cli
 - **備考**: CIパイプラインから呼び出し可能にする
 
-#### report-ui `@spec: report-ui`
+/// [@st-spec-cli-report-ui] layer: spec-detail, type: Func, name: report-ui, links: [@st-spec-cli]
+#### report-ui
+
 - **概要**: 結果をブラウザで可視化
 - **入出力**: JSONファイル → Web UI
 - **レイヤ**: service / view
 
+/// [@st-spec-annotation-parser] layer: spec-detail, type: Func, name: Annotation Parser, links: [@st-spec-components]
 ### 2.2 Annotation Parser
-#### parse-code-annotations `@spec: parse-code-annotations`
+
+/// [@st-spec-parser-code-annotations] layer: spec-detail, type: Func, name: parse-code-annotations, links: [@st-spec-annotation-parser]
+#### parse-code-annotations
+
 - **概要**: Rustソースのコメントからアノテーションを抽出
 - **アルゴリズム**: syn crate + 正規表現
 - **レイヤ**: usecase
 
-#### parse-spec-docs `@spec: parse-spec-docs`
+/// [@st-spec-parser-spec-docs] layer: spec-detail, type: Func, name: parse-spec-docs, links: [@st-spec-annotation-parser]
+#### parse-spec-docs
+
 - **概要**: `.specify/*.md` から仕様IDとメタ情報を抽出
 - **レイヤ**: usecase
 
+/// [@st-spec-mapping-engine] layer: spec-detail, type: Func, name: Mapping Engine, links: [@st-spec-components]
 ### 2.3 Mapping Engine
-#### match-spec-to-code `@spec: match-spec-to-code`
+
+/// [@st-spec-mapping-match-spec-to-code] layer: spec-detail, type: Func, name: match-spec-to-code, links: [@st-spec-mapping-engine]
+#### match-spec-to-code
+
 - **概要**: 仕様とコードの対応をマッピング
 - **出力**: マッピング結果の内部表現（HashMap<SpecId, Vec<CodeLocation>>）
 - **レイヤ**: model
 
-#### generate-report `@spec: generate-report`
+/// [@st-spec-mapping-generate-report] layer: spec-detail, type: Func, name: generate-report, links: [@st-spec-mapping-engine]
+#### generate-report
+
 - **概要**: 差分・警告・孤立コードを出力
 - **フォーマット**: text, json
 - **レイヤ**: service
 
+/// [@st-spec-non-functional-specs] layer: spec-detail, type: NonFunc, name: Non-functional Requirements
 ## 3. Non-functional Requirements
 - パフォーマンス要件
 - 解析対象ソースコードの最大サイズ
 - CLIのレスポンス速度目標
 - 将来拡張（IDE連携、Graph出力）
 
+/// [@st-spec-data-model] layer: abstract, type: Structure, name: Data Model, links: [@st-meta-specification]
 ## 4. Data Model
 - アノテーション構造体（Rust struct）
 - マッピング結果のデータ構造
 - JSONスキーマ（もし出力するなら）
 
+/// [@st-spec-open-questions] layer: meta, type: Rule, name: Open Questions
 ## 5. Open Questions
-- IDの命名規則（kebab-caseか？）
-- 未実装仕様をCIでfailさせるか？
-- 複数@specを持つ関数の扱い
+- ID of naming convention (is it kebab-case?)
+- Should we fail CI if unimplemented specifications exist?
+- Handling functions with multiple @spec
