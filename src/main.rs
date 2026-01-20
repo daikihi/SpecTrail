@@ -1,6 +1,7 @@
 use crate::libs::config::SpecTrailConfig;
 
 mod libs;
+mod domains;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     let toml_file_name: &str = "src/config/config.toml";
