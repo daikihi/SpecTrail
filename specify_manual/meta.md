@@ -1,12 +1,9 @@
-Specification Model: Formal Definition
+# Specification Model: Formal Definition
 
-> This document defines the formal metamodel and philosophical foundation
-> of the SpecTrail system.
+> This document defines the formal metamodel and philosophical foundation of the SpecTrail system.
 >
 > It is intended as a stable conceptual reference.
-> Implementation details, file formats, and tooling behavior
-> are intentionally out of scope.
-
+> Implementation details, file formats, and tooling behavior are intentionally out of scope.
 
 ## Non-goals
 
@@ -18,12 +15,15 @@ Specification Model: Formal Definition
 
 Status: Draft (Conceptually stable, subject to naming refinements)
 
-# Specification
+## Specification
 
-1. SpecTrailAnnotation
-1.1 SpecTrailUnit
+### 1. SpecTrailAnnotation
 
-```
+#### 1.1 SpecTrailUnit
+
+SpecTrail defines two parallel annotation domains that share a common structural schema:
+
+```ebnf
 SpecTrailUnit = { CodeAnnotation, DocumentAnnotation }
 ```
 
@@ -34,15 +34,9 @@ A SpecTrailUnit represents a traceable conceptual pair consisting of:
 
 Together, these two components form the dual representation of a single conceptual specification element within the SpecTrail system.
 
-1.2 SpecTrailAnnotation
+### 1.2 SpecTrailAnnotation
 
-SpecTrail defines two parallel annotation domains that share a common structural schema:
-
-```
-SpecTrailUnit = { DocumentAnnotation, CodeAnnotation }
-```
-
-Both domains are constructed from the same three-layer annotation structure:
+Both domains on `SpecTrailUnit` are constructed from the same three-layer annotation structure:
 
 - MetaAnnotation (M)
 - AbstractAnnotation (A)
@@ -55,27 +49,28 @@ Although they share the same schema, they exist in different ontological strata:
 
 Formally:
 
-```
+```ebnf
 DocumentAnnotation = { Mᴰ, Aᴰ, Dᴰ }
 CodeAnnotation     = { Mᶜ, Aᶜ, Dᶜ }
 ```
 
-Each component (M, A, D) follows the same structural definition across the two domains while being instantiated differently according to its representational medium.
+Each component (M, A, D) follows the same structural definition across the two domains, but each should be explicitly understood as instantiated separately in DocumentAnnotation (Mᴰ, Aᴰ, Dᴰ) and in CodeAnnotation (Mᶜ, Aᶜ, Dᶜ), according to their respective representational media.
 
+#### 1.2.1 Annotation Traceability
 
-1.2.1 Structural Mapping
+A Trace relation establishes semantic correspondence between DocumentAnnotation and CodeAnnotation.
 
-A Trace relation establishes semantic correspondence between document-space annotations and code-space annotations.
-
-```
+```ebnf
 ∀ aᴰ ∈ DocumentAnnotation,
-∃ aᶜ ∈ CodeAnnotation such that Trace(aᴰ, aᶜ)
+∃ aᶜ ∈ CodeAnnotation 
+
+such that Trace(aᴰ, aᶜ)
 ```
 
 The mapping is not required to be 1-to-1.
 This accommodates partial mappings, composite mappings, and real-world divergences between intended specifications and implemented systems.
 
-1.2.2 Philosophical Note
+#### 1.2.2 Philosophical Note
 
 DocumentAnnotation and CodeAnnotation are structurally isomorphic but ontologically distinct:
 
@@ -85,14 +80,14 @@ DocumentAnnotation and CodeAnnotation are structurally isomorphic but ontologica
 SpecTrail purposely does not collapse these spaces into a single ontology.
 Instead, the system maintains their distinction while enforcing traceability between them.
 
-1.2.3 MetaAnnotation
+#### 1.2.3 MetaAnnotation
 
 MetaAnnotation describes design principles, naming conventions, and management-level guidelines.
 It supports the structure of the specification but does not define system functionality directly.
 
 MetaAnnotations generally do not appear in source code.
 
-```
+```ebnf
 M = {m₁, ..., mₙ}
 
 ∀ m ∈ M:
@@ -101,11 +96,24 @@ M = {m₁, ..., mₙ}
     t ∈ MetaType
 ```
 
-MetaType includes:
+** MetaType includes **:
 
-```
+```ebnf
 Philosophy | Guideline | Convention | Structure | Rule
 ```
+
+** MetaName **:
+
+MetaName is a string identifier for MetaAnnotation.  
+A MetaName should be a unique entity across all MetaAnnotations.
+
+** Semantics of MetaAnnotation **:
+
+```aiignore
+∀ m₁, m₂ ∈ MetaAnnotation, m₁ ≠ m₂ ⇒ m₁.MetaName ≠ m₂.MetaName
+```
+
+#### 1.2.4 AbstractAnnotation
 
 AbstractAnnotation defines high-level conceptual units of the system:
 
@@ -121,7 +129,7 @@ In web systems, it typically corresponds to:
 
 Each AbstractAnnotation owns multiple SpecDetailAnnotations.
 
-```
+```ebnf
 A = {a₁, ..., aₙ}
 
 ∀ a ∈ A:
@@ -131,7 +139,7 @@ A = {a₁, ..., aₙ}
     link ⊆ SpecDetailAnnotation
 ```
 
-1.2.5 SpecDetailAnnotation
+#### 1.2.5 SpecDetailAnnotation
 
 SpecDetailAnnotation represents concrete functional or structural specification derived from an AbstractAnnotation.
 
