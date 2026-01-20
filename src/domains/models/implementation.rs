@@ -1,3 +1,4 @@
+use crate::domains::models::layer::Layer;
 use crate::domains::models::abstract_annotation::AbstractAnnotation;
 use crate::domains::models::spec_detail::SpecDetailAnnotation;
 
@@ -33,6 +34,7 @@ pub enum ImplementationStatus {
 pub struct ImplementationAnnotation {
     pub name: ImplementationSpecName,
     pub r#type: ImplementationType,
+    pub layer: Layer,
     pub links: Vec<ImplementationLink>,
     pub artifact: ImplementationArtifact,
     pub status: ImplementationStatus,
