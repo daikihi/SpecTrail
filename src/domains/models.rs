@@ -1,3 +1,6 @@
+/// [spec-annotation-structure-file] layer: abstract, type: File, name: models.rs
+/// This file defines the domain models for the SpecTrail system.
+
 pub mod meta;
 pub mod abstract_annotation;
 pub mod spec_detail;

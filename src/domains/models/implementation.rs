@@ -1,10 +1,17 @@
+/// [@st-spec-annotation-structure-file] layer: abstract, type: File, name: implementation.rs
+/// This file defines the implementation-layer annotations, describing how specifications are realized at the technical level.
+
 use crate::domains::models::layer::Layer;
 use crate::domains::models::abstract_annotation::AbstractAnnotation;
 use crate::domains::models::spec_detail::SpecDetailAnnotation;
 
+/// [@st-spec-annotation-structure] layer: abstract, type: Structure, name: ImplementationSpecName
+/// This struct represents the name identifier for implementation annotation as described in the specification.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct ImplementationSpecName(pub String);
 
+/// [@st-spec-annotation-structure] layer: abstract, type: Structure, name: ImplementationType
+/// This enum represents the type of implementation annotation as described in the specification.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ImplementationType {
     DatabaseSchema,
@@ -14,15 +21,21 @@ pub enum ImplementationType {
     WebInterfaceDataModel,
 }
 
+/// [@st-spec-annotation-structure] layer: abstract, type: Structure, name: ImplementationLink
+/// This enum represents the link type for implementation annotation as described in the specification.
 #[derive(Debug, Clone)]
 pub enum ImplementationLink {
     SpecDetail(Box<SpecDetailAnnotation>),
     Abstract(Box<AbstractAnnotation>),
 }
 
+/// [@st-spec-annotation-structure] layer: abstract, type: Structure, name: ImplementationArtifact
+/// This struct represents the artifact for implementation annotation as described in the specification.
 #[derive(Debug, Clone)]
 pub struct ImplementationArtifact(pub String);
 
+/// [@st-spec-annotation-structure] layer: abstract, type: Structure, name: ImplementationStatus
+/// This enum represents the status for implementation annotation as described in the specification.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum ImplementationStatus {
     Planned,
@@ -30,6 +43,8 @@ pub enum ImplementationStatus {
     Completed,
 }
 
+/// [@st-spec-annotation-structure] layer: abstract, type: Structure, name: ImplementationAnnotation
+/// This struct represents the implementation annotation model as described in the specification.
 #[derive(Debug, Clone)]
 pub struct ImplementationAnnotation {
     pub name: ImplementationSpecName,
