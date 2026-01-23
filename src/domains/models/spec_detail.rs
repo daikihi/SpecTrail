@@ -1,16 +1,21 @@
-/// [@st-spec-annotation-structure-file] layer: abstract, type: File, name: spec_detail.rs
+/// [@st-code-domain-models-spec-detail-file] layer: abstract, type: File, name: spec_detail.rs
 /// This file defines the spec-detail-layer annotations, representing concrete functional or structural specifications.
 
 use crate::domains::models::layer::Layer;
 use crate::domains::models::abstract_annotation::AbstractAnnotation;
 use crate::domains::models::implementation::ImplementationAnnotation;
 
-/// [@st-spec-annotation-structure] layer: abstract, type: Structure, name: SpecDetailName
+/// [@st-code-domain-models-spec-detail-spec-detail-annotation-id] layer: abstract, type: Structure, name: SpecDetailAnnotationId
+/// This struct represents the unique identifier for a spec detail annotation (id = tag) as described in the specification.
+#[derive(Debug, Clone, PartialEq, Eq, Hash)]
+pub struct SpecDetailAnnotationId(pub String);
+
+/// [@st-code-domain-models-spec-detail-spec-detail-name] layer: abstract, type: Structure, name: SpecDetailName
 /// This struct represents the name identifier for spec detail annotation as described in the specification.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct SpecDetailName(pub String);
 
-/// [@st-spec-annotation-structure] layer: abstract, type: Structure, name: SpecDetailType
+/// [@st-code-domain-models-spec-detail-spec-detail-type] layer: abstract, type: Structure, name: SpecDetailType
 /// This enum represents the type of spec detail annotation as described in the specification.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum SpecDetailType {
@@ -22,7 +27,7 @@ pub enum SpecDetailType {
     Rule, // spec.mdでRuleが使われているため追加
 }
 
-/// [@st-spec-annotation-structure] layer: abstract, type: Structure, name: SpecDetailLink
+/// [@st-code-domain-models-spec-detail-spec-detail-link] layer: abstract, type: Structure, name: SpecDetailLink
 /// This enum represents the link type for spec detail annotation as described in the specification.
 #[derive(Debug, Clone)]
 pub enum SpecDetailLink {
@@ -30,10 +35,11 @@ pub enum SpecDetailLink {
     Implementation(Box<ImplementationAnnotation>),
 }
 
-/// [@st-spec-annotation-structure] layer: abstract, type: Structure, name: SpecDetailAnnotation
+/// [@st-code-domain-models-spec-detail-spec-detail-annotation] layer: abstract, type: Structure, name: SpecDetailAnnotation
 /// This struct represents the spec detail annotation model as described in the specification.
 #[derive(Debug, Clone)]
 pub struct SpecDetailAnnotation {
+    pub id: SpecDetailAnnotationId,
     pub name: SpecDetailName,
     pub r#type: SpecDetailType,
     pub layer: Layer,
