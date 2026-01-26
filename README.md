@@ -1,47 +1,54 @@
 # SpecTrail
-A specification is a map, and code is a road. SpecTrail is the compass that helps navigate this environment.
 
-Writing documentation is one of the best ways to understand a project and reflect on its direction.  
-However, mapping documentation to program code is a challenging task.  
-SpecTrail aims to establish a clear and maintainable link between documentation and source code.
+> A specification is a map, and code is a road. SpecTrail is the compass that helps navigate this environment.
 
-## Features
+SpecTrail links documentation and implementation code through annotations, enabling teams to understand the relationship between specifications and code, and to track whether items are implemented or unimplemented.
 
-- SpecTrail analyzes specification documents in the `.specify/` directory and evaluates their structure and content.
-- SpecTrail scans source code to find embedded annotations.
-- SpecTrail maps and analyzes both specification annotations and code annotations, identifying unimplemented functions and undocumented features.
+## Vision
 
-## annotations
+Writing documentation is one of the best ways to understand a project and reflect on its direction. However, mapping documentation to program code is a challenging task. SpecTrail aims to establish a clear and maintainable link between specifications and source code, reducing divergence and improving traceability.
 
-### in code 
-SpecTrail annotation should start with `///` comment line.
+## Core Features
 
-#### Annotation for Specification Abstraction Layer
+### 📋 Annotation-Based Linking
+- Add annotations to both specification documents and code to explicitly link them
+- Support multi-layer abstraction: AbstractAnnotation → SpecDetailAnnotation → ImplementationAnnotation
+- Both inline code annotations (comments) and document annotations are supported
 
-SpecTrail defines a three-layered annotation model to represent different levels of specification abstraction. This model helps organize and trace the relationship between high-level concepts and low-level implementation.
+### 🔍 Scan & Integrity Checks
+- Scan repository for all annotations (documents and code)
+- Verify integrity of annotation references (detect broken links)
+- Identify unlinked annotations (document-only, code-only, implementation-only)
 
-1. AbstractAnnotation
-Represents high-level specifications, such as the overall purpose or behavior of a feature. In a web service, this might correspond to a screen or page. In a microservice architecture, it could describe the role of a service. An AbstractAnnotation typically links to multiple SpecDetailAnnotations.
+### 📊 Status Tracking & Reports
+- Track implementation status: Implemented / In Progress / Unimplemented / Deprecated / Verified
+- Autonomous status estimation based on heuristics (presence of implementation, tests, PR merge status)
+- Generate coverage reports showing what percentage of specs have implementation references
 
-2. SpecDetailAnnotation
-Describes more specific aspects of a feature, breaking down an AbstractAnnotation into smaller parts. This includes API endpoints used by a page, UI behaviors, or validation rules. Each SpecDetailAnnotation may link to several ImplementationAnnotations.
+### 🔄 PR & Version Tracking
+- View annotation diffs in pull requests (added/changed/removed)
+- Version annotations to track when they were introduced (commit, PR, author)
+- Support PR-level change reporting
 
-3. ImplementationAnnotation
-Captures implementation-level details such as database models, domain logic, use cases, repositories, and gateways. This layer connects the specification directly to the code structure and is used when deeper traceability is needed.
+## Annotations Guide
 
+### In Code
 
-#### Annotation Types
+SpecTrail annotations in code should start with `///` comment lines. Use a structured format with tags to provide clear linking.
 
-SpecTrail supports structured annotations to describe the role and context of each code fragment.  
-Each annotation consists of three parts: `@spec`, `@type`, and `@layer`.
+#### Annotation Format
+
+```
+/// @AbstractAnnotation @name="<name>" @type="<type>" @spec="<spec-id>"
+```
+
+#### Key Tags
 
 | Tag        | Description                          | Example Value       |
 |------------|--------------------------------------|---------------------|
-| `@spec`    | Specification ID linked to the feature or task | `check-command`, `report-ui` |
-| `@type`    | Type of the implementation           | `func`, `non-func`, `test`, `infra` |
-| `@layer`   | Architectural layer of the code      | `controller`, `usecase`, `model`, `dao`, `cli`, `service` |
-
----
+| `@spec`    | Specification ID linked to the feature or item | `check-command`, `report-ui`, `FR-001` |
+| `@type`    | Implementation type                  | `func`, `non-func`, `test`, `infra` |
+| `@layer`   | Architectural layer                  | `controller`, `usecase`, `model`, `dao`, `cli`, `service` |
 
 #### Type Definitions
 
@@ -52,16 +59,30 @@ Each annotation consists of three parts: `@spec`, `@type`, and `@layer`.
 | `test`     | Test code related to the specification                                  |
 | `infra`    | Infrastructure-related code (e.g. DB access, logging, external services)|
 
----
+#### Annotation Layers
 
-#### Layer Examples (customizable per architecture)
+SpecTrail defines three abstraction layers for organizing annotations:
 
-SpecTrail allows flexible layer tagging depending on the architecture of your project.  
-Below are common examples across various architectural styles.
+1. **AbstractAnnotation**: High-level specification (e.g. feature overview, user story)
+2. **SpecDetailAnnotation**: Detailed specification item (e.g. API endpoint, validation rule)
+3. **ImplementationAnnotation**: Implementation detail (e.g. database model, business logic)
 
----
+#### Example
 
-##### 🧭 Clean Architecture
+```rust
+/// @AbstractAnnotation @name="CheckCommand" @type="Feature" @spec="check-command"
+/// Analyzes annotations in source code and compares them with specification documents.
+fn check_command(args: Vec<String>) {
+    /// @SpecDetailAnnotation @id="CHK-001" @name="AnalyzeAnnotations" @type="func" @layer="cli"
+    scan_annotations();
+    
+    /// @ImplementationAnnotation @id="CHK-001-impl" @type="func" @layer="model"
+    compare_specs_and_code();
+}
+
+```
+
+#### Architectural Layers (customizable per architecture)
 
 | Layer       | Description                                  |
 |-------------|----------------------------------------------|
@@ -70,9 +91,7 @@ Below are common examples across various architectural styles.
 | `entity`    | Core domain models and rules                 |
 | `gateway`   | Interfaces to external systems or DB         |
 
----
-
-##### 🧱 Domain-Driven Design (DDD)
+##### Domain-Driven Design (DDD)
 
 | Layer           | Description                                  |
 |-----------------|----------------------------------------------|
@@ -81,9 +100,7 @@ Below are common examples across various architectural styles.
 | `infrastructure`| Technical implementation (DB, messaging)     |
 | `interface`     | External interfaces (e.g. REST, CLI)         |
 
----
-
-##### 🧪 MVC / Web App
+##### MVC / Web App
 
 | Layer       | Description                                  |
 |-------------|----------------------------------------------|
@@ -92,9 +109,7 @@ Below are common examples across various architectural styles.
 | `view`      | UI rendering and presentation                 |
 | `dao`       | Data access layer                             |
 
----
-
-##### 🛠 Hexagonal Architecture
+##### Hexagonal Architecture
 
 | Layer       | Description                                  |
 |-------------|----------------------------------------------|
@@ -103,31 +118,157 @@ Below are common examples across various architectural styles.
 | `adapter`   | Concrete implementations (e.g. REST, DB)     |
 | `service`   | Shared utilities or helpers                  |
 
----
+### In Documents
 
-##### 🌀 Others (customizable)
+Specification documents include annotations to define specification items and their context.
 
-| Layer       | Description                                  |
-|-------------|----------------------------------------------|
-| `cli`       | Command-line interface layer                  |
-| `test`      | Test-related code                             |
-| `infra`     | Infrastructure setup and configuration        |
-| `config`    | Configuration definitions                     |
+#### Document Annotation Format
 
-
-
-### in document
-Specification documents in `.specify/` can include annotations to define feature IDs and their context.  
-These annotations help SpecTrail link documentation to corresponding code fragments.
-
-#### Example
+Use the `@spec:` tag in markdown to mark specification items:
 
 ```markdown
-#### Check Command `@spec: check-command`
+## Check Command @spec: check-command
 
-This command analyzes annotations in source code and compares them with specification documents.  
-It reports missing implementations, undocumented features, and potential duplicates.
+This command analyzes annotations in source code and compares them with specification documents.
 
-- Type: func
-- Layer: cli
+- **Type**: func
+- **Layer**: cli
+- **Status**: Implemented / In Progress / Unimplemented
 ```
+
+#### Key Attributes
+
+- `@spec`: Specification ID (unique identifier for linking to code)
+- **Type**: Same types as code annotations (func, non-func, test, infra)
+- **Layer**: Architectural layer
+- **Status**: Implementation status (optional; can be auto-detected by scanner)
+
+## Typical Workflow
+
+### 1. Create Specification with Annotations
+
+Add annotations to specification documents (markdown files in `specs/` directory):
+
+```markdown
+## Feature: User Authentication @spec: auth-feature
+
+Users should be able to log in securely.
+
+### Login Endpoint @spec: auth-login-endpoint
+- **Type**: func
+- **Layer**: api
+- **Status**: In Progress
+```
+
+### 2. Add Code Annotations
+
+Link implementation code using `///` comments:
+
+```rust
+/// @SpecDetailAnnotation @id="auth-login-endpoint" @type="func" @layer="controller"
+async fn login(req: LoginRequest) -> Result<Token> {
+    // Implementation here
+}
+```
+
+### 3. Run Scanner
+
+Scan repository to find all annotations and verify linking:
+
+```bash
+spectrail scan
+```
+
+Output: JSON manifest with all annotations, their relationships, and status.
+
+### 4. Generate Reports
+
+View coverage and broken references:
+
+```bash
+spectrail report --coverage
+spectrail report --broken-refs
+```
+
+### 5. Review in PRs
+
+See what specifications changed and their implementation status:
+
+```bash
+spectrail diff --pr
+```
+
+## Installation & Setup
+
+### Prerequisites
+- Python 3.9+
+- Rust 1.56+ (for the scanner)
+
+### Local Development
+
+```bash
+# Clone the repository
+git clone https://github.com/daikihi/SpecTrail.git
+cd SpecTrail
+
+# Set up Python virtual environment
+python -m venv .venv
+source .venv/bin/activate  # On Windows: .venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements-dev.txt
+
+# Run tests
+pytest
+
+# Build Rust components (if applicable)
+cargo build
+```
+
+## Project Structure
+
+```
+SpecTrail/
+├── specify_manual/               # Canonical specification metamodel
+│   ├── meta.md                  # Formal definition of SpecTrail annotation model
+│   ├── spec.md                  # Core specification
+│   ├── memory/                  # Constitution and design principles
+│   ├── templates/               # Specification templates
+│   └── scripts/                 # Specification management scripts
+├── specs/                        # Feature specifications and implementations
+│   └── 001-spec-impl-annotations/
+│       ├── spec.md              # Feature specification (EN)
+│       ├── spec.ja.md           # Feature specification (JA)
+│       ├── metamodel.md         # Convenience copy of canonical metamodel
+│       ├── tasks.md             # Implementation tasks and checklist
+│       ├── quickstart.md        # Getting started guide
+│       └── examples/            # Sample manifests for testing
+├── src/                         # Source code
+│   ├── main.rs
+│   ├── cli/                     # CLI commands (scan, report, diff)
+│   └── scanner/                 # Scanner and annotation parser
+├── tests/                       # Test suite
+│   ├── contracts/               # Contract/schema validation tests
+│   ├── unit/                    # Unit tests
+│   └── integration/             # Integration tests
+└── .github/workflows/           # CI/CD pipelines
+```
+
+### Key Directories
+
+- **specify_manual/**: Canonical source for the SpecTrail metamodel and annotation specification. This is the authoritative reference for the annotation schema and semantic model.
+- **specs/**: Feature-specific specifications and implementation guides. Each feature branch has its own specification directory with tasks, examples, and progress tracking.
+- **src/**: Implementation of the scanner, CLI, and core SpecTrail functionality in Rust.
+- **tests/**: Comprehensive test coverage including contract tests that validate against the schema.
+
+## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on:
+- Adding new annotations
+- Extending the scanner
+- Improving detection heuristics
+- Adding features
+
+## License
+
+See [LICENSE](LICENSE) for details.
