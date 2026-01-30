@@ -3,7 +3,7 @@
 This command shows lists of annotations in your project.
 It provides a comprehensive overview of all annotations, including their types, categories, and associated metadata.
 
-## what is this command?
+## Available functions
 
 This command lists all annotations in your project for both document and programming code.
 You can view annotations categorized as follows:
