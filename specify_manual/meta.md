@@ -1,4 +1,4 @@
-/// [@st-meta-model-doc] layer: meta, type: Philosophy, name: Specification Model: Formal Definition
+/// [@st-manual-meta-model-doc] layer: meta, type: Philosophy, name: Specification Model: Formal Definition
 # Specification Model: Formal Definition
 
 > This document defines the formal metamodel and philosophical foundation of the SpecTrail system.
@@ -6,25 +6,25 @@
 > It is intended as a stable conceptual reference.
 > Implementation details, file formats, and tooling behavior are intentionally out of scope.
 
-/// [@st-meta-non-goals] layer: meta, type: Guideline, name: Non-goals
+/// [@st-manual-meta-non-goals] layer: meta, type: Guideline, name: Non-goals
 ## Non-goals
 
 - This document does not define file formats.
 - This document does not prescribe programming languages.
 - This document does not define CLI behavior.
 
-/// [@st-meta-doc-status] layer: meta, type: Structure, name: Document Status
+/// [@st-manual-meta-doc-status] layer: meta, type: Structure, name: Document Status
 ## Document Status
 
 Status: Draft (Conceptually stable, subject to naming refinements)
 
-/// [@st-meta-specification] layer: abstract, type: Structure, name: Specification
+/// [@st-manual-meta-specification] layer: abstract, type: Structure, name: Specification
 ## Specification
 
-/// [@st-meta-spectrail-annotation] layer: abstract, type: Structure, name: SpecTrailAnnotation
+/// [@st-manual-meta-spectrail-annotation] layer: abstract, type: Structure, name: SpecTrailAnnotation
 ### 1. SpecTrailAnnotation
 
-/// [@st-meta-spectrail-unit] layer: abstract, type: Convention, name: SpecTrailUnit
+/// [@st-manual-meta-spectrail-unit] layer: abstract, type: Convention, name: SpecTrailUnit
 #### 1.1 SpecTrailUnit
 
 SpecTrail defines two parallel annotation domains that share a common structural schema:
@@ -248,10 +248,10 @@ TraceKind expresses semantics such as:
 Traces are the structural backbone of SpecTrail, ensuring full bidirectional traceability.
 
 
-/// [@st-meta-vocabulary] layer: meta, type: Convention, name: Vocabulary
+/// [@st-manual-meta-vocabulary] layer: meta, type: Convention, name: Vocabulary
 2. Vocabulary
 
-/// [@st-meta-specdetailtype] layer: spec-detail, type: Structure, name: SpecDetailType
+/// [@st-manual-meta-specdetailtype] layer: spec-detail, type: Structure, name: SpecDetailType
 2.1 SpecDetailType
 
 Defines the structural classification of a SpecDetailAnnotation.
@@ -265,7 +265,7 @@ Convention: Standard patterns or recurring structures
 Rule      : Strict constraints or validation logic
 ```
 
-/// [@st-meta-metamodel-diagrams] layer: meta, type: Structure, name: metamodel diagrams
+/// [@st-manual-meta-metamodel-diagrams] layer: meta, type: Structure, name: metamodel diagrams
 3. metamodel diagrams
 
 ```mermaid
