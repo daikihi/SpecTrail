@@ -1,4 +1,5 @@
 use std::fmt;
+use std::str::FromStr;
 
 /// Show command modes
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -82,5 +83,53 @@ impl ShowRequestDto {
     pub fn with_scope(mut self, scope: String) -> Self {
         self.scope = Some(scope);
         self
+    }
+
+    pub fn from_args(args: &[String]) -> Result<Self, Box<dyn std::error::Error>> {
+        let mut mode: Option<ShowMode> = None;
+        let mut target: Option<ShowTarget> = None;
+        let mut scope: Option<String> = None;
+
+        let mut i = 1; // Skip program name
+        while i < args.len() {
+            match args[i].as_str() {
+                "--mode" => {
+                    i += 1;
+                    if i < args.len() {
+                        mode = Some(ShowMode::from_str(&args[i])?);
+                    } else {
+                        return Err("--mode requires a value".into());
+                    }
+                }
+                "--target" => {
+                    i += 1;
+                    if i < args.len() {
+                        target = Some(ShowTarget::from_str(&args[i])?);
+                    } else {
+                        return Err("--target requires a value".into());
+                    }
+                }
+                "--scope" => {
+                    i += 1;
+                    if i < args.len() {
+                        scope = Some(args[i].clone());
+                    } else {
+                        return Err("--scope requires a value".into());
+                    }
+                }
+                _ => return Err(format!("Unknown argument: {}", args[i]).into()),
+            }
+            i += 1;
+        }
+
+        let mode = mode.ok_or("--mode is required")?;
+        let target = target.ok_or("--target is required")?;
+
+        let mut request = ShowRequestDto::new(mode, target);
+        if let Some(s) = scope {
+            request = request.with_scope(s);
+        }
+
+        Ok(request)
     }
 }
