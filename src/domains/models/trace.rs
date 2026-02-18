@@ -1,9 +1,8 @@
 /// [@st-code-domain-models-trace-file] layer: abstract, type: File, name: trace.rs
 /// This file defines the traceability structures, establishing semantic correspondence between different annotation layers.
-
 use crate::domains::models::abstract_annotation::AbstractAnnotation;
-use crate::domains::models::spec_detail::SpecDetailAnnotation;
 use crate::domains::models::implementation::ImplementationAnnotation;
+use crate::domains::models::spec_detail::SpecDetailAnnotation;
 
 /// [@st-code-domain-models-trace-trace-source] layer: spec-detail, type: Func, name: TraceSource
 /// This enum represents the source of a trace link as described in the specification.

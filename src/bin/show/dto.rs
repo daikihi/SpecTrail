@@ -1,7 +1,8 @@
+/// [@st-code-bin-show-dto-file] layer: abstract, type: File, name: dto.rs
 use std::fmt;
 use std::str::FromStr;
 
-/// Show command modes
+/// [@st-code-bin-show-dto-show-mode] layer: abstract, type: Structure, name: ShowMode
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ShowMode {
     List,
@@ -29,7 +30,7 @@ impl std::str::FromStr for ShowMode {
     }
 }
 
-/// Show command targets
+/// [@st-code-bin-show-dto-show-target] layer: abstract, type: Structure, name: ShowTarget
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum ShowTarget {
     All,
@@ -63,7 +64,7 @@ impl std::str::FromStr for ShowTarget {
     }
 }
 
-/// Data Transfer Object for show command requests
+/// [@st-code-bin-show-dto-show-request-dto] layer: abstract, type: Structure, name: ShowRequestDto
 #[derive(Debug, Clone)]
 pub struct ShowRequestDto {
     pub mode: ShowMode,

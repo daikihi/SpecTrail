@@ -1,9 +1,9 @@
+use crate::domains::models::abstract_annotation::AbstractAnnotation;
 /// [@st-code-domain-models-implementation-file] layer: abstract, type: File, name: implementation.rs
 /// This file defines the implementation-layer annotations, describing how specifications are realized at the technical level.
-
 use crate::domains::models::layer::Layer;
-use crate::domains::models::abstract_annotation::AbstractAnnotation;
 use crate::domains::models::spec_detail::SpecDetailAnnotation;
+use std::str::FromStr;
 
 /// [@st-code-domain-models-implementation-implementation-annotation-id] layer: abstract, type: Structure, name: ImplementationAnnotationId
 /// This struct represents the unique identifier for an implementation annotation (id = tag) as described in the specification.
@@ -24,6 +24,22 @@ pub enum ImplementationType {
     DomainEntity,
     ExternalApiGateway,
     WebInterfaceDataModel,
+    Structure, // 暫定
+}
+
+impl std::str::FromStr for ImplementationType {
+    type Err = String;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "DatabaseSchema" => Ok(ImplementationType::DatabaseSchema),
+            "DaoRepository" => Ok(ImplementationType::DaoRepository),
+            "DomainEntity" => Ok(ImplementationType::DomainEntity),
+            "ExternalApiGateway" => Ok(ImplementationType::ExternalApiGateway),
+            "WebInterfaceDataModel" => Ok(ImplementationType::WebInterfaceDataModel),
+            "Structure" => Ok(ImplementationType::Structure),
+            _ => Err(format!("Unknown ImplementationType: {}", s)),
+        }
+    }
 }
 
 /// [@st-code-domain-models-implementation-implementation-link] layer: abstract, type: Structure, name: ImplementationLink
@@ -46,6 +62,18 @@ pub enum ImplementationStatus {
     Planned,
     InProgress,
     Completed,
+}
+
+impl std::str::FromStr for ImplementationStatus {
+    type Err = String;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "Planned" => Ok(ImplementationStatus::Planned),
+            "InProgress" => Ok(ImplementationStatus::InProgress),
+            "Completed" => Ok(ImplementationStatus::Completed),
+            _ => Err(format!("Unknown ImplementationStatus: {}", s)),
+        }
+    }
 }
 
 /// [@st-code-domain-models-implementation-implementation-annotation] layer: abstract, type: Structure, name: ImplementationAnnotation

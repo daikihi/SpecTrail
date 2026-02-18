@@ -10,6 +10,9 @@ path = "src/libs.rs"
 [dependencies]
 serde = { version = "1.0.228", features = ["derive"] }
 toml = "0.8"
+regex = "1.10"
+log = "0.4"
+env_logger = "0.11"
 
 [[bin]]
 name = "show"

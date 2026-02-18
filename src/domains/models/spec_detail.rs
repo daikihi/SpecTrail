@@ -1,9 +1,9 @@
-/// [@st-code-domain-models-spec-detail-file] layer: abstract, type: File, name: spec_detail.rs
-/// This file defines the spec-detail-layer annotations, representing concrete functional or structural specifications.
-
-use crate::domains::models::layer::Layer;
 use crate::domains::models::abstract_annotation::AbstractAnnotation;
 use crate::domains::models::implementation::ImplementationAnnotation;
+/// [@st-code-domain-models-spec-detail-file] layer: abstract, type: File, name: spec_detail.rs
+/// This file defines the spec-detail-layer annotations, representing concrete functional or structural specifications.
+use crate::domains::models::layer::Layer;
+use std::str::FromStr;
 
 /// [@st-code-domain-models-spec-detail-spec-detail-annotation-id] layer: abstract, type: Structure, name: SpecDetailAnnotationId
 /// This struct represents the unique identifier for a spec detail annotation (id = tag) as described in the specification.
@@ -23,8 +23,23 @@ pub enum SpecDetailType {
     NonFunc,
     Test,
     Infra,
-    Convention, // spec.mdでConventionが使われているため追加
-    Rule, // spec.mdでRuleが使われているため追加
+    Convention,
+    Rule,
+}
+
+impl std::str::FromStr for SpecDetailType {
+    type Err = String;
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "Func" => Ok(SpecDetailType::Func),
+            "NonFunc" => Ok(SpecDetailType::NonFunc),
+            "Test" => Ok(SpecDetailType::Test),
+            "Infra" => Ok(SpecDetailType::Infra),
+            "Convention" => Ok(SpecDetailType::Convention),
+            "Rule" => Ok(SpecDetailType::Rule),
+            _ => Err(format!("Unknown SpecDetailType: {}", s)),
+        }
+    }
 }
 
 /// [@st-code-domain-models-spec-detail-spec-detail-link] layer: abstract, type: Structure, name: SpecDetailLink
