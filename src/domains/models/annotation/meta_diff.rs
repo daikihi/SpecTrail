@@ -1,10 +1,9 @@
+use super::code_annotation::CodeAnnotation;
+use super::document_annotation::DocumentAnnotation;
+use crate::domains::models::meta::{MetaAnnotation, MetaAnnotationId};
 /// [@st-code-domain-models-annotation-meta-diff-file] layer: abstract, type: File, name: meta_diff.rs
 /// This file defines the logic and data structure for comparing meta annotations between document and code annotations, supporting traceability and consistency checks.
-
 use std::collections::{HashMap, HashSet};
-use crate::domains::models::meta::{MetaAnnotation, MetaAnnotationId};
-use super::document_annotation::DocumentAnnotation;
-use super::code_annotation::CodeAnnotation;
 
 /// [@st-code-domain-models-annotation-meta-annotation-diff] layer: abstract, type: Structure, name: MetaAnnotationDiff
 /// This struct represents the diff of meta annotations between document and code as described in the specification.
@@ -17,10 +16,18 @@ pub struct MetaAnnotationDiff {
 
 impl MetaAnnotationDiff {
     pub fn compare(doc: &DocumentAnnotation, code: &CodeAnnotation) -> Self {
-        let doc_by_id: HashMap<MetaAnnotationId, MetaAnnotation> =
-            doc.metas.iter().cloned().map(|m| (m.id.clone(), m)).collect();
-        let code_by_id: HashMap<MetaAnnotationId, MetaAnnotation> =
-            code.metas.iter().cloned().map(|m| (m.id.clone(), m)).collect();
+        let doc_by_id: HashMap<MetaAnnotationId, MetaAnnotation> = doc
+            .metas
+            .iter()
+            .cloned()
+            .map(|m| (m.id.clone(), m))
+            .collect();
+        let code_by_id: HashMap<MetaAnnotationId, MetaAnnotation> = code
+            .metas
+            .iter()
+            .cloned()
+            .map(|m| (m.id.clone(), m))
+            .collect();
 
         let doc_ids: HashSet<_> = doc_by_id.keys().cloned().collect();
         let code_ids: HashSet<_> = code_by_id.keys().cloned().collect();
@@ -61,9 +68,9 @@ impl MetaAnnotationDiff {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::domains::models::meta::{MetaAnnotation, MetaAnnotationId, MetaName, MetaType};
-    use crate::domains::models::annotation::document_annotation::DocumentAnnotation;
     use crate::domains::models::annotation::code_annotation::CodeAnnotation;
+    use crate::domains::models::annotation::document_annotation::DocumentAnnotation;
+    use crate::domains::models::meta::{MetaAnnotation, MetaAnnotationId, MetaName, MetaType};
 
     #[test]
     fn test_compare_same_annotations() {
