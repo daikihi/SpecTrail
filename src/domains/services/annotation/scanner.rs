@@ -28,7 +28,8 @@ impl AnnotationScanner {
             for entry in entries.flatten() {
                 let path = entry.path();
                 if path.is_dir() {
-                    // target ディレクトリなどは除外したいが、今はシンプルに
+                    // @todo target directory should be ignored
+                    // This kind of directory naming depends on the programming language.
                     if path.file_name().and_then(|s| s.to_str()) == Some("target") {
                         continue;
                     }
@@ -96,7 +97,7 @@ impl AnnotationScanner {
                         for link_id in links_str.split(',') {
                             let link_id = link_id.trim();
                             if !link_id.is_empty() {
-                                // 暫定的に自分自身へのリンクとして構造を維持
+                                // Temporarily maintain structure as a link to itself
                                 meta.links.push(MetaAnnotation {
                                     id: MetaAnnotationId(link_id.to_string()),
                                     name: MetaName("Linked Meta".to_string()),

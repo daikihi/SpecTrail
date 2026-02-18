@@ -23,8 +23,8 @@ pub enum AbstractType {
     BackgroundComponent,
     Structure,
     Convention,
-    Philosophy, // spec.mdにあるため追加
-    Guideline,  // spec.mdにあるため追加
+    Philosophy,
+    Guideline,
 }
 
 impl std::str::FromStr for AbstractType {

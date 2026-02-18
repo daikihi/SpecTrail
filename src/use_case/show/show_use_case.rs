@@ -33,13 +33,13 @@ impl ShowUseCase {
     ) -> Result<ShowUseCaseResponseDto, Box<dyn std::error::Error>> {
         info!("Executing ShowUseCase with request: {:?}", request);
 
-        // 1. コードからアノテーションを取得 (src/ 下をスキャン)
+        // 1. Get annotations from code (scan under src/)
         let code_annotations = AnnotationScanner::scan_code("src");
 
-        // 2. ドキュメントからアノテーションを取得 (specify_manual/ 下をスキャン)
+        // 2. Get annotations from documents (scan under specify_manual/)
         let document_annotations = AnnotationScanner::scan_documents("specify_manual");
 
-        // レポーティング
+        // Reporting
         self.report_annotations(&code_annotations, &document_annotations);
 
         Ok(ShowUseCaseResponseDto {

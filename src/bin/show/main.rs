@@ -15,7 +15,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let toml_file_name: &str = "src/config/config.toml";
     let _config: SpecTrailConfig = SpecTrailConfig::from_file(toml_file_name)?;
 
-    // UseCase Request DTO への変換
+    // Convert to UseCase Request DTO
     let use_case_request = ShowUseCaseRequestDto {
         mode: request_dto.mode.to_string(),
         target: request_dto.target.to_string(),
