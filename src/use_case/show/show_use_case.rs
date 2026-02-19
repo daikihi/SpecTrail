@@ -34,10 +34,10 @@ impl ShowUseCase {
         info!("Executing ShowUseCase with request: {:?}", request);
 
         // 1. Get annotations from code (scan under src/)
-        let code_annotations = AnnotationScanner::scan_code("src");
+        let code_annotations: Vec<CodeAnnotation> = AnnotationScanner::scan_code("src");
 
         // 2. Get annotations from documents (scan under specify_manual/)
-        let document_annotations = AnnotationScanner::scan_documents("specify_manual");
+        let document_annotations: Vec<DocumentAnnotation> = AnnotationScanner::scan_documents("specify_manual");
 
         // Reporting
         self.report_annotations(&code_annotations, &document_annotations);
