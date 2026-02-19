@@ -1,4 +1,5 @@
 /// [@st-code-domain-models-abstract-annotation-file] layer: abstract, type: File, name: abstract_annotation.rs
+/// [@st-manual-meta-model-doc] layer: meta, type: Philosophy, name: Specification Model: Formal Definition
 /// This file defines the abstract-layer annotations, representing high-level conceptual units of the system.
 use crate::domains::models::layer::Layer;
 use crate::domains::models::spec_detail::SpecDetailAnnotation;

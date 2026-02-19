@@ -1,4 +1,5 @@
 /// [@st-code-domain-models-layer-file] layer: abstract, type: File, name: layer.rs
+/// [@st-manual-meta-model-doc] layer: meta, type: Philosophy, name: Specification Model: Formal Definition
 /// This file defines the Layer enumeration, classifying annotations into meta, abstract, spec-detail, and implementation strata.
 
 /// [@st-code-domain-models-layer-layer] layer: abstract, type: Structure, name: Layer

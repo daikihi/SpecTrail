@@ -1,4 +1,6 @@
 /// [@st-code-domain-services-annotation-scanner-file] layer: abstract, type: File, name: scanner.rs
+/// [@st-manual-meta-model-doc] layer: meta, type: Philosophy, name: Specification Model: Formal Definition
+/// [@st-manual-meta-non-goals] layer: meta, type: Guideline, name: Non-goals
 use crate::domains::models::abstract_annotation::{
     AbstractAnnotation, AbstractAnnotationId, AbstractName, AbstractType,
 };

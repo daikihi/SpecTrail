@@ -1,6 +1,7 @@
 use crate::domains::models::abstract_annotation::AbstractAnnotation;
 use crate::domains::models::implementation::ImplementationAnnotation;
 /// [@st-code-domain-models-spec-detail-file] layer: abstract, type: File, name: spec_detail.rs
+/// [@st-manual-meta-model-doc] layer: meta, type: Philosophy, name: Specification Model: Formal Definition
 /// This file defines the spec-detail-layer annotations, representing concrete functional or structural specifications.
 use crate::domains::models::layer::Layer;
 use std::str::FromStr;
