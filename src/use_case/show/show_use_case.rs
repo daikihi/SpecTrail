@@ -37,7 +37,8 @@ impl ShowUseCase {
         let code_annotations: Vec<CodeAnnotation> = AnnotationScanner::scan_code("src");
 
         // 2. Get annotations from documents (scan under specify_manual/)
-        let document_annotations: Vec<DocumentAnnotation> = AnnotationScanner::scan_documents("specify_manual");
+        let document_annotations: Vec<DocumentAnnotation> =
+            AnnotationScanner::scan_documents("specify_manual");
 
         // Reporting
         self.report_annotations(&code_annotations, &document_annotations);
@@ -60,22 +61,39 @@ impl ShowUseCase {
             if !anno.metas.is_empty() {
                 for meta in &anno.metas {
                     let link_ids: Vec<String> = meta.links.iter().map(|l| l.id.0.clone()).collect();
-                    info!("    [Meta] id: {}, name: {}, type: {:?}, links: {:?}", meta.id.0, meta.name.0, meta.r#type, link_ids);
+                    info!(
+                        "    [Meta] id: {}, name: {}, type: {:?}, links: {:?}",
+                        meta.id.0, meta.name.0, meta.r#type, link_ids
+                    );
                 }
             }
             if !anno.abstracts.is_empty() {
                 for abs in &anno.abstracts {
                     let link_ids: Vec<String> = abs.links.iter().map(|l| l.id.0.clone()).collect();
-                    info!("    [Abstract] id: {}, name: {}, type: {:?}, links: {:?}", abs.id.0, abs.name.0, abs.r#type, link_ids);
+                    info!(
+                        "    [Abstract] id: {}, name: {}, type: {:?}, links: {:?}",
+                        abs.id.0, abs.name.0, abs.r#type, link_ids
+                    );
                 }
             }
             if !anno.details.is_empty() {
                 for detail in &anno.details {
-                    let link_ids: Vec<String> = detail.links.iter().map(|l| match l {
-                        crate::domains::models::spec_detail::SpecDetailLink::Abstract(a) => a.id.0.clone(),
-                        crate::domains::models::spec_detail::SpecDetailLink::Implementation(i) => i.id.0.clone(),
-                    }).collect();
-                    info!("    [Detail] id: {}, name: {}, type: {:?}, links: {:?}", detail.id.0, detail.name.0, detail.r#type, link_ids);
+                    let link_ids: Vec<String> = detail
+                        .links
+                        .iter()
+                        .map(|l| match l {
+                            crate::domains::models::spec_detail::SpecDetailLink::Abstract(a) => {
+                                a.id.0.clone()
+                            }
+                            crate::domains::models::spec_detail::SpecDetailLink::Implementation(
+                                i,
+                            ) => i.id.0.clone(),
+                        })
+                        .collect();
+                    info!(
+                        "    [Detail] id: {}, name: {}, type: {:?}, links: {:?}",
+                        detail.id.0, detail.name.0, detail.r#type, link_ids
+                    );
                 }
             }
             if !anno.implementations.is_empty() {
@@ -84,7 +102,14 @@ impl ShowUseCase {
                         crate::domains::models::implementation::ImplementationLink::Abstract(a) => a.id.0.clone(),
                         crate::domains::models::implementation::ImplementationLink::SpecDetail(s) => s.id.0.clone(),
                     }).collect();
-                    info!("    [Implementation] id: {}, name: {}, type: {:?}, artifact: {}, links: {:?}", impl_anno.id.0, impl_anno.name.0, impl_anno.r#type, impl_anno.artifact.0, link_ids);
+                    info!(
+                        "    [Implementation] id: {}, name: {}, type: {:?}, artifact: {}, links: {:?}",
+                        impl_anno.id.0,
+                        impl_anno.name.0,
+                        impl_anno.r#type,
+                        impl_anno.artifact.0,
+                        link_ids
+                    );
                 }
             }
         }
@@ -95,22 +120,39 @@ impl ShowUseCase {
             if !anno.metas.is_empty() {
                 for meta in &anno.metas {
                     let link_ids: Vec<String> = meta.links.iter().map(|l| l.id.0.clone()).collect();
-                    info!("    [Meta] id: {}, name: {}, type: {:?}, links: {:?}", meta.id.0, meta.name.0, meta.r#type, link_ids);
+                    info!(
+                        "    [Meta] id: {}, name: {}, type: {:?}, links: {:?}",
+                        meta.id.0, meta.name.0, meta.r#type, link_ids
+                    );
                 }
             }
             if !anno.abstracts.is_empty() {
                 for abs in &anno.abstracts {
                     let link_ids: Vec<String> = abs.links.iter().map(|l| l.id.0.clone()).collect();
-                    info!("    [Abstract] id: {}, name: {}, type: {:?}, links: {:?}", abs.id.0, abs.name.0, abs.r#type, link_ids);
+                    info!(
+                        "    [Abstract] id: {}, name: {}, type: {:?}, links: {:?}",
+                        abs.id.0, abs.name.0, abs.r#type, link_ids
+                    );
                 }
             }
             if !anno.details.is_empty() {
                 for detail in &anno.details {
-                    let link_ids: Vec<String> = detail.links.iter().map(|l| match l {
-                        crate::domains::models::spec_detail::SpecDetailLink::Abstract(a) => a.id.0.clone(),
-                        crate::domains::models::spec_detail::SpecDetailLink::Implementation(i) => i.id.0.clone(),
-                    }).collect();
-                    info!("    [Detail] id: {}, name: {}, type: {:?}, links: {:?}", detail.id.0, detail.name.0, detail.r#type, link_ids);
+                    let link_ids: Vec<String> = detail
+                        .links
+                        .iter()
+                        .map(|l| match l {
+                            crate::domains::models::spec_detail::SpecDetailLink::Abstract(a) => {
+                                a.id.0.clone()
+                            }
+                            crate::domains::models::spec_detail::SpecDetailLink::Implementation(
+                                i,
+                            ) => i.id.0.clone(),
+                        })
+                        .collect();
+                    info!(
+                        "    [Detail] id: {}, name: {}, type: {:?}, links: {:?}",
+                        detail.id.0, detail.name.0, detail.r#type, link_ids
+                    );
                 }
             }
             if !anno.implementations.is_empty() {
@@ -119,7 +161,14 @@ impl ShowUseCase {
                         crate::domains::models::implementation::ImplementationLink::Abstract(a) => a.id.0.clone(),
                         crate::domains::models::implementation::ImplementationLink::SpecDetail(s) => s.id.0.clone(),
                     }).collect();
-                    info!("    [Implementation] id: {}, name: {}, type: {:?}, artifact: {}, links: {:?}", impl_anno.id.0, impl_anno.name.0, impl_anno.r#type, impl_anno.artifact.0, link_ids);
+                    info!(
+                        "    [Implementation] id: {}, name: {}, type: {:?}, artifact: {}, links: {:?}",
+                        impl_anno.id.0,
+                        impl_anno.name.0,
+                        impl_anno.r#type,
+                        impl_anno.artifact.0,
+                        link_ids
+                    );
                 }
             }
         }
