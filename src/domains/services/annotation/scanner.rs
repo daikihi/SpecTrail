@@ -1,12 +1,14 @@
 /// [@st-code-domain-services-annotation-scanner-file] layer: abstract, type: File, name: scanner.rs
+/// [@st-manual-meta-model-doc] layer: meta, type: Philosophy, name: Specification Model: Formal Definition
+/// [@st-manual-meta-non-goals] layer: meta, type: Guideline, name: Non-goals
 use crate::domains::models::abstract_annotation::{
     AbstractAnnotation, AbstractAnnotationId, AbstractName, AbstractType,
 };
 use crate::domains::models::annotation::code_annotation::CodeAnnotation;
 use crate::domains::models::annotation::document_annotation::DocumentAnnotation;
 use crate::domains::models::implementation::{
-    ImplementationAnnotation, ImplementationAnnotationId, ImplementationArtifact, ImplementationLink,
-    ImplementationSpecName, ImplementationStatus, ImplementationType,
+    ImplementationAnnotation, ImplementationAnnotationId, ImplementationArtifact,
+    ImplementationLink, ImplementationSpecName, ImplementationStatus, ImplementationType,
 };
 use crate::domains::models::layer::Layer;
 use crate::domains::models::meta::{MetaAnnotation, MetaAnnotationId, MetaName, MetaType};
@@ -36,9 +38,10 @@ impl AnnotationScanner {
                     results.extend(Self::scan_code(&path));
                 } else if path.extension().and_then(|s| s.to_str()) == Some("rs") {
                     if let Ok(content) = fs::read_to_string(&path) {
-                        if let Some(container) =
-                            Self::parse_file_annotations::<CodeAnnotation>(&content, path.to_str().unwrap_or(""))
-                        {
+                        if let Some(container) = Self::parse_file_annotations::<CodeAnnotation>(
+                            &content,
+                            path.to_str().unwrap_or(""),
+                        ) {
                             results.push(container);
                         }
                     }
@@ -57,9 +60,10 @@ impl AnnotationScanner {
                     results.extend(Self::scan_documents(&path));
                 } else if path.extension().and_then(|s| s.to_str()) == Some("md") {
                     if let Ok(content) = fs::read_to_string(&path) {
-                        if let Some(container) =
-                            Self::parse_file_annotations::<DocumentAnnotation>(&content, path.to_str().unwrap_or(""))
-                        {
+                        if let Some(container) = Self::parse_file_annotations::<DocumentAnnotation>(
+                            &content,
+                            path.to_str().unwrap_or(""),
+                        ) {
                             results.push(container);
                         }
                     }
@@ -193,11 +197,7 @@ impl AnnotationScanner {
             }
         }
 
-        if found {
-            Some(container)
-        } else {
-            None
-        }
+        if found { Some(container) } else { None }
     }
 }
 

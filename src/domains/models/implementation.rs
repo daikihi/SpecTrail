@@ -1,5 +1,6 @@
 use crate::domains::models::abstract_annotation::AbstractAnnotation;
 /// [@st-code-domain-models-implementation-file] layer: abstract, type: File, name: implementation.rs
+/// [@st-manual-meta-model-doc] layer: meta, type: Philosophy, name: Specification Model: Formal Definition
 /// This file defines the implementation-layer annotations, describing how specifications are realized at the technical level.
 use crate::domains::models::layer::Layer;
 use crate::domains::models::spec_detail::SpecDetailAnnotation;

@@ -1,4 +1,5 @@
 /// [@st-code-domain-models-trace-file] layer: abstract, type: File, name: trace.rs
+/// [@st-manual-meta-model-doc] layer: meta, type: Philosophy, name: Specification Model: Formal Definition
 /// This file defines the traceability structures, establishing semantic correspondence between different annotation layers.
 use crate::domains::models::abstract_annotation::AbstractAnnotation;
 use crate::domains::models::implementation::ImplementationAnnotation;

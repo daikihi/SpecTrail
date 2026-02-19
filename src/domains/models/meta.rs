@@ -1,4 +1,5 @@
 /// [@st-code-domain-models-meta-file] layer: abstract, type: File, name: meta.rs
+/// [@st-manual-meta-model-doc] layer: meta, type: Philosophy, name: Specification Model: Formal Definition
 /// This file defines the meta-layer annotations, which represent high-level philosophies, guidelines, and rules.
 use crate::domains::models::layer::Layer;
 use std::str::FromStr;
