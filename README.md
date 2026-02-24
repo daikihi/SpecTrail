@@ -18,12 +18,11 @@ Writing documentation is one of the best ways to understand a project and reflec
 ### 🔍 Scan & Integrity Checks
 - Scan repository for all annotations (documents and code)
 - Verify integrity of annotation references (detect broken links)
-- Identify unlinked annotations (document-only, code-only, implementation-only)
 
-### 📊 Status Tracking & Reports
+### 📊 Visualization & Reports
+- Show annotations and their relationships via CLI
+- Identify unlinked annotations (document-only, code-only, implementation-only)
 - Track implementation status: Implemented / In Progress / Unimplemented / Deprecated / Verified
-- Autonomous status estimation based on heuristics (presence of implementation, tests, PR merge status)
-- Generate coverage reports showing what percentage of specs have implementation references
 
 ### 🔄 PR & Version Tracking
 - View annotation diffs in pull requests (added/changed/removed)
@@ -171,31 +170,28 @@ async fn login(req: LoginRequest) -> Result<Token> {
 }
 ```
 
-### 3. Run Scanner
+### 3. Show Annotations
 
-Scan repository to find all annotations and verify linking:
+Use the `show` command to list or search annotations:
 
 ```bash
-spectrail scan
+cargo run --bin show -- --mode list --target all
 ```
 
-Output: JSON manifest with all annotations, their relationships, and status.
+Output: A detailed report of annotations found in both code and documents.
 
-### 4. Generate Reports
+#### Show Command Options
 
-View coverage and broken references:
+| Option     | Description                                      | Example Value           |
+|------------|--------------------------------------------------|-------------------------|
+| `--mode`   | Operation mode (`list`, `search`)                | `list`                  |
+| `--target` | Target of scan (`all`, `document`, `code`, `group`) | `all`                   |
+| `--scope`  | Specific scope or ID to focus on                 | `CHK-001`               |
 
-```bash
-spectrail report --coverage
-spectrail report --broken-refs
-```
-
-### 5. Review in PRs
-
-See what specifications changed and their implementation status:
+### 4. Build & Install
 
 ```bash
-spectrail diff --pr
+cargo build --release
 ```
 
 ## Installation & Setup
@@ -211,18 +207,11 @@ spectrail diff --pr
 git clone https://github.com/daikihi/SpecTrail.git
 cd SpecTrail
 
-# Set up Python virtual environment
-python -m venv .venv
-source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-
-# Install dependencies
-pip install -r requirements-dev.txt
-
-# Run tests
-pytest
-
-# Build Rust components (if applicable)
+# Build Rust components
 cargo build
+
+# Run show command
+cargo run --bin show -- --mode list --target all
 ```
 
 ## Project Structure
@@ -232,42 +221,29 @@ SpecTrail/
 ├── specify_manual/               # Canonical specification metamodel
 │   ├── meta.md                  # Formal definition of SpecTrail annotation model
 │   ├── spec.md                  # Core specification
+│   ├── data_model/              # Detail definitions of data models
+│   ├── command_design/          # Design of CLI commands
 │   ├── memory/                  # Constitution and design principles
 │   ├── templates/               # Specification templates
 │   └── scripts/                 # Specification management scripts
 ├── specs/                        # Feature specifications and implementations
 │   └── 001-spec-impl-annotations/
-│       ├── spec.md              # Feature specification (EN)
-│       ├── spec.ja.md           # Feature specification (JA)
-│       ├── metamodel.md         # Convenience copy of canonical metamodel
-│       ├── tasks.md             # Implementation tasks and checklist
-│       ├── quickstart.md        # Getting started guide
-│       └── examples/            # Sample manifests for testing
-├── src/                         # Source code
-│   ├── main.rs
-│   ├── cli/                     # CLI commands (scan, report, diff)
-│   └── scanner/                 # Scanner and annotation parser
+├── src/                         # Source code (Rust)
+│   ├── bin/                     # CLI entry points (e.g., show)
+│   ├── domains/                 # Domain logic and models
+│   ├── use_case/                # Application use cases
+│   └── infrastructures/         # External integrations
 ├── tests/                       # Test suite
-│   ├── contracts/               # Contract/schema validation tests
-│   ├── unit/                    # Unit tests
-│   └── integration/             # Integration tests
-└── .github/workflows/           # CI/CD pipelines
+└── Cargo.toml                   # Rust project configuration
 ```
 
 ### Key Directories
 
 - **specify_manual/**: Canonical source for the SpecTrail metamodel and annotation specification. This is the authoritative reference for the annotation schema and semantic model.
 - **specs/**: Feature-specific specifications and implementation guides. Each feature branch has its own specification directory with tasks, examples, and progress tracking.
-- **src/**: Implementation of the scanner, CLI, and core SpecTrail functionality in Rust.
+- **src/**: Implementation of the CLI commands and core SpecTrail functionality in Rust.
 - **tests/**: Comprehensive test coverage including contract tests that validate against the schema.
 
-## Contributing
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines on:
-- Adding new annotations
-- Extending the scanner
-- Improving detection heuristics
-- Adding features
 
 ## License
 
