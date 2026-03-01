@@ -40,8 +40,9 @@ $ strail show --mode list --target all
 
 - **Example:**
 
-```bash
-@todo
+```text
+Code Anno [0]: @st-code-use-case-show-show-use-case-file (Layer: Abstract, Type: Structure)
+Document Anno [0]: @st-manual-spec-specification (Layer: Abstract, Type: Structure)
 ```
 
 ### List all document annotations in your project
@@ -70,8 +71,8 @@ $ strail show --mode list --target document
 
 
 - **Example:**
-  ```bash
-  @todo
+  ```text
+  Document Anno [0]: @st-manual-spec-specification (Layer: Abstract, Type: Structure)
   ```
 
 ### List all code annotations in your project
@@ -101,67 +102,74 @@ $ strail show --mode list --target code
 You can see all code annotations in your project.
 
 - **Example:**
-  ```bash
-  @todo
+  ```text
+  Code Anno [0]: @st-code-use-case-show-show-use-case-file (Layer: Abstract, Type: Structure)
   ```
 
 ### List all annotation groups in your project
 
-This mode lists all annotation groups in your project.
-The target annotations are both document and code annotations.
-When you want to list annotations grouped by specific layer or types, this mode is the most convenient way.
-
 - **Purpose:**
 
-Sometimes, a developer wants to see all annotations that are the same annotation layer.
-
-- **Precondition:**
-  The project contains at least one annotation group.
-  However, this mode does not require that the annotation group is defined on the document or on the code.
-
-- **Steps:**
-
-  ```bash
-  @todo
-  ```
-
-- **Expected Result:**
-  The mode can show all annotations in the same group.
-
-- **Example:**
-  ```bash
-  @todo
-  ```
-  
-### Trace-related annotations starting from a specific annotation
-
-This mode lists all related annotations starting from the specific annotations.
-A developer sometimes wants to know related specifications or codes which have related to the specific annotation.
-
-- **Purpose:**
-
-A developer can know the relation among annotations. 
-The relation points to the context of the specification in annotation.
-Annotations have contexts from application or higher level specifications to real implementation codes.
+  Sometimes, a developer wants to see all annotations that are in the same annotation layer or share the same type.
+  This helps in identifying patterns and ensuring consistency across the project.
+  For example, viewing all "Philosophy" meta-annotations together provides a high-level view of the project's core principles.
 
 - **Precondition:**
 
-The project contains at least two annotations, and they are related to each other.
-Even if the project does not contain any annotations, or the system contains more than two annotations and they are not related to each other,
-however, the mode can execute without any error. But the mode execution result is an empty list.
+  The project contains at least one annotation.
 
 - **Steps:**
 
 ```bash
-@todo
+$ strail show --mode list --target group
 ```
 
 - **Expected Result:**
 
-The mode can show related annotations not only in text format but also in a graphical view.
-A user can choose one of them.
+  The command outputs annotations grouped by their **Layer** (Meta, Abstract, SpecDetail, Implementation) and then by their **Type**.
 
 - **Example:**
-  ```bash
-  @todo
-  ```
+
+```text
+[Layer: Meta]
+  - [Type: Philosophy]
+    - @st-manual-meta-model-doc: Specification Model: Formal Definition
+  - [Type: Guideline]
+    - @st-manual-spec-user-assumption: User Assumption and Use Case
+
+[Layer: Abstract]
+  - [Type: Structure]
+    - @st-manual-spec-specification: SpecTrail Specification
+```
+
+### Trace-related annotations starting from a specific annotation
+
+- **Purpose:**
+
+  A developer sometimes wants to know related specifications or codes which are related to a specific annotation.
+  This mode allows tracing the chain of links from a single point of interest.
+  It helps in impact analysis when a specification changes.
+
+- **Precondition:**
+
+  The project contains at least one annotation with links to other annotations.
+
+- **Steps:**
+
+```bash
+$ strail show --mode search --target all --scope "@st-manual-spec-cli-show-command"
+```
+*(Note: Currently, tracing is often achieved via `search` mode with a specific ID, but future versions might have a dedicated trace mode.)*
+
+- **Expected Result:**
+
+  The mode shows the target annotation and all annotations that are directly or indirectly linked to it.
+
+- **Example:**
+
+```text
+Target: @st-manual-spec-cli-show-command
+Links to:
+  - @st-manual-spec-cli (Layer: SpecDetail, Type: Rule)
+  - @st-code-use-case-show-show-use-case (Layer: Abstract, Type: Structure)
+```

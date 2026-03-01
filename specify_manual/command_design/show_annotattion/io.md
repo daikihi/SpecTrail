@@ -12,13 +12,45 @@ show --mode list --target group
 show --mode search --target code --scope src/
 ```
 
-### all
+### target: all
 
-### document
+Returns a flat list of all annotations from both `src/` and `specify_manual/`.
 
-### code
+```json
+{
+  "document_annotations": [...],
+  "code_annotations": [...]
+}
+```
 
-### group
+### target: document / code
 
+Returns a list of annotations filtered by source.
+
+### target: group
+
+Returns annotations organized hierarchically by Layer and Type.
+
+```json
+{
+  "Meta": {
+    "Philosophy": [
+      { "id": "@st-manual-meta-model-doc", "name": "..." }
+    ],
+    "Guideline": [...]
+  },
+  "Abstract": { ... }
+}
+```
 
 ## Output
+
+The output can be provided in **Standard Output (Text)** or **JSON** format.
+
+### Text Output (Standard)
+
+A human-readable list or tree, as shown in [UseCase examples](./use_case.md).
+
+### JSON Output
+
+A structured representation suitable for machine processing or the `report-ui`.

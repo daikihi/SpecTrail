@@ -114,8 +114,25 @@ Basically, both of those annotations should be exact same name for readability t
 - **出力**: レポート（標準出力、ファイル出力）
 - **レイヤ**: cli
 - **備考**: CIパイプラインから呼び出し可能にする
-
-/// [@st-manual-spec-cli-report-ui] layer: spec-detail, type: Func, name: report-ui, links: [@st-manual-spec-cli]
+ 
+/// [@st-manual-spec-cli-show-command] layer: spec-detail, type: Func, name: show-command, links: [@st-manual-spec-cli]
+#### show-command
+ 
+- **overview**: This command shows or finds annotations from specification documents and/or source code.
+- **input**: 
+  - `target` (`--target all|document|code|group`):
+    - `all`: Show all annotations (scans `src/` and `specify_manual/`).
+    - `document`: Show annotations from documents (scans `specify_manual/`).
+    - `code`: Show annotations from source code (scans `src/`).
+    - `group`: (Future implementation) Group annotations by specific criteria.
+  - `mode` (`--mode list|search`):
+    - `list`: List all found annotations.
+    - `search`: Search for specific annotations (requires `--scope`).
+  - `scope` (`--scope <query>`): Search query for `search` mode.
+- **output**: reports of annotations (stdout/json)
+- **layer**: cli, usecase
+- **note**: Show command has annotation filtering and searching capabilities. It provides a way to inspect the state of annotations across the project.
+ 
 #### report-ui
 
 - **概要**: 結果をブラウザで可視化
@@ -164,9 +181,194 @@ Basically, both of those annotations should be exact same name for readability t
 
 /// [@st-manual-spec-data-model] layer: abstract, type: Structure, name: Data Model, links: [@st-manual-meta-specification]
 ## 4. Data Model
-- アノテーション構造体（Rust struct）
-- マッピング結果のデータ構造
-- JSONスキーマ（もし出力するなら）
+
+SpecTrail uses a unified data model for annotations in both documents and source code. This section describes the internal data structures (Rust structs) and their corresponding JSON representations used for CLI output and reporting.
+
+### 4.1 Common Fields
+All annotation layers share some common attributes:
+- `id`: Unique identifier (e.g., `@st-manual-spec-goal`)
+- `name`: Human-readable name
+- `type`: Specific category within the layer (e.g., Philosophy, Func)
+- `layer`: The layer this annotation belongs to (Meta, Abstract, SpecDetail, Implementation)
+- `links`: References to other annotations
+
+### 4.2 Annotation Layers
+
+#### MetaAnnotation
+Represents high-level philosophies, guidelines, and rules.
+- **Types**: Philosophy, Guideline, Convention, Structure, Rule
+- **Links**: Can link to other `MetaAnnotation`s.
+
+#### AbstractAnnotation
+Represents conceptual units of the system.
+- **Types**: Page, Application, BackgroundComponent, Structure, Convention, Philosophy, Guideline
+- **Links**: Links to `SpecDetailAnnotation`s.
+
+#### SpecDetailAnnotation
+Represents concrete functional or structural specifications.
+- **Types**: Func, NonFunc, Test, Infra, Convention, Rule
+- **Links**: Links to `AbstractAnnotation` or `ImplementationAnnotation`.
+
+#### ImplementationAnnotation
+Describes technical realization.
+- **Types**: DatabaseSchema, DaoRepository, DomainEntity, ExternalApiGateway, WebInterfaceDataModel, Structure
+- **Artifact**: Path or identifier of the code artifact (e.g., file path, function name).
+- **Status**: Planned, InProgress, Completed.
+- **Links**: Links to `SpecDetailAnnotation` or `AbstractAnnotation`.
+
+### 4.3 Container Structures
+
+#### CodeAnnotation / DocumentAnnotation
+These are aggregators that group annotations found in a specific file or artifact.
+```json
+{
+  "metas": [ ...MetaAnnotation ],
+  "abstracts": [ ...AbstractAnnotation ],
+  "details": [ ...SpecDetailAnnotation ],
+  "implementations": [ ...ImplementationAnnotation ]
+}
+```
+
+### 4.4 JSON Schema Example (Show Command Output)
+When running `show --mode list --target all`, the output follows this structure:
+
+```json
+{
+  "document_annotations": [
+    {
+      "metas": [
+        {
+          "id": "@st-manual-meta-model-doc",
+          "name": "Specification Model: Formal Definition",
+          "type": "Philosophy",
+          "layer": "Meta",
+          "links": [
+            {
+              "id": "@st-manual-meta-vocabulary",
+              "name": "Vocabulary",
+              "type": "Convention",
+              "layer": "Meta"
+            }
+          ]
+        }
+      ],
+      "abstracts": [
+        {
+          "id": "@st-manual-spec-goal",
+          "name": "Goal of SpecTrail",
+          "type": "Philosophy",
+          "layer": "Abstract",
+          "links": [
+            {
+              "id": "@st-manual-spec-cli-show-command",
+              "name": "show-command",
+              "type": "Func",
+              "layer": "SpecDetail"
+            }
+          ]
+        }
+      ],
+      "details": [
+        {
+          "id": "@st-manual-spec-cli-show-command",
+          "name": "show-command",
+          "type": "Func",
+          "layer": "SpecDetail",
+          "links": [
+            {
+              "id": "@st-code-use-case-show-show-use-case",
+              "name": "ShowUseCase",
+              "type": "Structure",
+              "layer": "Implementation"
+            }
+          ]
+        }
+      ],
+      "implementations": [
+        {
+          "id": "@st-impl-report-json-format",
+          "name": "Show Command JSON Output Format",
+          "type": "WebInterfaceDataModel",
+          "layer": "Implementation",
+          "artifact": "specify_manual/command/show/io.md",
+          "status": "InProgress",
+          "links": [
+            {
+              "id": "@st-manual-spec-cli-show-command",
+              "name": "show-command",
+              "type": "Func",
+              "layer": "SpecDetail"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "code_annotations": [
+    {
+      "metas": [
+        {
+          "id": "@st-meta-naming-convention",
+          "name": "Annotation ID Naming Convention",
+          "type": "Convention",
+          "layer": "Meta",
+          "links": []
+        }
+      ],
+      "abstracts": [
+        {
+          "id": "@st-abstract-cli",
+          "name": "Command Line Interface",
+          "type": "Structure",
+          "layer": "Abstract",
+          "links": [
+            {
+              "id": "@st-manual-spec-cli-show-command",
+              "name": "show-command",
+              "type": "Func",
+              "layer": "SpecDetail"
+            }
+          ]
+        }
+      ],
+      "details": [
+        {
+          "id": "@st-detail-show-list",
+          "name": "List annotations (show --mode list)",
+          "type": "Func",
+          "layer": "SpecDetail",
+          "links": [
+            {
+              "id": "@st-code-use-case-show-show-use-case",
+              "name": "ShowUseCase",
+              "type": "Structure",
+              "layer": "Implementation"
+            }
+          ]
+        }
+      ],
+      "implementations": [
+        {
+          "id": "@st-code-use-case-show-show-use-case",
+          "name": "ShowUseCase",
+          "type": "Structure",
+          "layer": "Implementation",
+          "artifact": "src/use_case/show/show_use_case.rs",
+          "status": "Completed",
+          "links": [
+            {
+              "id": "@st-detail-show-list",
+              "name": "List annotations (show --mode list)",
+              "type": "Func",
+              "layer": "SpecDetail"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
+```
 
 /// [@st-manual-spec-open-questions] layer: meta, type: Rule, name: Open Questions
 ## 5. Open Questions

@@ -32,14 +32,20 @@ impl ShowUseCase {
         request: ShowUseCaseRequestDto,
     ) -> Result<ShowUseCaseResponseDto, Box<dyn std::error::Error>> {
         info!("Executing ShowUseCase with request: {:?}", request);
-
+ 
+        let mut code_annotations: Vec<CodeAnnotation> = Vec::new();
+        let mut document_annotations: Vec<DocumentAnnotation> = Vec::new();
+ 
         // 1. Get annotations from code (scan under src/)
-        let code_annotations: Vec<CodeAnnotation> = AnnotationScanner::scan_code("src");
-
+        if request.target == "all" || request.target == "code" {
+            code_annotations = AnnotationScanner::scan_code("src");
+        }
+ 
         // 2. Get annotations from documents (scan under specify_manual/)
-        let document_annotations: Vec<DocumentAnnotation> =
-            AnnotationScanner::scan_documents("specify_manual");
-
+        if request.target == "all" || request.target == "document" {
+            document_annotations = AnnotationScanner::scan_documents("specify_manual");
+        }
+ 
         // Reporting
         self.report_annotations(&code_annotations, &document_annotations);
 
