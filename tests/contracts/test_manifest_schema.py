@@ -13,17 +13,17 @@ def load(path):
 
 def test_manifest_local_valid():
     schema = load(SCHEMA_PATH)
-    manifest = load(os.path.join(os.path.dirname(__file__), '..', '..', 'specs', '001-spec-impl-annotations', 'examples', 'manifest.local.json'))
+    manifest = load(os.path.join(os.path.dirname(__file__), '..', '..', 'specs', '001-spec-impl-annotations.done', 'examples', 'manifest.local.json'))
     Draft7Validator(schema).validate(manifest)
 
 
 def test_manifest_pr_valid():
     schema = load(SCHEMA_PATH)
-    manifest = load(os.path.join(os.path.dirname(__file__), '..', '..', 'specs', '001-spec-impl-annotations', 'examples', 'manifest.pr.json'))
+    manifest = load(os.path.join(os.path.dirname(__file__), '..', '..', 'specs', '001-spec-impl-annotations.done', 'examples', 'manifest.pr.json'))
     Draft7Validator(schema).validate(manifest)
 
 
 def test_manifest_broken_valid():
     schema = load(SCHEMA_PATH)
-    manifest = load(os.path.join(os.path.dirname(__file__), '..', '..', 'specs', '001-spec-impl-annotations', 'examples', 'manifest.broken.json'))
+    manifest = load(os.path.join(os.path.dirname(__file__), '..', '..', 'specs', '001-spec-impl-annotations.done', 'examples', 'manifest.broken.json'))
     Draft7Validator(schema).validate(manifest)

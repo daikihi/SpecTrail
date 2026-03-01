@@ -4,11 +4,11 @@ on:
   push:
     paths:
       - 'contracts/manifest.schema.json'
-      - 'specs/001-spec-impl-annotations/examples/**'
+      - '../../specs/001-spec-impl-annotations.done/examples/**'
   pull_request:
     paths:
       - 'contracts/manifest.schema.json'
-      - 'specs/001-spec-impl-annotations/examples/**'
+      - '../../specs/001-spec-impl-annotations.done/examples/**'
 
 jobs:
   validate:
