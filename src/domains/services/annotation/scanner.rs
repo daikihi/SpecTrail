@@ -24,7 +24,7 @@ use std::str::FromStr;
 pub struct AnnotationScanner;
 
 impl AnnotationScanner {
-    pub fn scan_code<P: AsRef<Path>>(path: P) -> Vec<CodeAnnotation> {
+    pub fn scan_code<P: AsRef<Path>>(path: P, extension: &str) -> Vec<CodeAnnotation> {
         let mut results = Vec::new();
         if let Ok(entries) = fs::read_dir(path) {
             for entry in entries.flatten() {
@@ -35,8 +35,8 @@ impl AnnotationScanner {
                     if path.file_name().and_then(|s| s.to_str()) == Some("target") {
                         continue;
                     }
-                    results.extend(Self::scan_code(&path));
-                } else if path.extension().and_then(|s| s.to_str()) == Some("rs") {
+                    results.extend(Self::scan_code(&path, extension));
+                } else if path.extension().and_then(|s| s.to_str()) == Some(extension.trim_start_matches('.')) {
                     if let Ok(content) = fs::read_to_string(&path) {
                         if let Some(container) = Self::parse_file_annotations::<CodeAnnotation>(
                             &content,
@@ -51,14 +51,14 @@ impl AnnotationScanner {
         results
     }
 
-    pub fn scan_documents<P: AsRef<Path>>(path: P) -> Vec<DocumentAnnotation> {
+    pub fn scan_documents<P: AsRef<Path>>(path: P, extension: &str) -> Vec<DocumentAnnotation> {
         let mut results = Vec::new();
         if let Ok(entries) = fs::read_dir(path) {
             for entry in entries.flatten() {
                 let path = entry.path();
                 if path.is_dir() {
-                    results.extend(Self::scan_documents(&path));
-                } else if path.extension().and_then(|s| s.to_str()) == Some("md") {
+                    results.extend(Self::scan_documents(&path, extension));
+                } else if path.extension().and_then(|s| s.to_str()) == Some(extension.trim_start_matches('.')) {
                     if let Ok(content) = fs::read_to_string(&path) {
                         if let Some(container) = Self::parse_file_annotations::<DocumentAnnotation>(
                             &content,
