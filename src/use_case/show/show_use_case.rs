@@ -2,6 +2,7 @@
 use crate::domains::models::annotation::code_annotation::CodeAnnotation;
 use crate::domains::models::annotation::document_annotation::DocumentAnnotation;
 use crate::domains::services::annotation::scanner::AnnotationScanner;
+use crate::config::SpecTrailConfig;
 use log::info;
 
 /// [@st-code-use-case-show-show-use-case-request-dto] layer: abstract, type: Structure, name: ShowUseCaseRequestDto
@@ -32,20 +33,22 @@ impl ShowUseCase {
         request: ShowUseCaseRequestDto,
     ) -> Result<ShowUseCaseResponseDto, Box<dyn std::error::Error>> {
         info!("Executing ShowUseCase with request: {:?}", request);
- 
+
+        let config = SpecTrailConfig::from_file("src/config/config.toml")?;
+
         let mut code_annotations: Vec<CodeAnnotation> = Vec::new();
         let mut document_annotations: Vec<DocumentAnnotation> = Vec::new();
- 
+
         // 1. Get annotations from code (scan under src/)
         if request.target == "all" || request.target == "code" {
-            code_annotations = AnnotationScanner::scan_code("src");
+            code_annotations = AnnotationScanner::scan_code(&config.document.head, &config.document.extension);
         }
- 
+
         // 2. Get annotations from documents (scan under specify_manual/)
         if request.target == "all" || request.target == "document" {
-            document_annotations = AnnotationScanner::scan_documents("specify_manual");
+            document_annotations = AnnotationScanner::scan_documents(&config.source.head, &config.source.extension);
         }
- 
+
         // Reporting
         self.report_annotations(&code_annotations, &document_annotations);
 
