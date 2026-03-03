@@ -15,6 +15,7 @@ use crate::domains::models::meta::{MetaAnnotation, MetaAnnotationId, MetaName, M
 use crate::domains::models::spec_detail::{
     SpecDetailAnnotation, SpecDetailAnnotationId, SpecDetailLink, SpecDetailName, SpecDetailType,
 };
+use crate::config::SpecTrailConfig;
 use regex::Regex;
 use std::fs;
 use std::path::Path;
@@ -93,7 +94,7 @@ impl AnnotationScanner {
                     let mut meta = MetaAnnotation {
                         id: MetaAnnotationId(id),
                         name: MetaName(name),
-                        r#type: MetaType::from_str(type_str).unwrap_or(MetaType::Philosophy),
+                        r#type: MetaType::from_str(type_str).ok(),
                         layer: Layer::Meta,
                         links: vec![],
                     };
@@ -104,8 +105,8 @@ impl AnnotationScanner {
                                 // Temporarily maintain structure as a link to itself
                                 meta.links.push(MetaAnnotation {
                                     id: MetaAnnotationId(link_id.to_string()),
-                                    name: MetaName("Linked Meta".to_string()),
-                                    r#type: MetaType::Philosophy,
+                                    name: MetaName("".to_string()),
+                                    r#type: None,
                                     layer: Layer::Meta,
                                     links: vec![],
                                 });
@@ -118,7 +119,7 @@ impl AnnotationScanner {
                     let mut abs = AbstractAnnotation {
                         id: AbstractAnnotationId(id),
                         name: AbstractName(name),
-                        r#type: AbstractType::from_str(type_str).unwrap_or(AbstractType::Structure),
+                        r#type: AbstractType::from_str(type_str).ok(),
                         layer: Layer::Abstract,
                         links: vec![],
                     };
@@ -128,8 +129,8 @@ impl AnnotationScanner {
                             if !link_id.is_empty() {
                                 abs.links.push(SpecDetailAnnotation {
                                     id: SpecDetailAnnotationId(link_id.to_string()),
-                                    name: SpecDetailName("Linked Detail".to_string()),
-                                    r#type: SpecDetailType::Func,
+                                    name: SpecDetailName("".to_string()),
+                                    r#type: None,
                                     layer: Layer::SpecDetail,
                                     links: vec![],
                                 });
@@ -142,7 +143,7 @@ impl AnnotationScanner {
                     let mut detail = SpecDetailAnnotation {
                         id: SpecDetailAnnotationId(id),
                         name: SpecDetailName(name),
-                        r#type: SpecDetailType::from_str(type_str).unwrap_or(SpecDetailType::Func),
+                        r#type: SpecDetailType::from_str(type_str).ok(),
                         layer: Layer::SpecDetail,
                         links: vec![],
                     };
@@ -153,8 +154,8 @@ impl AnnotationScanner {
                                 detail.links.push(SpecDetailLink::Abstract(Box::new(
                                     AbstractAnnotation {
                                         id: AbstractAnnotationId(link_id.to_string()),
-                                        name: AbstractName("Linked Abstract".to_string()),
-                                        r#type: AbstractType::Structure,
+                                        name: AbstractName("".to_string()),
+                                        r#type: None,
                                         layer: Layer::Abstract,
                                         links: vec![],
                                     },
@@ -168,12 +169,11 @@ impl AnnotationScanner {
                     let mut impl_anno = ImplementationAnnotation {
                         id: ImplementationAnnotationId(id),
                         name: ImplementationSpecName(name),
-                        r#type: ImplementationType::from_str(type_str)
-                            .unwrap_or(ImplementationType::DomainEntity),
+                        r#type: ImplementationType::from_str(type_str).ok(),
                         layer: Layer::Implementation,
                         links: vec![],
                         artifact: ImplementationArtifact(file_path.to_string()),
-                        status: ImplementationStatus::Completed,
+                        status: ImplementationStatus::from_str(type_str).ok(),
                     };
                     if let Some(links_str) = cap.name("links").map(|m| m.as_str()) {
                         for link_id in links_str.split(',') {
@@ -182,8 +182,8 @@ impl AnnotationScanner {
                                 impl_anno.links.push(ImplementationLink::Abstract(Box::new(
                                     AbstractAnnotation {
                                         id: AbstractAnnotationId(link_id.to_string()),
-                                        name: AbstractName("Linked Abstract".to_string()),
-                                        r#type: AbstractType::Structure,
+                                        name: AbstractName("".to_string()),
+                                        r#type: None,
                                         layer: Layer::Abstract,
                                         links: vec![],
                                     },

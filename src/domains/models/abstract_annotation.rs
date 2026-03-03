@@ -3,7 +3,6 @@
 /// This file defines the abstract-layer annotations, representing high-level conceptual units of the system.
 use crate::domains::models::layer::Layer;
 use crate::domains::models::spec_detail::SpecDetailAnnotation;
-use std::str::FromStr;
 
 /// [@st-code-domain-models-abstract-annotation-abstract-annotation-id] layer: abstract, type: Structure, name: AbstractAnnotationId
 /// This struct represents the unique identifier for an abstract annotation (id = tag) as described in the specification.
@@ -51,7 +50,7 @@ impl std::str::FromStr for AbstractType {
 pub struct AbstractAnnotation {
     pub id: AbstractAnnotationId,
     pub name: AbstractName,
-    pub r#type: AbstractType,
+    pub r#type: Option<AbstractType>,
     pub layer: Layer,
     pub links: Vec<SpecDetailAnnotation>,
 }
