@@ -60,8 +60,6 @@ pub struct AnnotationConfig {
     pub prefix: String,
 }
 
-
-
 #[cfg(test)]
 mod tests_spec_trail_config {
     use super::*;

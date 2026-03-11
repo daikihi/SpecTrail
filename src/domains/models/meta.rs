@@ -2,7 +2,6 @@
 /// [@st-manual-meta-model-doc] layer: meta, type: Philosophy, name: Specification Model: Formal Definition
 /// This file defines the meta-layer annotations, which represent high-level philosophies, guidelines, and rules.
 use crate::domains::models::layer::Layer;
-use std::str::FromStr;
 
 /// [@st-code-domain-models-meta-meta-annotation-id] layer: abstract, type: Structure, name: MetaAnnotationId
 /// This struct represents the unique identifier for a meta annotation (id = tag) as described in the specification.
@@ -45,7 +44,7 @@ impl std::str::FromStr for MetaType {
 pub struct MetaAnnotation {
     pub id: MetaAnnotationId,
     pub name: MetaName,
-    pub r#type: MetaType,
+    pub r#type: Option<MetaType>,
     pub layer: Layer,
     pub links: Vec<MetaAnnotation>,
 }

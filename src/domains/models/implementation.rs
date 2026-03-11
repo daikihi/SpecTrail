@@ -4,7 +4,6 @@ use crate::domains::models::abstract_annotation::AbstractAnnotation;
 /// This file defines the implementation-layer annotations, describing how specifications are realized at the technical level.
 use crate::domains::models::layer::Layer;
 use crate::domains::models::spec_detail::SpecDetailAnnotation;
-use std::str::FromStr;
 
 /// [@st-code-domain-models-implementation-implementation-annotation-id] layer: abstract, type: Structure, name: ImplementationAnnotationId
 /// This struct represents the unique identifier for an implementation annotation (id = tag) as described in the specification.
@@ -83,9 +82,9 @@ impl std::str::FromStr for ImplementationStatus {
 pub struct ImplementationAnnotation {
     pub id: ImplementationAnnotationId,
     pub name: ImplementationSpecName,
-    pub r#type: ImplementationType,
+    pub r#type: Option<ImplementationType>,
     pub layer: Layer,
     pub links: Vec<ImplementationLink>,
     pub artifact: ImplementationArtifact,
-    pub status: ImplementationStatus,
+    pub status: Option<ImplementationStatus>,
 }

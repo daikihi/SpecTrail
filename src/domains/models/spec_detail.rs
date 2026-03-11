@@ -4,7 +4,6 @@ use crate::domains::models::implementation::ImplementationAnnotation;
 /// [@st-manual-meta-model-doc] layer: meta, type: Philosophy, name: Specification Model: Formal Definition
 /// This file defines the spec-detail-layer annotations, representing concrete functional or structural specifications.
 use crate::domains::models::layer::Layer;
-use std::str::FromStr;
 
 /// [@st-code-domain-models-spec-detail-spec-detail-annotation-id] layer: abstract, type: Structure, name: SpecDetailAnnotationId
 /// This struct represents the unique identifier for a spec detail annotation (id = tag) as described in the specification.
@@ -57,7 +56,7 @@ pub enum SpecDetailLink {
 pub struct SpecDetailAnnotation {
     pub id: SpecDetailAnnotationId,
     pub name: SpecDetailName,
-    pub r#type: SpecDetailType,
+    pub r#type: Option<SpecDetailType>,
     pub layer: Layer,
     pub links: Vec<SpecDetailLink>,
 }
