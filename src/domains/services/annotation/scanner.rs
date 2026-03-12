@@ -1,3 +1,5 @@
+/// [@st-code-domain-services-annotation-scanner-file] layer: abstract, type: File, name: scanner.rs
+/// This file provides the AnnotationScanner, which orchestrates the parsing and resolution of annotations across multiple files and directories.
 use crate::domains::models::annotation::code_annotation::CodeAnnotation;
 use crate::domains::models::annotation::document_annotation::DocumentAnnotation;
 use crate::domains::services::annotation::parser::{AnnotationParser, ParseWarning};
@@ -8,21 +10,31 @@ use crate::domains::services::annotation::resolver::{
 use std::fs;
 use std::path::Path;
 
+/// [@st-code-domain-services-annotation-scanner-scan-result] layer: abstract, type: Structure, name: ScanResult
+/// Holds the final results of a scan, including categorized annotations and all accumulated warnings.
 pub struct ScanResult {
     pub code_annotations: Vec<CodeAnnotation>,
     pub document_annotations: Vec<DocumentAnnotation>,
     pub warnings: Vec<ScanWarning>,
 }
 
+/// [@st-code-domain-services-annotation-scanner-scan-warning] layer: abstract, type: Structure, name: ScanWarning
+/// Wraps warnings from either the parsing or resolution stages.
 #[derive(Debug)]
 pub enum ScanWarning {
     Parse(ParseWarning),
     Resolve(ResolveWarning),
 }
 
+/// [@st-code-domain-services-annotation-scanner-annotation-scanner] layer: abstract, type: Structure, name: AnnotationScanner
+/// Orchestrates the end-to-end scanning process: file traversal, parsing, resolution, and categorization.
 pub struct AnnotationScanner;
 
 impl AnnotationScanner {
+/* Performs a full scan of code and document directories.
+     *
+     * This method traverses both directories, parses all matching files for annotations,
+     * resolves links between them, and then categorizes the results based on their source path. */
     pub fn scan<P: AsRef<Path>>(
         code_path: P,
         code_ext: &str,
@@ -32,17 +44,17 @@ impl AnnotationScanner {
         let mut raw_annotations = Vec::new();
         let mut warnings = Vec::new();
 
-        // 1. Scan code files
+        /* 1. Scan code files */
         let (mut code_raw, code_parse_warnings) = Self::collect_raw(code_path.as_ref(), code_ext);
         raw_annotations.append(&mut code_raw);
         warnings.extend(code_parse_warnings.into_iter().map(ScanWarning::Parse));
 
-        // 2. Scan document files
+        /* 2. Scan document files */
         let (mut doc_raw, doc_parse_warnings) = Self::collect_raw(doc_path.as_ref(), doc_ext);
         raw_annotations.append(&mut doc_raw);
         warnings.extend(doc_parse_warnings.into_iter().map(ScanWarning::Parse));
 
-        // 3. Resolve links
+        /* 3. Resolve links */
         let resolve_result = AnnotationResolver::resolve(raw_annotations);
         warnings.extend(
             resolve_result
@@ -51,14 +63,14 @@ impl AnnotationScanner {
                 .map(ScanWarning::Resolve),
         );
 
-        // 4. Categorize by file path
+        /* 4. Categorize by file path */
         let mut code_annotations = Vec::new();
         let mut document_annotations = Vec::new();
 
         let code_path_str = code_path.as_ref().to_str().unwrap_or("");
         let doc_path_str = doc_path.as_ref().to_str().unwrap_or("");
 
-        // 各ファイルごとに CodeAnnotation/DocumentAnnotation を構築する
+        /* Use maps to aggregate annotations by file path for both code and documents. */
         let mut code_map: std::collections::HashMap<String, CodeAnnotation> =
             std::collections::HashMap::new();
         let mut doc_map: std::collections::HashMap<String, DocumentAnnotation> =
@@ -110,6 +122,7 @@ impl AnnotationScanner {
         }
     }
 
+    /* Recursively collects raw annotations from all files matching the extension in the given path. */
     fn collect_raw(path: &Path, extension: &str) -> (Vec<RawAnnotation>, Vec<ParseWarning>) {
         let mut all_raw = Vec::new();
         let mut all_warnings = Vec::new();
@@ -148,7 +161,7 @@ impl AnnotationScanner {
         (all_raw, all_warnings)
     }
 
-    // 互換性のための古いメソッド
+    /* Backward compatibility methods */
     pub fn scan_code<P: AsRef<Path>>(path: P, extension: &str) -> Vec<CodeAnnotation> {
         let result = Self::scan(path.as_ref(), extension, Path::new(""), "");
         result.code_annotations

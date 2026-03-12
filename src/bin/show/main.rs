@@ -20,7 +20,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         }
     };
 
-    // Convert to UseCase Request DTO
+    /* Convert to UseCase Request DTO */
     let use_case_request = ShowUseCaseRequestDto {
         mode: request_dto.mode.to_string(),
         target: request_dto.target.to_string(),
@@ -33,7 +33,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
     match response {
         Ok(response) => {
-            // Print warnings to stderr
+            /* Print scan warnings to stderr to notify the user of any malformed annotations or missing links. */
             for warning in &response.warnings {
                 match warning {
                     ScanWarning::Parse(pw) => {

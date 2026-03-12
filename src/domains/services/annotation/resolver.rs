@@ -1,3 +1,5 @@
+/// [@st-code-domain-services-annotation-resolver-file] layer: abstract, type: File, name: resolver.rs
+/// This file provides the resolver that transforms RawAnnotations into fully typed domain models.
 use crate::domains::models::abstract_annotation::{
     AbstractAnnotation, AbstractAnnotationId, AbstractName, AbstractType,
 };
@@ -14,8 +16,12 @@ use crate::domains::services::annotation::raw_annotation::RawAnnotation;
 use std::collections::HashMap;
 use std::str::FromStr;
 
+/// [@st-code-domain-services-annotation-resolver-annotation-resolver] layer: abstract, type: Structure, name: AnnotationResolver
+/// Responsible for validating layers/types and resolving links between annotations.
 pub struct AnnotationResolver;
 
+/// [@st-code-domain-services-annotation-resolver-resolved-annotation] layer: abstract, type: Structure, name: ResolvedAnnotation
+/// A domain annotation that has been resolved and categorized by its layer.
 #[derive(Debug)]
 pub enum ResolvedAnnotation {
     Meta(MetaAnnotation, String),
@@ -25,6 +31,7 @@ pub enum ResolvedAnnotation {
 }
 
 impl ResolvedAnnotation {
+    /* Returns the source file path where this annotation was found. */
     pub fn source_file(&self) -> &str {
         match self {
             ResolvedAnnotation::Meta(_, f) => f,
@@ -35,11 +42,15 @@ impl ResolvedAnnotation {
     }
 }
 
+/// [@st-code-domain-services-annotation-resolver-resolve-result] layer: abstract, type: Structure, name: ResolveResult
+/// Holds the results of a resolution operation, including any resolved annotations and warnings.
 pub struct ResolveResult {
     pub annotations: Vec<ResolvedAnnotation>,
     pub warnings: Vec<ResolveWarning>,
 }
 
+/// [@st-code-domain-services-annotation-resolver-resolve-warning] layer: abstract, type: Structure, name: ResolveWarning
+/// Represents an issue found during resolution, such as a missing link target or invalid layer name.
 #[derive(Debug)]
 pub struct ResolveWarning {
     pub source_annotation_id: String,
@@ -47,6 +58,12 @@ pub struct ResolveWarning {
 }
 
 impl AnnotationResolver {
+    /* Resolves a list of RawAnnotations into a ResolveResult.
+     *
+     * This method performs two main steps:
+     * 1. Building an index of all annotations by ID to allow for link resolution.
+     * 2. Iterating through each RawAnnotation, converting its string fields to domain Enums,
+     *    and resolving its links using the index. */
     pub fn resolve(raw_annotations: Vec<RawAnnotation>) -> ResolveResult {
         let mut annotations = Vec::new();
         let mut warnings = Vec::new();
@@ -87,6 +104,7 @@ impl AnnotationResolver {
 
                     let mut links = Vec::new();
                     for link_id in &raw.links {
+                        let link_id: &String = link_id;
                         let link_id_stripped = link_id.strip_prefix('@').unwrap_or(link_id);
                         if let Some(target) = index.get(link_id_stripped) {
                             links.push(MetaAnnotation {
@@ -135,6 +153,7 @@ impl AnnotationResolver {
 
                     let mut links = Vec::new();
                     for link_id in &raw.links {
+                        let link_id: &String = link_id;
                         let link_id_stripped = link_id.strip_prefix('@').unwrap_or(link_id);
                         if let Some(target) = index.get(link_id_stripped) {
                             links.push(SpecDetailAnnotation {
@@ -183,9 +202,11 @@ impl AnnotationResolver {
 
                     let mut links = Vec::new();
                     for link_id in &raw.links {
+                        let link_id: &String = link_id;
                         let link_id_stripped = link_id.strip_prefix('@').unwrap_or(link_id);
                         if let Some(target) = index.get(link_id_stripped) {
-                            // 暫定的に Abstract リンクとして扱う (既存の scanner.rs と同等)
+                            /* Currently treating all links from SpecDetail as Abstract links
+                                (matching existing scanner.rs behavior). */
                             links.push(SpecDetailLink::Abstract(Box::new(AbstractAnnotation {
                                 id: AbstractAnnotationId(target.id.clone()),
                                 name: AbstractName(target.name.clone()),
@@ -232,6 +253,7 @@ impl AnnotationResolver {
 
                     let mut links = Vec::new();
                     for link_id in &raw.links {
+                        let link_id: &String = link_id;
                         let link_id_stripped = link_id.strip_prefix('@').unwrap_or(link_id);
                         if let Some(target) = index.get(link_id_stripped) {
                             links.push(ImplementationLink::Abstract(Box::new(
