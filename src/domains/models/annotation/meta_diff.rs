@@ -77,7 +77,7 @@ mod tests {
         let meta = MetaAnnotation {
             id: MetaAnnotationId("@st-test-same".to_string()),
             name: MetaName("test".to_string()),
-            r#type: MetaType::Rule,
+            r#type: Some(MetaType::Rule),
             layer: crate::domains::models::layer::Layer::Meta,
             links: vec![],
         };
@@ -105,14 +105,14 @@ mod tests {
         let meta1 = MetaAnnotation {
             id: MetaAnnotationId("@st-test-doc-only".to_string()),
             name: MetaName("doc_only".to_string()),
-            r#type: MetaType::Rule,
+            r#type: Some(MetaType::Rule),
             layer: crate::domains::models::layer::Layer::Meta,
             links: vec![],
         };
         let meta2 = MetaAnnotation {
             id: MetaAnnotationId("@st-test-code-only".to_string()),
             name: MetaName("code_only".to_string()),
-            r#type: MetaType::Guideline,
+            r#type: Some(MetaType::Guideline),
             layer: crate::domains::models::layer::Layer::Meta,
             links: vec![],
         };
