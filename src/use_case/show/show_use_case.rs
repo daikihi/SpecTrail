@@ -1,9 +1,10 @@
+use crate::config::SpecTrailConfig;
 /// [@st-code-use-case-show-show-use-case-file] layer: abstract, type: File, name: show_use_case.rs
 use crate::domains::models::annotation::code_annotation::CodeAnnotation;
 use crate::domains::models::annotation::document_annotation::DocumentAnnotation;
-use crate::domains::services::annotation::scanner::AnnotationScanner;
-use crate::config::SpecTrailConfig;
+use crate::domains::services::annotation::scanner::{AnnotationScanner, ScanWarning};
 use log::info;
+use std::path::Path;
 
 /// [@st-code-use-case-show-show-use-case-request-dto] layer: abstract, type: Structure, name: ShowUseCaseRequestDto
 #[derive(Debug)]
@@ -18,6 +19,7 @@ pub struct ShowUseCaseRequestDto {
 pub struct ShowUseCaseResponseDto {
     pub document_annotations: Vec<DocumentAnnotation>,
     pub code_annotations: Vec<CodeAnnotation>,
+    pub warnings: Vec<ScanWarning>,
 }
 
 /// [@st-code-use-case-show-show-use-case] layer: abstract, type: Structure, name: ShowUseCase
@@ -36,18 +38,28 @@ impl ShowUseCase {
 
         let config = SpecTrailConfig::from_file("src/config/config.toml")?;
 
-        let mut code_annotations: Vec<CodeAnnotation> = Vec::new();
-        let mut document_annotations: Vec<DocumentAnnotation> = Vec::new();
+        let code_path = if request.target == "all" || request.target == "code" {
+            Path::new(&config.document.head)
+        } else {
+            Path::new("")
+        };
 
-        // 1. Get annotations from code (scan under src/)
-        if request.target == "all" || request.target == "code" {
-            code_annotations = AnnotationScanner::scan_code(&config.document.head, &config.document.extension);
-        }
+        let doc_path = if request.target == "all" || request.target == "document" {
+            Path::new(&config.source.head)
+        } else {
+            Path::new("")
+        };
 
-        // 2. Get annotations from documents (scan under specify_manual/)
-        if request.target == "all" || request.target == "document" {
-            document_annotations = AnnotationScanner::scan_documents(&config.source.head, &config.source.extension);
-        }
+        let scan_result = AnnotationScanner::scan(
+            code_path,
+            &config.document.extension,
+            doc_path,
+            &config.source.extension,
+        );
+
+        let code_annotations = scan_result.code_annotations;
+        let document_annotations = scan_result.document_annotations;
+        let warnings = scan_result.warnings;
 
         // Reporting
         self.report_annotations(&code_annotations, &document_annotations);
@@ -55,6 +67,7 @@ impl ShowUseCase {
         Ok(ShowUseCaseResponseDto {
             document_annotations,
             code_annotations,
+            warnings,
         })
     }
 
