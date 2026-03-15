@@ -1,0 +1,3 @@
+[submodule "External/SpecKit"]
+	path = External/SpecKit
+	url = https://github.com/github/spec-kit.git
