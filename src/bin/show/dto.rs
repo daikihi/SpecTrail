@@ -91,36 +91,25 @@ impl ShowRequestDto {
         let mut target: Option<ShowTarget> = None;
         let mut scope: Option<String> = None;
 
-        let mut i = 1; // Skip program name
-        while i < args.len() {
-            match args[i].as_str() {
+        let mut args = args.into_iter().skip(1); // Skip program name
+
+        while let Some(arg) = args.next() {
+            match arg.as_str() {
                 "--mode" => {
-                    i += 1;
-                    if i < args.len() {
-                        mode = Some(ShowMode::from_str(&args[i])?);
-                    } else {
-                        return Err("--mode requires a value".into());
-                    }
+                    mode = Some(ShowMode::from_str(
+                        &args.next().ok_or("--mode requires a value")?
+                    )?);
                 }
                 "--target" => {
-                    i += 1;
-                    if i < args.len() {
-                        target = Some(ShowTarget::from_str(&args[i])?);
-                    } else {
-                        return Err("--target requires a value".into());
-                    }
+                    target = Some(ShowTarget::from_str(
+                        &args.next().ok_or("--target requires a value")?
+                    )?);
                 }
                 "--scope" => {
-                    i += 1;
-                    if i < args.len() {
-                        scope = Some(args[i].clone());
-                    } else {
-                        return Err("--scope requires a value".into());
-                    }
+                    scope = Some(args.next().ok_or("--scope requires a value")?.to_string());
                 }
-                _ => return Err(format!("Unknown argument: {}", args[i]).into()),
+                _ => return Err(format!("Unknown argument: {}", arg).into()),
             }
-            i += 1;
         }
 
         let mode = mode.ok_or("--mode is required")?;
