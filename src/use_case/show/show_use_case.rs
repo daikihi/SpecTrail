@@ -36,6 +36,18 @@ impl ShowUseCase {
     ) -> Result<ShowUseCaseResponseDto, Box<dyn std::error::Error>> {
         info!("Executing ShowUseCase with request: {:?}", request);
 
+        if request.mode == "search" {
+            return Err("show --mode search is not implemented yet".into());
+        }
+
+        if request.target == "group" {
+            return Err("show --target group is not implemented yet".into());
+        }
+
+        if request.scope.is_some() {
+            return Err("--scope is only supported with --mode search".into());
+        }
+
         let config = SpecTrailConfig::from_file("src/config/config.toml")?;
 
         let code_path = if request.target == "all" || request.target == "code" {

@@ -115,11 +115,70 @@ impl ShowRequestDto {
         let mode = mode.ok_or("--mode is required")?;
         let target = target.ok_or("--target is required")?;
 
+        if target == ShowTarget::Group {
+            return Err("--target group is not implemented yet".into());
+        }
+
+        if mode == ShowMode::Search && scope.is_none() {
+            return Err("--scope is required with --mode search".into());
+        }
+
+        if mode != ShowMode::Search && scope.is_some() {
+            return Err("--scope is only supported with --mode search".into());
+        }
+
         let mut request = ShowRequestDto::new(mode, target);
         if let Some(s) = scope {
             request = request.with_scope(s);
         }
 
         Ok(request)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn args(values: &[&str]) -> Vec<String> {
+        values.iter().map(|value| value.to_string()).collect()
+    }
+
+    #[test]
+    fn rejects_group_target_until_it_is_implemented() {
+        let result = ShowRequestDto::from_args(&args(&["show", "--mode", "list", "--target", "group"]));
+        assert!(result.is_err());
+        assert_eq!(
+            result.unwrap_err().to_string(),
+            "--target group is not implemented yet"
+        );
+    }
+
+    #[test]
+    fn rejects_scope_without_search_mode() {
+        let result = ShowRequestDto::from_args(&args(&[
+            "show",
+            "--mode",
+            "list",
+            "--target",
+            "all",
+            "--scope",
+            "@st-foo",
+        ]));
+        assert!(result.is_err());
+        assert_eq!(
+            result.unwrap_err().to_string(),
+            "--scope is only supported with --mode search"
+        );
+    }
+
+    #[test]
+    fn requires_scope_for_search_mode() {
+        let result = ShowRequestDto::from_args(&args(&["show", "--mode", "search", "--target", "all"]));
+        assert!(result.is_err());
+        assert_eq!(
+            result.unwrap_err().to_string(),
+            "--scope is required with --mode search"
+        );
     }
 }
