@@ -30,6 +30,25 @@ impl ShowUseCase {
         Self
     }
 
+    /// Executes the show use case: scans configured code and document paths according to the request
+    /// and returns found annotations and any scan warnings.
+    ///
+    /// This validates the request options and returns an error for unsupported combinations:
+    /// - mode == "search" -> error "show --mode search is not implemented yet"
+    /// - target == "group" -> error "show --target group is not implemented yet"
+    /// - scope is Some -> error "--scope is only supported with --mode search"
+    ///
+    /// On success, loads configuration from "src/config/config.toml", selects input paths based on
+    /// `request.target`, runs the annotation scanner, reports the results via `report_annotations`,
+    /// and returns a `ShowUseCaseResponseDto` containing document annotations, code annotations, and warnings.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// let uc = ShowUseCase::new();
+    /// let req = ShowUseCaseRequestDto { mode: "search".into(), target: "all".into(), scope: None };
+    /// assert!(uc.execute(req).is_err()); // "search" mode is not implemented
+    /// ```
     pub fn execute(
         &self,
         request: ShowUseCaseRequestDto,

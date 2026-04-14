@@ -11,6 +11,14 @@ use dto::ShowRequestDto;
 use std::env;
 use std::process;
 
+/// Entry point for the `show` CLI: parses command-line arguments, executes the Show use case, and prints any warnings and a compact summary of results.
+///
+/// # Examples
+///
+/// ```no_run
+/// // Run the compiled binary from a shell:
+/// // cargo run --bin show -- <mode> <target> [scope]
+/// ```
 fn main() {
     env_logger::init();
     let args: Vec<String> = env::args().collect();
@@ -46,6 +54,24 @@ fn main() {
     }
 }
 
+/// Prints scan warnings to standard error in a human-readable form.
+///
+/// Parse warnings are printed as:
+/// `WARNING [parse] <source_file>: <message> (raw: '<raw_text>')`
+/// Resolve warnings are printed as:
+/// `WARNING [resolve] <message>`
+///
+/// # Arguments
+///
+/// * `warnings` - Slice of `ScanWarning` values to print.
+///
+/// # Examples
+///
+/// ```
+/// // Assuming `ScanWarning` is in scope:
+/// // print_warnings(&[] as &[crate::ScanWarning]);
+/// print_warnings(&[]);
+/// ```
 fn print_warnings(warnings: &[ScanWarning]) {
     for warning in warnings {
         match warning {
@@ -62,6 +88,22 @@ fn print_warnings(warnings: &[ScanWarning]) {
     }
 }
 
+/// Prints a compact summary of the show use-case response counts to stdout.
+///
+/// The summary includes counts of code files, code annotations, document files,
+/// document annotations, and total warnings from the provided response.
+///
+/// # Examples
+///
+/// ```
+/// // Construct a minimal response with empty collections (types assumed in scope).
+/// let response = ShowUseCaseResponseDto {
+///     code_annotations: Vec::new(),
+///     document_annotations: Vec::new(),
+///     warnings: Vec::new(),
+/// };
+/// print_response_summary(&response);
+/// ```
 fn print_response_summary(response: &ShowUseCaseResponseDto) {
     let code_totals = count_code_annotations(&response.code_annotations);
     let document_totals = count_document_annotations(&response.document_annotations);
@@ -74,6 +116,21 @@ fn print_response_summary(response: &ShowUseCaseResponseDto) {
     println!("  warnings: {}", response.warnings.len());
 }
 
+/// Counts the total number of annotations contained in the given code-file annotations.
+///
+/// The count is the sum, for each `CodeAnnotation`, of its `metas`, `abstracts`,
+/// `details`, and `implementations` collections.
+///
+/// # Examples
+///
+/// ```
+/// // Assuming CodeAnnotation has a simple constructor for tests; replace with
+/// // real constructors in actual code.
+/// use spec_trail_domain::CodeAnnotation;
+///
+/// let annotations: Vec<CodeAnnotation> = vec![];
+/// assert_eq!(crate::count_code_annotations(&annotations), 0);
+/// ```
 fn count_code_annotations(annotations: &[CodeAnnotation]) -> usize {
     annotations
         .iter()
@@ -86,6 +143,13 @@ fn count_code_annotations(annotations: &[CodeAnnotation]) -> usize {
         .sum()
 }
 
+/// Counts all annotations contained in the given document annotations slice.
+///
+/// Returns the total number of `metas`, `abstracts`, `details`, and `implementations` across every `DocumentAnnotation` in `annotations`.
+///
+/// # Returns
+///
+/// `usize` total count of document-level annotation items.
 fn count_document_annotations(annotations: &[DocumentAnnotation]) -> usize {
     annotations
         .iter()

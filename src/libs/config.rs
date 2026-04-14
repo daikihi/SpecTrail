@@ -13,6 +13,29 @@ pub struct SpecTrailConfig {
 }
 
 impl SpecTrailConfig {
+    /// Loads a SpecTrailConfig from a TOML file at the specified path.
+    ///
+    /// On success, returns the parsed SpecTrailConfig. File I/O failures or TOML
+    /// deserialization errors are propagated and returned as a boxed dynamic error.
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use std::fs;
+    /// let toml = r#"
+    /// [source]
+    /// head = ".specify/"
+    /// extension = "rs"
+    /// [document]
+    /// head = "docs/"
+    /// extension = "md"
+    /// [annotation]
+    /// prefix = "@spec"
+    /// "#;
+    /// fs::write("test_config.toml", toml).unwrap();
+    /// let config = SpecTrailConfig::from_file("test_config.toml").unwrap();
+    /// assert_eq!(config.source.head, ".specify/");
+    /// ```
     pub fn from_file<P: AsRef<Path>>(path: P) -> Result<Self, Box<dyn std::error::Error>> {
         let content: String = fs::read_to_string(path)?;
         let config: SpecTrailConfig = toml::from_str(&content)?;
