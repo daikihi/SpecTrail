@@ -1,0 +1,27 @@
+{
+  "version": "v0.1.1",
+  "generated_by": {
+    "tool": "spectrail",
+    "tool_version": "0.1.1",
+    "timestamp": "2026-01-10T12:34:56Z"
+  },
+  "annotations": [
+    {
+      "id": "FR-006",
+      "name": "VersionableAnnotations",
+      "spec": "specs/001-spec-impl-annotations/spec.md#fr-006",
+      "type": "infra",
+      "implementation_refs": [],
+      "version": "v0.1.1",
+      "introduced_by": {
+        "type": "pr",
+        "id": "PR#123",
+        "author": "alice"
+      },
+      "introduced_at": "2026-01-10T12:34:56Z",
+      "history": [],
+      "status": "unimplemented",
+      "estimated_status": "unimplemented"
+    }
+  ]
+}

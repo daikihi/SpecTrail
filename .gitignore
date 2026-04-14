@@ -22,4 +22,9 @@
 
 .venv-test
 /comments/
-/specs/
+/specs/**
+!/specs/001-spec-impl-annotations/
+!/specs/001-spec-impl-annotations/examples/
+!/specs/001-spec-impl-annotations/examples/manifest.local.json
+!/specs/001-spec-impl-annotations/examples/manifest.pr.json
+!/specs/001-spec-impl-annotations/examples/manifest.broken.json
