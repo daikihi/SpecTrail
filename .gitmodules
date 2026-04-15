@@ -1,3 +1,6 @@
 [submodule "External/SpecKit"]
 	path = External/SpecKit
 	url = https://github.com/github/spec-kit.git
+[submodule "specs"]
+	path = specs
+	url = https://github.com/daikihi/SpecTrailAiSpecs.git
