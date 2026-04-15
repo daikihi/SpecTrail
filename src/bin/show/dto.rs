@@ -216,4 +216,175 @@ mod tests {
             "--scope is required with --mode search"
         );
     }
+
+    #[test]
+    fn from_args_succeeds_with_list_mode_and_all_target() {
+        let result = ShowRequestDto::from_args(&args(&["show", "--mode", "list", "--target", "all"]));
+        assert!(result.is_ok());
+        let req = result.unwrap();
+        assert_eq!(req.mode, ShowMode::List);
+        assert_eq!(req.target, ShowTarget::All);
+        assert!(req.scope.is_none());
+    }
+
+    #[test]
+    fn from_args_succeeds_with_search_mode_and_scope() {
+        let result = ShowRequestDto::from_args(&args(&[
+            "show", "--mode", "search", "--target", "all", "--scope", "@st-foo",
+        ]));
+        assert!(result.is_ok());
+        let req = result.unwrap();
+        assert_eq!(req.mode, ShowMode::Search);
+        assert_eq!(req.target, ShowTarget::All);
+        assert_eq!(req.scope, Some("@st-foo".to_string()));
+    }
+
+    #[test]
+    fn from_args_succeeds_with_document_target() {
+        let result = ShowRequestDto::from_args(&args(&["show", "--mode", "list", "--target", "document"]));
+        assert!(result.is_ok());
+        let req = result.unwrap();
+        assert_eq!(req.target, ShowTarget::Document);
+    }
+
+    #[test]
+    fn from_args_succeeds_with_code_target() {
+        let result = ShowRequestDto::from_args(&args(&["show", "--mode", "list", "--target", "code"]));
+        assert!(result.is_ok());
+        let req = result.unwrap();
+        assert_eq!(req.target, ShowTarget::Code);
+    }
+
+    #[test]
+    fn from_args_fails_when_mode_is_missing() {
+        let result = ShowRequestDto::from_args(&args(&["show", "--target", "all"]));
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err().to_string(), "--mode is required");
+    }
+
+    #[test]
+    fn from_args_fails_when_target_is_missing() {
+        let result = ShowRequestDto::from_args(&args(&["show", "--mode", "list"]));
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err().to_string(), "--target is required");
+    }
+
+    #[test]
+    fn from_args_fails_when_mode_has_no_value() {
+        let result = ShowRequestDto::from_args(&args(&["show", "--mode"]));
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err().to_string(), "--mode requires a value");
+    }
+
+    #[test]
+    fn from_args_fails_when_target_has_no_value() {
+        let result = ShowRequestDto::from_args(&args(&["show", "--mode", "list", "--target"]));
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err().to_string(), "--target requires a value");
+    }
+
+    #[test]
+    fn from_args_fails_when_scope_has_no_value() {
+        let result = ShowRequestDto::from_args(&args(&[
+            "show", "--mode", "search", "--target", "all", "--scope",
+        ]));
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err().to_string(), "--scope requires a value");
+    }
+
+    #[test]
+    fn from_args_fails_with_unknown_argument() {
+        let result = ShowRequestDto::from_args(&args(&[
+            "show", "--mode", "list", "--target", "all", "--unknown",
+        ]));
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err().to_string(), "Unknown argument: --unknown");
+    }
+
+    #[test]
+    fn from_args_fails_with_invalid_mode_value() {
+        let result = ShowRequestDto::from_args(&args(&["show", "--mode", "invalid", "--target", "all"]));
+        assert!(result.is_err());
+        assert!(result.unwrap_err().to_string().contains("Invalid mode: invalid"));
+    }
+
+    #[test]
+    fn from_args_fails_with_invalid_target_value() {
+        let result = ShowRequestDto::from_args(&args(&["show", "--mode", "list", "--target", "invalid"]));
+        assert!(result.is_err());
+        assert!(result.unwrap_err().to_string().contains("Invalid target: invalid"));
+    }
+
+    #[test]
+    fn show_mode_displays_list() {
+        assert_eq!(ShowMode::List.to_string(), "list");
+    }
+
+    #[test]
+    fn show_mode_displays_search() {
+        assert_eq!(ShowMode::Search.to_string(), "search");
+    }
+
+    #[test]
+    fn show_target_displays_all() {
+        assert_eq!(ShowTarget::All.to_string(), "all");
+    }
+
+    #[test]
+    fn show_target_displays_document() {
+        assert_eq!(ShowTarget::Document.to_string(), "document");
+    }
+
+    #[test]
+    fn show_target_displays_code() {
+        assert_eq!(ShowTarget::Code.to_string(), "code");
+    }
+
+    #[test]
+    fn show_target_displays_group() {
+        assert_eq!(ShowTarget::Group.to_string(), "group");
+    }
+
+    #[test]
+    fn show_request_dto_new_has_no_scope() {
+        let req = ShowRequestDto::new(ShowMode::List, ShowTarget::All);
+        assert_eq!(req.mode, ShowMode::List);
+        assert_eq!(req.target, ShowTarget::All);
+        assert!(req.scope.is_none());
+    }
+
+    #[test]
+    fn show_request_dto_with_scope_sets_scope() {
+        let req = ShowRequestDto::new(ShowMode::Search, ShowTarget::All)
+            .with_scope("@st-bar".to_string());
+        assert_eq!(req.scope, Some("@st-bar".to_string()));
+    }
+
+    #[test]
+    fn show_mode_from_str_parses_list() {
+        assert_eq!("list".parse::<ShowMode>().unwrap(), ShowMode::List);
+    }
+
+    #[test]
+    fn show_mode_from_str_parses_search() {
+        assert_eq!("search".parse::<ShowMode>().unwrap(), ShowMode::Search);
+    }
+
+    #[test]
+    fn show_mode_from_str_rejects_unknown() {
+        assert!("unknown".parse::<ShowMode>().is_err());
+    }
+
+    #[test]
+    fn show_target_from_str_parses_all_variants() {
+        assert_eq!("all".parse::<ShowTarget>().unwrap(), ShowTarget::All);
+        assert_eq!("document".parse::<ShowTarget>().unwrap(), ShowTarget::Document);
+        assert_eq!("code".parse::<ShowTarget>().unwrap(), ShowTarget::Code);
+        assert_eq!("group".parse::<ShowTarget>().unwrap(), ShowTarget::Group);
+    }
+
+    #[test]
+    fn show_target_from_str_rejects_unknown() {
+        assert!("unknown".parse::<ShowTarget>().is_err());
+    }
 }
