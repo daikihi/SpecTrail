@@ -97,3 +97,133 @@ fn count_document_annotations(annotations: &[DocumentAnnotation]) -> usize {
         })
         .sum()
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use SpecTrail::domains::models::abstract_annotation::{
+        AbstractAnnotation, AbstractAnnotationId, AbstractName,
+    };
+    use SpecTrail::domains::models::implementation::{
+        ImplementationAnnotation, ImplementationAnnotationId, ImplementationArtifact,
+        ImplementationSpecName,
+    };
+    use SpecTrail::domains::models::layer::Layer;
+    use SpecTrail::domains::models::meta::{MetaAnnotation, MetaAnnotationId, MetaName};
+    use SpecTrail::domains::models::spec_detail::{
+        SpecDetailAnnotation, SpecDetailAnnotationId, SpecDetailName,
+    };
+
+    fn make_meta() -> MetaAnnotation {
+        MetaAnnotation {
+            id: MetaAnnotationId("m".to_string()),
+            name: MetaName("Meta".to_string()),
+            r#type: None,
+            layer: Layer::Meta,
+            links: vec![],
+        }
+    }
+
+    fn make_abstract() -> AbstractAnnotation {
+        AbstractAnnotation {
+            id: AbstractAnnotationId("a".to_string()),
+            name: AbstractName("Abstract".to_string()),
+            r#type: None,
+            layer: Layer::Abstract,
+            links: vec![],
+        }
+    }
+
+    fn make_detail() -> SpecDetailAnnotation {
+        SpecDetailAnnotation {
+            id: SpecDetailAnnotationId("d".to_string()),
+            name: SpecDetailName("Detail".to_string()),
+            r#type: None,
+            layer: Layer::SpecDetail,
+            links: vec![],
+        }
+    }
+
+    fn make_implementation() -> ImplementationAnnotation {
+        ImplementationAnnotation {
+            id: ImplementationAnnotationId("i".to_string()),
+            name: ImplementationSpecName("Impl".to_string()),
+            r#type: None,
+            layer: Layer::Implementation,
+            links: vec![],
+            artifact: ImplementationArtifact("artifact".to_string()),
+            status: None,
+        }
+    }
+
+    fn make_code_annotation(
+        metas: usize,
+        abstracts: usize,
+        details: usize,
+        impls: usize,
+    ) -> CodeAnnotation {
+        CodeAnnotation {
+            metas: (0..metas).map(|_| make_meta()).collect(),
+            abstracts: (0..abstracts).map(|_| make_abstract()).collect(),
+            details: (0..details).map(|_| make_detail()).collect(),
+            implementations: (0..impls).map(|_| make_implementation()).collect(),
+        }
+    }
+
+    fn make_document_annotation(
+        metas: usize,
+        abstracts: usize,
+        details: usize,
+        impls: usize,
+    ) -> DocumentAnnotation {
+        DocumentAnnotation {
+            metas: (0..metas).map(|_| make_meta()).collect(),
+            abstracts: (0..abstracts).map(|_| make_abstract()).collect(),
+            details: (0..details).map(|_| make_detail()).collect(),
+            implementations: (0..impls).map(|_| make_implementation()).collect(),
+        }
+    }
+
+    #[test]
+    fn count_code_annotations_returns_zero_for_empty_slice() {
+        assert_eq!(count_code_annotations(&[]), 0);
+    }
+
+    #[test]
+    fn count_code_annotations_sums_all_annotation_types() {
+        let annotation = make_code_annotation(2, 3, 1, 4);
+        assert_eq!(count_code_annotations(&[annotation]), 10);
+    }
+
+    #[test]
+    fn count_code_annotations_sums_across_multiple_files() {
+        let a = make_code_annotation(1, 0, 0, 0);
+        let b = make_code_annotation(0, 2, 1, 0);
+        let c = make_code_annotation(0, 0, 0, 3);
+        assert_eq!(count_code_annotations(&[a, b, c]), 7);
+    }
+
+    #[test]
+    fn count_code_annotations_with_all_empty_collections_returns_zero() {
+        let annotation = make_code_annotation(0, 0, 0, 0);
+        assert_eq!(count_code_annotations(&[annotation]), 0);
+    }
+
+    #[test]
+    fn count_document_annotations_returns_zero_for_empty_slice() {
+        assert_eq!(count_document_annotations(&[]), 0);
+    }
+
+    #[test]
+    fn count_document_annotations_sums_all_annotation_types() {
+        let annotation = make_document_annotation(1, 2, 3, 4);
+        assert_eq!(count_document_annotations(&[annotation]), 10);
+    }
+
+    #[test]
+    fn count_document_annotations_sums_across_multiple_files() {
+        let a = make_document_annotation(2, 0, 0, 0);
+        let b = make_document_annotation(0, 0, 3, 0);
+        assert_eq!(count_document_annotations(&[a, b]), 5);
+    }
+}
