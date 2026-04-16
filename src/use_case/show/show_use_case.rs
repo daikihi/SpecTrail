@@ -12,6 +12,8 @@ pub struct ShowUseCaseRequestDto {
     pub mode: String,
     pub target: String,
     pub scope: Option<String>,
+    /// [@st-code-use-case-show-show-use-case-request-dto-config-path] layer: abstract, type: Structure, name: config_path
+    pub config_path: Option<String>,
 }
 
 /// [@st-code-use-case-show-show-use-case-response-dto] layer: abstract, type: Structure, name: ShowUseCaseResponseDto
@@ -149,16 +151,19 @@ impl ShowUseCase {
             return Err("--scope is only supported with --mode search".into());
         }
 
-        let config = SpecTrailConfig::from_file("src/config/config.toml")?;
+        let config_path = request
+            .config_path
+            .unwrap_or_else(|| String::from("src/config/default.toml"));
+        let config = SpecTrailConfig::from_file(config_path)?;
 
         let code_path = if request.target == "all" || request.target == "code" {
-            Path::new(&config.document.head)
+            Path::new(&config.source.head)
         } else {
             Path::new("")
         };
 
         let doc_path = if request.target == "all" || request.target == "document" {
-            Path::new(&config.source.head)
+            Path::new(&config.document.head)
         } else {
             Path::new("")
         };

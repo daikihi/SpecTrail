@@ -1,5 +1,5 @@
 [source]
-head = ".specify/"
+head = "specify_manual/"
 extension = ".md"
 
 [document]

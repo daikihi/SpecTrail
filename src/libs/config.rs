@@ -5,10 +5,14 @@ use std::path::Path;
 /**
  * configuration loader from a toml file using with parameter
  */
+/// [@st-code-libs-config-spec-trail-config] layer: abstract, type: Structure, name: SpecTrailConfig
 #[derive(Debug, Deserialize)]
 pub struct SpecTrailConfig {
+    /// [@st-code-libs-config-spec-trail-config-source] layer: abstract, type: Structure, name: source
     pub source: SourceConfig,
+    /// [@st-code-libs-config-spec-trail-config-document] layer: abstract, type: Structure, name: document
     pub document: DocumentConfig,
+    /// [@st-code-libs-config-spec-trail-config-annotation] layer: abstract, type: Structure, name: annotation
     pub annotation: AnnotationConfig,
 }
 
@@ -46,6 +50,7 @@ impl SpecTrailConfig {
 /**
  * Using for source code specs
  */
+/// [@st-code-libs-config-source-config] layer: abstract, type: Structure, name: SourceConfig
 #[derive(Debug, Deserialize)]
 pub struct SourceConfig {
     pub head: String,
@@ -55,6 +60,7 @@ pub struct SourceConfig {
 /**
  * Using for document specs
  */
+/// [@st-code-libs-config-document-config] layer: abstract, type: Structure, name: DocumentConfig
 #[derive(Debug, Deserialize)]
 pub struct DocumentConfig {
     pub head: String,
@@ -64,6 +70,7 @@ pub struct DocumentConfig {
 /**
  * Using for annotation specs
  */
+/// [@st-code-libs-config-annotation-config] layer: abstract, type: Structure, name: AnnotationConfig
 #[derive(Debug, Deserialize)]
 pub struct AnnotationConfig {
     pub prefix: String,
@@ -82,16 +89,16 @@ mod tests_spec_trail_config {
 
     #[test]
     fn it_works() {
-        let config_result: Result<SpecTrailConfig, _> = SpecTrailConfig::from_file("src/config/config.toml");
+        let config_result: Result<SpecTrailConfig, _> =
+            SpecTrailConfig::from_file("src/config/default.toml");
         assert!(config_result.is_ok());
         let config = config_result.unwrap();
-        println!("{:#?}", config);
-        assert_eq!(config.source.head, ".specify/");
+        assert_eq!(config.source.head, "specify_manual/");
     }
 
     #[test]
     fn it_fails() {
-        let config = SpecTrailConfig::from_file("src/config/config_fail.toml");
+        let config = SpecTrailConfig::from_file("src/config/missing.toml");
         assert!(config.is_err());
     }
 

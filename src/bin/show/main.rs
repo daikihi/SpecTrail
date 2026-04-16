@@ -36,6 +36,7 @@ fn main() {
         mode: request_dto.mode.to_string(),
         target: request_dto.target.to_string(),
         scope: request_dto.scope.clone(),
+        config_path: request_dto.config_path.clone(),
     };
 
     let use_case: ShowUseCase = ShowUseCase::new();

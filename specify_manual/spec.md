@@ -119,6 +119,7 @@ Basically, both of those annotations should be exact same name for readability t
 #### show-command
  
 - **overview**: This command shows or finds annotations from specification documents and/or source code.
+- **config**: The command can load different `config/*.toml` files to switch scan roots between the main project and sample applications.
 - **input**: 
   - `target` (`--target all|document|code|group`):
     - `all`: Show all annotations (scans `src/` and `specify_manual/`).
