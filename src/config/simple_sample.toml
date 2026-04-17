@@ -1,0 +1,10 @@
+[source]
+head = "samples/rust/simple_sample/src"
+extension = "rs"
+
+[document]
+head = "samples/rust/simple_sample"
+extension = "md"
+
+[annotation]
+prefix = "@DocumentAnnotation"
