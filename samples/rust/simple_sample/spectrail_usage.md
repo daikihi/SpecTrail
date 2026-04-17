@@ -1,6 +1,6 @@
 # SpecTrail Usage Guide for Simple Sample
 
-/// @DocumentAnnotation @spec="ss-simple-sample-spectrail-usage" @type="non-func" @layer="document"
+/// [@ss-simple-sample-spectrail-usage] layer: meta, type: Philosophy, name: SpecTrail Usage Guide
 
 ## Purpose
 
@@ -12,7 +12,7 @@ The sample is intentionally small, so the documentation shows the annotation flo
 
 ### 1. Write documentation before code
 
-/// @DocumentAnnotation @spec="ss-simple-sample-spectrail-usage-doc-first" @type="non-func" @layer="document"
+/// [@ss-simple-sample-spectrail-usage-doc-first] layer: abstract, type: Philosophy, name: Write documentation before code
 
 - Start with the specification document
 - Add annotations to the document sections
@@ -20,7 +20,7 @@ The sample is intentionally small, so the documentation shows the annotation flo
 
 ### 2. Use `///` for SpecTrail annotation lines in markdown
 
-/// @DocumentAnnotation @spec="ss-simple-sample-spectrail-usage-doc-annotation" @type="non-func" @layer="document"
+/// [@ss-simple-sample-spectrail-usage-doc-annotation] layer: abstract, type: Philosophy, name: Use /// for SpecTrail annotation lines in markdown
 
 - Put the annotation line directly above the section or item it describes
 - Keep the annotation line short and explicit
@@ -28,7 +28,7 @@ The sample is intentionally small, so the documentation shows the annotation flo
 
 ### 3. Keep IDs aligned between document and code
 
-/// @DocumentAnnotation @spec="ss-simple-sample-spectrail-usage-id-alignment" @type="non-func" @layer="document"
+/// [@ss-simple-sample-spectrail-usage-id-alignment] layer: abstract, type: Philosophy, name: Keep IDs aligned between document and code
 
 - Document requirement IDs and code requirement IDs should match
 - Structure annotations should point to the same logical part of the sample
@@ -36,7 +36,7 @@ The sample is intentionally small, so the documentation shows the annotation flo
 
 ### 4. Use separate config files per application
 
-/// @DocumentAnnotation @spec="ss-simple-sample-spectrail-usage-config" @type="non-func" @layer="document"
+/// [@ss-simple-sample-spectrail-usage-config] layer: abstract, type: Philosophy, name: Use separate config files per application
 
 - Prefer `config/default.toml` for the main project
 - Prefer `config/simple_sample.toml` for this sample
@@ -47,21 +47,21 @@ The sample is intentionally small, so the documentation shows the annotation flo
 
 ### Requirement example
 
-/// @DocumentAnnotation @spec="ss-simple-sample-spectrail-usage-example-requirement" @type="non-func" @layer="document"
+/// [@ss-simple-sample-spectrail-usage-example-requirement] layer: abstract, type: Philosophy, name: Requirement example
 
-- Document: `/// @DocumentAnnotation @spec="ss-simple-sample-requirement-1" ...`
-- Code: `/// @DocumentAnnotation @spec="ss-simple-sample-requirement-1" ...`
+- Document: `/// [@ss-simple-sample-requirement-1] layer: abstract, type: Philosophy, name: Requirement 1`
+- Code: `/// [@ss-simple-sample-requirement-1] layer: implementation, type: Structure, name: Requirement 1`
 
 ### Structure example
 
-/// @DocumentAnnotation @spec="ss-simple-sample-spectrail-usage-example-structure" @type="non-func" @layer="document"
+/// [@ss-simple-sample-spectrail-usage-example-structure] layer: abstract, type: Philosophy, name: Structure example
 
 - Document: `### Structure: \`src/main.rs\``
 - Code: `src/main.rs` carries the matching annotation
 
 ## Files in This Sample
 
-/// @DocumentAnnotation @spec="ss-simple-sample-spectrail-usage-files" @type="non-func" @layer="document"
+/// [@ss-simple-sample-spectrail-usage-files] layer: abstract, type: Philosophy, name: Files in This Sample
 
 - `spec.md`: main specification for the sample
 - `README.md`: human-friendly overview and structure summary
@@ -72,7 +72,7 @@ The sample is intentionally small, so the documentation shows the annotation flo
 
 ## Recommended Flow
 
-/// @DocumentAnnotation @spec="ss-simple-sample-spectrail-usage-flow" @type="non-func" @layer="document"
+/// [@ss-simple-sample-spectrail-usage-flow] layer: abstract, type: Philosophy, name: Recommended Flow
 
 1. Update `spec.md`
 2. Update `README.md` if needed
@@ -81,7 +81,7 @@ The sample is intentionally small, so the documentation shows the annotation flo
 
 ## Using `show`
 
-/// @DocumentAnnotation @spec="ss-simple-sample-spectrail-usage-show" @type="non-func" @layer="document"
+/// [@ss-simple-sample-spectrail-usage-show] layer: abstract, type: Philosophy, name: Using show
 
 Use the `show` command to confirm that the sample annotations are visible from the main SpecTrail project.
 
@@ -115,7 +115,7 @@ If the command output is noisy, narrow the target or scope to the sample documen
 
 ## Notes
 
-/// @DocumentAnnotation @spec="ss-simple-sample-spectrail-usage-notes" @type="non-func" @layer="document"
+/// [@ss-simple-sample-spectrail-usage-notes] layer: abstract, type: Philosophy, name: Notes
 
 - Keep this sample small
 - Prefer clarity over abstraction

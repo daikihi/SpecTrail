@@ -1,6 +1,6 @@
 # Simple Sample
 
-/// @DocumentAnnotation @spec="ss-simple-sample" @type="non-func" @layer="document"
+/// [@ss-simple-sample] layer: meta, type: Philosophy, name: Simple Sample
 
 ## Goal
 
@@ -14,23 +14,23 @@ This sample also assumes configuration can be switched with `config/*.toml` so t
 
 ## Structure
 
-/// @DocumentAnnotation @spec="ss-simple-sample-structure" @type="non-func" @layer="document"
+/// [@ss-simple-sample-structure] layer: abstract, type: Structure, name: Simple Sample Structure
 
 ### `src/main.rs`
 
-/// @DocumentAnnotation @spec="ss-simple-sample-structure-main" @type="non-func" @layer="document"
+/// [@ss-simple-sample-structure-main] layer: abstract, type: Structure, name: Main Structure
 
 - CLI entry point
 
 ### `src/application.rs`
 
-/// @DocumentAnnotation @spec="ss-simple-sample-structure-application" @type="non-func" @layer="document"
+/// [@ss-simple-sample-structure-application] layer: spec-detail, type: NonFunc, name: Application Structure
 
 - Application orchestration
 
 ### `src/domain.rs`
 
-/// @DocumentAnnotation @spec="ss-simple-sample-structure-domain" @type="non-func" @layer="document"
+/// [@ss-simple-sample-structure-domain] layer: implementation, type: Structure, name: Domain Structure
 
 - Validation and greeting generation
 
@@ -38,22 +38,22 @@ This sample also assumes configuration can be switched with `config/*.toml` so t
 
 ### Presentation
 
-/// @DocumentAnnotation @spec="ss-simple-sample-presentation" @type="non-func" @layer="presentation"
-/// @DocumentAnnotation @spec="ss-simple-sample-structure-main" @type="non-func" @layer="document"
+/// [@ss-simple-sample-presentation] layer: abstract, type: Philosophy, name: Presentation
+/// [@ss-simple-sample-structure-main] layer: abstract, type: Structure, name: Main Structure
 
 - `main.rs` reads CLI arguments and prints the result
 
 ### Application
 
-/// @DocumentAnnotation @spec="ss-simple-sample-application" @type="non-func" @layer="application"
-/// @DocumentAnnotation @spec="ss-simple-sample-structure-application" @type="non-func" @layer="document"
+/// [@ss-simple-sample-application] layer: spec-detail, type: NonFunc, name: Application
+/// [@ss-simple-sample-structure-application] layer: spec-detail, type: NonFunc, name: Application Structure
 
 - `application.rs` coordinates validation and greeting generation
 
 ### Domain
 
-/// @DocumentAnnotation @spec="ss-simple-sample-domain" @type="non-func" @layer="domain"
-/// @DocumentAnnotation @spec="ss-simple-sample-structure-domain" @type="non-func" @layer="document"
+/// [@ss-simple-sample-domain] layer: implementation, type: Structure, name: Domain
+/// [@ss-simple-sample-structure-domain] layer: implementation, type: Structure, name: Domain Structure
 
 - `domain.rs` validates the name and builds the greeting
 - The sample keeps responsibilities separated so the flow is easy to follow

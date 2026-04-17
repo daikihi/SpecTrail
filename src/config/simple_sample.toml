@@ -7,4 +7,4 @@ head = "samples/rust/simple_sample"
 extension = "md"
 
 [annotation]
-prefix = "@DocumentAnnotation"
+prefix = "[@"
