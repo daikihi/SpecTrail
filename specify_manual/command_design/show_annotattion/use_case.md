@@ -66,7 +66,7 @@ Document Anno [0]: @st-manual-spec-specification (Layer: Abstract, Type: Structu
 - **Steps:**
 
 ```bash
-$ strail show --mode list --target document --config src/config/simple_sample.toml
+$ strail show --mode list --target document --config src/config/default.toml
 ```
 
 - **Expected Result:**
