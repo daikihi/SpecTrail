@@ -4,6 +4,10 @@ In this section, we describe the UseCase of show annotation command.
 
 We listed all functions of showing annotations in [Available functions](./overview.md#available-functions).
 
+/// [@st-manual-usecase-show-config-split] layer: spec-detail, type: Convention, name: Show Config Split
+The `show` command can switch its scan roots by config, so the main project and sample projects can be traced separately.
+The recommended config set is `config/default.toml` for the main project and `config/simple_sample.toml` for the sample project.
+
 ## Individual UseCases
 
 ### List all annotations in your project
@@ -28,7 +32,7 @@ We listed all functions of showing annotations in [Available functions](./overvi
   Execute the following command:
 
 ```bash
-$ strail show --mode list --target all
+$ strail show --mode list --target all --config src/config/default.toml
 ```
 
 - **Expected Result:**
@@ -62,7 +66,7 @@ Document Anno [0]: @st-manual-spec-specification (Layer: Abstract, Type: Structu
 - **Steps:**
 
 ```bash
-$ strail show --mode list --target document
+$ strail show --mode list --target document --config src/config/default.toml
 ```
 
 - **Expected Result:**
@@ -94,7 +98,7 @@ $ strail show --mode list --target document
 - **Steps:**
 
 ```bash
-$ strail show --mode list --target code
+$ strail show --mode list --target code --config src/config/default.toml
 ```
 
 - **Expected Result:**
@@ -157,7 +161,7 @@ $ strail show --mode list --target group
 - **Steps:**
 
 ```bash
-$ strail show --mode search --target all --scope "@st-manual-spec-cli-show-command"
+$ strail show --mode search --target all --scope "@st-manual-spec-cli-show-command" --config src/config/simple_sample.toml
 ```
 *(Note: Currently, tracing is often achieved via `search` mode with a specific ID, but future versions might have a dedicated trace mode.)*
 

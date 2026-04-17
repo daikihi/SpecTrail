@@ -172,10 +172,11 @@ async fn login(req: LoginRequest) -> Result<Token> {
 
 ### 3. Show Annotations
 
-Use the `show` command to list or search annotations:
+Use the `show` command to list or search annotations. You can also switch scan targets with a config file:
 
 ```bash
-cargo run --bin show -- --mode list --target all
+cargo run --bin show -- --mode list --target all --config src/config/default.toml
+cargo run --bin show -- --mode list --target all --config src/config/simple_sample.toml
 ```
 
 Output: A detailed report of annotations found in both code and documents.
@@ -187,6 +188,12 @@ Output: A detailed report of annotations found in both code and documents.
 | `--mode`   | Operation mode (`list`, `search`)                | `list`                  |
 | `--target` | Target of scan (`all`, `document`, `code`, `group`) | `all`                   |
 | `--scope`  | Specific scope or ID to focus on                 | `CHK-001`               |
+| `--config` | Config file used to switch scan roots            | `src/config/default.toml` |
+
+#### Config Files
+
+- `src/config/default.toml`: Main project settings
+- `src/config/simple_sample.toml`: Sample project settings
 
 ### 4. Build & Install
 
@@ -211,7 +218,7 @@ cd SpecTrail
 cargo build
 
 # Run show command
-cargo run --bin show -- --mode list --target all
+cargo run --bin show -- --mode list --target all --config src/config/default.toml
 ```
 
 ## Project Structure

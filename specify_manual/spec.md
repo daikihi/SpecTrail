@@ -119,6 +119,7 @@ Basically, both of those annotations should be exact same name for readability t
 #### show-command
  
 - **overview**: This command shows or finds annotations from specification documents and/or source code.
+- **config**: The command can load different `config/*.toml` files to switch scan roots between the main project and sample applications.
 - **input**: 
   - `target` (`--target all|document|code|group`):
     - `all`: Show all annotations (scans `src/` and `specify_manual/`).
@@ -152,7 +153,7 @@ Basically, both of those annotations should be exact same name for readability t
 /// [@st-manual-spec-parser-spec-docs] layer: spec-detail, type: Func, name: parse-spec-docs, links: [@st-manual-spec-annotation-parser]
 #### parse-spec-docs
 
-- **概要**: `.specify/*.md` から仕様IDとメタ情報を抽出
+- **概要**: `specify_manual/*.md` から仕様IDとメタ情報を抽出
 - **レイヤ**: usecase
 
 /// [@st-manual-spec-mapping-engine] layer: spec-detail, type: Func, name: Mapping Engine, links: [@st-manual-spec-components]

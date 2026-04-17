@@ -70,6 +70,8 @@ pub struct ShowRequestDto {
     pub mode: ShowMode,
     pub target: ShowTarget,
     pub scope: Option<String>,
+    /// [@st-code-bin-show-dto-show-request-dto-config-path] layer: abstract, type: Structure, name: config_path
+    pub config_path: Option<String>,
 }
 
 impl ShowRequestDto {
@@ -78,11 +80,17 @@ impl ShowRequestDto {
             mode,
             target,
             scope: None,
+            config_path: None,
         }
     }
 
     pub fn with_scope(mut self, scope: String) -> Self {
         self.scope = Some(scope);
+        self
+    }
+
+    pub fn with_config_path(mut self, config_path: String) -> Self {
+        self.config_path = Some(config_path);
         self
     }
 
@@ -116,6 +124,7 @@ impl ShowRequestDto {
         let mut mode: Option<ShowMode> = None;
         let mut target: Option<ShowTarget> = None;
         let mut scope: Option<String> = None;
+        let mut config_path: Option<String> = None;
 
         let mut args = args.into_iter().skip(1); // Skip program name
 
@@ -133,6 +142,9 @@ impl ShowRequestDto {
                 }
                 "--scope" => {
                     scope = Some(args.next().ok_or("--scope requires a value")?.to_string());
+                }
+                "--config" => {
+                    config_path = Some(args.next().ok_or("--config requires a value")?.to_string());
                 }
                 _ => return Err(format!("Unknown argument: {}", arg).into()),
             }
@@ -156,6 +168,9 @@ impl ShowRequestDto {
         let mut request = ShowRequestDto::new(mode, target);
         if let Some(s) = scope {
             request = request.with_scope(s);
+        }
+        if let Some(config_path) = config_path {
+            request = request.with_config_path(config_path);
         }
 
         Ok(request)
@@ -386,5 +401,58 @@ mod tests {
     #[test]
     fn show_target_from_str_rejects_unknown() {
         assert!("unknown".parse::<ShowTarget>().is_err());
+    }
+
+    #[test]
+    fn accepts_config_path() {
+        let result = ShowRequestDto::from_args(&args(&[
+            "show",
+            "--mode",
+            "list",
+            "--target",
+            "all",
+            "--config",
+            "src/config/config.toml",
+        ]));
+        assert!(result.is_ok());
+        assert_eq!(
+            result.unwrap().config_path,
+            Some(String::from("src/config/config.toml"))
+        );
+    }
+
+    #[test]
+    fn from_args_fails_when_config_has_no_value() {
+        let result = ShowRequestDto::from_args(&args(&[
+            "show",
+            "--mode",
+            "list",
+            "--target",
+            "all",
+            "--config",
+        ]));
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err().to_string(), "--config requires a value");
+    }
+
+    #[test]
+    fn accepts_config_with_other_options() {
+        let result = ShowRequestDto::from_args(&args(&[
+            "show",
+            "--mode",
+            "search",
+            "--target",
+            "all",
+            "--scope",
+            "@st-test",
+            "--config",
+            "config/custom.toml",
+        ]));
+        assert!(result.is_ok());
+        let req = result.unwrap();
+        assert_eq!(req.mode, ShowMode::Search);
+        assert_eq!(req.target, ShowTarget::All);
+        assert_eq!(req.scope, Some("@st-test".to_string()));
+        assert_eq!(req.config_path, Some("config/custom.toml".to_string()));
     }
 }
