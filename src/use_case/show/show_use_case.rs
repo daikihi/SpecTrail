@@ -36,6 +36,7 @@ mod tests {
             mode: mode.to_string(),
             target: target.to_string(),
             scope: scope.map(|s| s.to_string()),
+            config_path: None,
         }
     }
 
@@ -170,9 +171,9 @@ impl ShowUseCase {
 
         let scan_result = AnnotationScanner::scan(
             code_path,
-            &config.document.extension,
-            doc_path,
             &config.source.extension,
+            doc_path,
+            &config.document.extension,
         );
 
         let code_annotations = scan_result.code_annotations;
