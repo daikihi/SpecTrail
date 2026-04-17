@@ -1,7 +1,7 @@
-/// [@ss-simple-sample] layer: implementation, type: Structure, name: Simple Sample
-/// [@ss-simple-sample-presentation] layer: implementation, type: Structure, name: Presentation
-/// [@ss-simple-sample-requirement-1] layer: implementation, type: Structure, name: Requirement 1
-/// [@ss-simple-sample-structure-main] layer: implementation, type: Structure, name: Main Structure
+/// [@ss-simple-sample] layer: meta, type: Philosophy, name: Simple Sample
+/// [@ss-simple-sample-presentation] layer: abstract, type: Philosophy, name: Presentation
+/// [@ss-simple-sample-requirement-1] layer: abstract, type: Philosophy, name: Requirement 1
+/// [@ss-simple-sample-structure-main] layer: abstract, type: Structure, name: Main Structure
 
 mod application;
 mod domain;

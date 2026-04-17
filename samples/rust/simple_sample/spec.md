@@ -39,7 +39,7 @@ This sample is a minimal Rust CLI that demonstrates documentation-first developm
 ### Presentation
 
 /// [@ss-simple-sample-presentation] layer: abstract, type: Philosophy, name: Presentation
-/// [@ss-simple-sample-structure-main] layer: abstract, type: Philosophy, name: Main Structure
+/// [@ss-simple-sample-structure-main] layer: abstract, type: Structure, name: Main Structure
 
 The Presentation layer owns the boundary with the command line.
 

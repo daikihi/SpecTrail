@@ -37,11 +37,6 @@ Returns a list of annotations filtered by source.
 
 Returns annotations organized hierarchically by Layer and Type.
 
-### config
-
-The config determines the scan roots and extensions for document and code.
-It also makes it possible to switch between `config/default.toml` and `config/simple_sample.toml`.
-
 ```json
 {
   "Meta": {
@@ -53,6 +48,11 @@ It also makes it possible to switch between `config/default.toml` and `config/si
   "Abstract": { ... }
 }
 ```
+
+### config
+
+The config determines the scan roots and extensions for document and code.
+It also makes it possible to switch between `config/default.toml` and `config/simple_sample.toml`.
 
 ## Output
 

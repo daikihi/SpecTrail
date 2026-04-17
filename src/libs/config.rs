@@ -28,7 +28,7 @@ impl SpecTrailConfig {
     /// use std::fs;
     /// let toml = r#"
     /// [source]
-    /// head = ".specify/"
+    /// head = "specify_manual/"
     /// extension = "rs"
     /// [document]
     /// head = "docs/"
@@ -38,7 +38,7 @@ impl SpecTrailConfig {
     /// "#;
     /// fs::write("test_config.toml", toml).unwrap();
     /// let config = SpecTrailConfig::from_file("test_config.toml").unwrap();
-    /// assert_eq!(config.source.head, ".specify/");
+    /// assert_eq!(config.source.head, "specify_manual/");
     /// ```
     pub fn from_file<P: AsRef<Path>>(path: P) -> Result<Self, Box<dyn std::error::Error>> {
         let content: String = fs::read_to_string(path)?;
@@ -98,7 +98,14 @@ mod tests_spec_trail_config {
 
     #[test]
     fn it_fails() {
-        let config = SpecTrailConfig::from_file("src/config/missing.toml");
+        use std::env;
+        use std::time::{SystemTime, UNIX_EPOCH};
+        let nanos = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_nanos();
+        let nonexistent_path = env::temp_dir().join(format!("nonexistent-{}.toml", nanos));
+        let config = SpecTrailConfig::from_file(&nonexistent_path);
         assert!(config.is_err());
     }
 

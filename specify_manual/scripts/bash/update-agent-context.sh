@@ -77,7 +77,7 @@ Q_FILE="$REPO_ROOT/AGENTS.md"
 BOB_FILE="$REPO_ROOT/AGENTS.md"
 
 # Template file
-TEMPLATE_FILE="$REPO_ROOT/.specify/templates/agent-file-template.md"
+TEMPLATE_FILE="$REPO_ROOT/specify_manual/templates/agent-file-template.md"
 
 # Global variables for parsed plan data
 NEW_LANG=""
@@ -796,4 +796,3 @@ main() {
 if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     main "$@"
 fi
-

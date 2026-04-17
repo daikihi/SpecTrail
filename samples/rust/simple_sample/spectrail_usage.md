@@ -18,9 +18,9 @@ The sample is intentionally small, so the documentation shows the annotation flo
 - Add annotations to the document sections
 - Agree on the content before changing code
 
-### 2. Use `///` for SpecTrail annotation lines in markdown
+### 2. Use `///` for SpecTrail annotation lines in Markdown
 
-/// [@ss-simple-sample-spectrail-usage-doc-annotation] layer: abstract, type: Philosophy, name: Use /// for SpecTrail annotation lines in markdown
+/// [@ss-simple-sample-spectrail-usage-doc-annotation] layer: abstract, type: Philosophy, name: Use /// for SpecTrail annotation lines in Markdown
 
 - Put the annotation line directly above the section or item it describes
 - Keep the annotation line short and explicit
@@ -90,7 +90,7 @@ If the project supports config selection, point `show` at the config that matche
 - Show all annotations:
 
 ```bash
-cargo run --bin show -- --mode list --target all
+cargo run --bin show -- --mode list --target all --config config/default.toml
 ```
 
 - Show annotations with a sample config:
@@ -102,13 +102,13 @@ cargo run --bin show -- --mode list --target all --config config/simple_sample.t
 - Focus on the sample scope:
 
 ```bash
-cargo run --bin show -- --mode list --target all --scope ss-simple-sample
+cargo run --bin show -- --mode list --target all --scope ss-simple-sample --config config/simple_sample.toml
 ```
 
 - Check a specific annotation ID:
 
 ```bash
-cargo run --bin show -- --mode search --target all --scope ss-simple-sample-requirement-1
+cargo run --bin show -- --mode search --target all --scope ss-simple-sample-requirement-1 --config config/simple_sample.toml
 ```
 
 If the command output is noisy, narrow the target or scope to the sample document and code annotations first.

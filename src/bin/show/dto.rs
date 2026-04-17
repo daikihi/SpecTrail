@@ -420,4 +420,39 @@ mod tests {
             Some(String::from("src/config/config.toml"))
         );
     }
+
+    #[test]
+    fn from_args_fails_when_config_has_no_value() {
+        let result = ShowRequestDto::from_args(&args(&[
+            "show",
+            "--mode",
+            "list",
+            "--target",
+            "all",
+            "--config",
+        ]));
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err().to_string(), "--config requires a value");
+    }
+
+    #[test]
+    fn accepts_config_with_other_options() {
+        let result = ShowRequestDto::from_args(&args(&[
+            "show",
+            "--mode",
+            "search",
+            "--target",
+            "all",
+            "--scope",
+            "@st-test",
+            "--config",
+            "config/custom.toml",
+        ]));
+        assert!(result.is_ok());
+        let req = result.unwrap();
+        assert_eq!(req.mode, ShowMode::Search);
+        assert_eq!(req.target, ShowTarget::All);
+        assert_eq!(req.scope, Some("@st-test".to_string()));
+        assert_eq!(req.config_path, Some("config/custom.toml".to_string()));
+    }
 }
