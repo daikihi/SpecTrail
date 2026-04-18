@@ -2,6 +2,7 @@
 mod dto;
 mod show_request_adapter;
 mod show_response_adapter;
+mod output;
 
 use dto::ShowRequestDto;
 use show_request_adapter::adapt_request;
@@ -28,13 +29,8 @@ fn main() {
 
     match response {
         Ok(response) => {
-            let view = adapt_response(&response);
-            for line in view.stdout {
-                println!("{}", line);
-            }
-            for line in view.stderr {
-                eprintln!("{}", line);
-            }
+            let view_model = adapt_response(&response, request_dto.view, request_dto.format);
+            output::render(&view_model);
         }
         Err(error) => {
             eprintln!("Error: {}", error);

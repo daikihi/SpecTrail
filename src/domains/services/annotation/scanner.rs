@@ -20,7 +20,7 @@ pub struct ScanResult {
 
 /// [@st-code-domain-services-annotation-scanner-scan-warning] layer: abstract, type: Structure, name: ScanWarning
 /// Wraps warnings from either the parsing or resolution stages.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum ScanWarning {
     Parse(ParseWarning),
     Resolve(ResolveWarning),

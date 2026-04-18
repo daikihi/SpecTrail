@@ -6,4 +6,4 @@ extension = "rs"
 head = "docs/"
 extension = "md"
 [annotation]
-prefix = "@spec"
+prefix = "@st-code"

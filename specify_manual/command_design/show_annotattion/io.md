@@ -32,9 +32,11 @@ Returns a flat list of all annotations from both `src/` and `specify_manual/`.
 
 Returns a list of annotations filtered by source.
 
-### target: group (View: group)
+### view: group
 
-When `--view group` is specified, annotations are organized hierarchically by Layer and Type.
+When `--view group` is specified, the output is organized hierarchically by Layer and Type.
+This is a presentation choice applied on top of normal targets (`all`, `document`, `code`).
+It only applies when `--view group` is used.
 
 ```json
 {

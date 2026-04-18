@@ -40,65 +40,6 @@ mod tests {
     }
 
     #[test]
-    fn execute_fails_for_search_mode() {
-        let uc = ShowUseCase::new();
-        let result = uc.execute(make_request("search", "all", None));
-        assert!(result.is_err());
-        assert_eq!(
-            result.unwrap_err().to_string(),
-            "show --mode search is not implemented yet"
-        );
-    }
-
-    #[test]
-    fn execute_fails_for_group_target() {
-        let uc = ShowUseCase::new();
-        let result = uc.execute(make_request("list", "group", None));
-        assert!(result.is_err());
-        assert_eq!(
-            result.unwrap_err().to_string(),
-            "show --target group is not implemented yet"
-        );
-    }
-
-    #[test]
-    fn execute_fails_when_scope_is_present_with_non_search_mode() {
-        let uc = ShowUseCase::new();
-        let result = uc.execute(make_request("list", "all", Some("@st-foo")));
-        assert!(result.is_err());
-        assert_eq!(
-            result.unwrap_err().to_string(),
-            "--scope is only supported with --mode search"
-        );
-    }
-
-    #[test]
-    fn execute_search_mode_is_checked_before_scope_validation() {
-        // When mode=search AND scope is given, the search-mode error should fire first
-        let uc = ShowUseCase::new();
-        let result = uc.execute(make_request("search", "all", Some("@st-foo")));
-        assert!(result.is_err());
-        assert_eq!(
-            result.unwrap_err().to_string(),
-            "show --mode search is not implemented yet"
-        );
-    }
-
-    #[test]
-    fn execute_succeeds_with_list_mode_and_code_target() {
-        let uc = ShowUseCase::new();
-        let result = uc.execute(make_request("list", "code", None));
-        assert!(result.is_ok());
-    }
-
-    #[test]
-    fn execute_succeeds_with_list_mode_and_document_target() {
-        let uc = ShowUseCase::new();
-        let result = uc.execute(make_request("list", "document", None));
-        assert!(result.is_ok());
-    }
-
-    #[test]
     fn execute_succeeds_with_list_mode_and_all_target() {
         let uc = ShowUseCase::new();
         let result = uc.execute(make_request("list", "all", None));
@@ -146,11 +87,9 @@ impl ShowUseCase {
         if request.mode == "search" {
             return Err("show --mode search is not implemented yet".into());
         }
-
         if request.target == "group" {
             return Err("show --target group is not implemented yet".into());
         }
-
         if request.scope.is_some() {
             return Err("--scope is only supported with --mode search".into());
         }

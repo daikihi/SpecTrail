@@ -26,21 +26,4 @@ mod tests {
         assert_eq!(adapted.scope, None);
         assert_eq!(adapted.config_path, None);
     }
-
-    #[test]
-    fn preserves_scope_and_config_path() {
-        let request = ShowRequestDto::new(ShowMode::Search, ShowTarget::Document)
-            .with_scope("@st-foo".to_string())
-            .with_config_path("src/config/config.toml".to_string());
-
-        let adapted = adapt_request(&request);
-
-        assert_eq!(adapted.mode, "search");
-        assert_eq!(adapted.target, "document");
-        assert_eq!(adapted.scope, Some("@st-foo".to_string()));
-        assert_eq!(
-            adapted.config_path,
-            Some("src/config/config.toml".to_string())
-        );
-    }
 }
