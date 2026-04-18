@@ -25,19 +25,10 @@ impl SpecTrailConfig {
     /// # Examples
     ///
     /// ```
-    /// use std::fs;
-    /// let toml = r#"
-    /// [source]
-    /// head = "specify_manual/"
-    /// extension = "rs"
-    /// [document]
-    /// head = "docs/"
-    /// extension = "md"
-    /// [annotation]
-    /// prefix = "@spec"
-    /// "#;
-    /// fs::write("test_config.toml", toml).unwrap();
-    /// let config = SpecTrailConfig::from_file("test_config.toml").unwrap();
+    /// use SpecTrail::config::SpecTrailConfig;
+    /// let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
+    ///     .join("tests/resources/test_config.toml");
+    /// let config = SpecTrailConfig::from_file(&path).unwrap();
     /// assert_eq!(config.source.head, "specify_manual/");
     /// ```
     pub fn from_file<P: AsRef<Path>>(path: P) -> Result<Self, Box<dyn std::error::Error>> {
