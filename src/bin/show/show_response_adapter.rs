@@ -13,14 +13,14 @@ pub struct ShowResponseView {
 }
 
 pub fn adapt_response(
-    response: &ShowUseCaseResponseDto,
+    response: ShowUseCaseResponseDto,
     view: crate::dto::ShowView,
     format: crate::dto::ShowFormat,
 ) -> ShowResponseView {
     ShowResponseView {
-        document_annotations: response.document_annotations.clone(),
-        code_annotations: response.code_annotations.clone(),
-        warnings: response.warnings.clone(),
+        document_annotations: response.document_annotations,
+        code_annotations: response.code_annotations,
+        warnings: response.warnings,
         view,
         format,
     }
@@ -109,7 +109,7 @@ mod tests {
         };
 
         let view = adapt_response(
-            &response,
+            response,
             crate::dto::ShowView::List,
             crate::dto::ShowFormat::Text,
         );
@@ -135,7 +135,7 @@ mod tests {
         };
 
         let view = adapt_response(
-            &response,
+            response,
             crate::dto::ShowView::Summary,
             crate::dto::ShowFormat::Json,
         );

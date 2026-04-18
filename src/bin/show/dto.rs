@@ -232,7 +232,7 @@ impl ShowRequestDto {
             }
         }
 
-        let mode = mode.ok_or("--mode is required")?;
+        let mode = mode.unwrap_or(ShowMode::List);
         let target = target.ok_or("--target is required")?;
 
         let mut request = ShowRequestDto::new(mode, target)
@@ -314,10 +314,11 @@ mod tests {
     }
 
     #[test]
-    fn from_args_fails_when_mode_is_missing() {
+    fn from_args_defaults_mode_to_list_when_missing() {
         let result = ShowRequestDto::from_args(&args(&["show", "--target", "all"]));
-        assert!(result.is_err());
-        assert_eq!(result.unwrap_err().to_string(), "--mode is required");
+        assert!(result.is_ok());
+        let req = result.unwrap();
+        assert_eq!(req.mode, ShowMode::List);
     }
 
     #[test]
@@ -475,5 +476,33 @@ mod tests {
         assert_eq!(req.target, ShowTarget::All);
         assert_eq!(req.scope, Some("@st-test".to_string()));
         assert_eq!(req.config_path, Some("config/custom.toml".to_string()));
+    }
+
+    #[test]
+    fn from_args_fails_when_view_has_no_value() {
+        let result = ShowRequestDto::from_args(&args(&["show", "--mode", "list", "--target", "all", "--view"]));
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err().to_string(), "--view requires a value");
+    }
+
+    #[test]
+    fn from_args_fails_with_invalid_view_value() {
+        let result = ShowRequestDto::from_args(&args(&["show", "--mode", "list", "--target", "all", "--view", "invalid"]));
+        assert!(result.is_err());
+        assert!(result.unwrap_err().to_string().contains("Invalid view: invalid"));
+    }
+
+    #[test]
+    fn from_args_fails_when_format_has_no_value() {
+        let result = ShowRequestDto::from_args(&args(&["show", "--mode", "list", "--target", "all", "--format"]));
+        assert!(result.is_err());
+        assert_eq!(result.unwrap_err().to_string(), "--format requires a value");
+    }
+
+    #[test]
+    fn from_args_fails_with_invalid_format_value() {
+        let result = ShowRequestDto::from_args(&args(&["show", "--mode", "list", "--target", "all", "--format", "invalid"]));
+        assert!(result.is_err());
+        assert!(result.unwrap_err().to_string().contains("Invalid format: invalid"));
     }
 }
