@@ -82,12 +82,14 @@ mod tests {
             links: vec![],
         };
         let doc = DocumentAnnotation {
+            source_file: "doc.md".to_string(),
             metas: vec![meta.clone()],
             abstracts: vec![],
             details: vec![],
             implementations: vec![],
         };
         let code = CodeAnnotation {
+            source_file: "code.rs".to_string(),
             metas: vec![meta.clone()],
             abstracts: vec![],
             details: vec![],
@@ -117,12 +119,14 @@ mod tests {
             links: vec![],
         };
         let doc = DocumentAnnotation {
+            source_file: "doc.md".to_string(),
             metas: vec![meta1.clone()],
             abstracts: vec![],
             details: vec![],
             implementations: vec![],
         };
         let code = CodeAnnotation {
+            source_file: "code.rs".to_string(),
             metas: vec![meta2.clone()],
             abstracts: vec![],
             details: vec![],

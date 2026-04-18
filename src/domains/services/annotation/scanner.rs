@@ -81,8 +81,9 @@ impl AnnotationScanner {
 
             if !code_path_str.is_empty() && source_file.starts_with(code_path_str) {
                 let container = code_map
-                    .entry(source_file)
+                    .entry(source_file.clone())
                     .or_insert_with(|| CodeAnnotation {
+                        source_file: source_file.clone(),
                         metas: vec![],
                         abstracts: vec![],
                         details: vec![],
@@ -96,8 +97,9 @@ impl AnnotationScanner {
                 }
             } else if !doc_path_str.is_empty() && source_file.starts_with(doc_path_str) {
                 let container = doc_map
-                    .entry(source_file)
+                    .entry(source_file.clone())
                     .or_insert_with(|| DocumentAnnotation {
+                        source_file: source_file.clone(),
                         metas: vec![],
                         abstracts: vec![],
                         details: vec![],
