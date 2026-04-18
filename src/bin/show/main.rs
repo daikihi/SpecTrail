@@ -29,7 +29,7 @@ fn main() {
 
     match response {
         Ok(response) => {
-            let view_model = adapt_response(&response, request_dto.view, request_dto.format);
+            let view_model = adapt_response(response, request_dto.view, request_dto.format);
             output::render(&view_model);
         }
         Err(error) => {
@@ -38,4 +38,3 @@ fn main() {
         }
     }
 }
-
