@@ -5,13 +5,12 @@ This command shows annotations for both source code and document.
 ## Input
 
 ```bash
-show --mode list --target all --config src/config/default.toml
-show --mode list --target all --config src/config/simple_sample.toml
-show --mode list --target all
-show --mode list --target document
-show --mode list --target code
-show --mode list --target group
-show --mode search --target code --scope src/
+show --target all --config src/config/default.toml --view list --format text
+show --target all --config src/config/simple_sample.toml --view detail
+show --target all --view summary
+show --target document
+show --target code
+show --target all --view group
 ```
 
 /// [@st-manual-io-show-config] layer: spec-detail, type: Convention, name: Show Config Selection
@@ -33,9 +32,11 @@ Returns a flat list of all annotations from both `src/` and `specify_manual/`.
 
 Returns a list of annotations filtered by source.
 
-### target: group
+### view: group
 
-Returns annotations organized hierarchically by Layer and Type.
+When `--view group` is specified, the output is organized hierarchically by Layer and Type.
+This is a presentation choice applied on top of normal targets (`all`, `document`, `code`).
+It only applies when `--view group` is used.
 
 ```json
 {
@@ -56,12 +57,16 @@ It also makes it possible to switch between `config/default.toml` and `config/si
 
 ## Output
 
-The output can be provided in **Standard Output (Text)** or **JSON** format.
+The output is managed by the `Presentation` layer (`output` module) and can be controlled via `--view` and `--format` options.
 
-### Text Output (Standard)
+### View Options
 
-A human-readable list or tree, as shown in [UseCase examples](./use_case.md).
+- `summary`: Overall statistics (count, types, etc.).
+- `list`: File-based summary list (default).
+- `group`: Grouped by attributes (Layer, Type, etc.).
+- `detail`: Full annotation details.
 
-### JSON Output
+### Format Options
 
-A structured representation suitable for machine processing or the `report-ui`.
+- `text`: Human-readable text (Standard Output/Error).
+- `json`: Machine-readable structured representation.

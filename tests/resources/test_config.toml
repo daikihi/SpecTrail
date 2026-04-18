@@ -1,0 +1,9 @@
+
+[source]
+head = "specify_manual/"
+extension = ".rs"
+[document]
+head = "docs/"
+extension = ".md"
+[annotation]
+prefix = "@st-code"

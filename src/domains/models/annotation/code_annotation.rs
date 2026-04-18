@@ -10,6 +10,7 @@ use crate::domains::models::spec_detail::SpecDetailAnnotation;
 /// This struct represents a code-space annotation, aggregating all annotation layers for code artifacts as described in the specification.
 #[derive(Debug, Clone)]
 pub struct CodeAnnotation {
+    pub source_file: String,
     pub metas: Vec<MetaAnnotation>,
     pub abstracts: Vec<AbstractAnnotation>,
     pub details: Vec<SpecDetailAnnotation>,

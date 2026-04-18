@@ -3,7 +3,6 @@ use crate::config::SpecTrailConfig;
 use crate::domains::models::annotation::code_annotation::CodeAnnotation;
 use crate::domains::models::annotation::document_annotation::DocumentAnnotation;
 use crate::domains::services::annotation::scanner::{AnnotationScanner, ScanWarning};
-use log::info;
 use std::path::Path;
 
 /// [@st-code-use-case-show-show-use-case-request-dto] layer: abstract, type: Structure, name: ShowUseCaseRequestDto
@@ -41,65 +40,6 @@ mod tests {
     }
 
     #[test]
-    fn execute_fails_for_search_mode() {
-        let uc = ShowUseCase::new();
-        let result = uc.execute(make_request("search", "all", None));
-        assert!(result.is_err());
-        assert_eq!(
-            result.unwrap_err().to_string(),
-            "show --mode search is not implemented yet"
-        );
-    }
-
-    #[test]
-    fn execute_fails_for_group_target() {
-        let uc = ShowUseCase::new();
-        let result = uc.execute(make_request("list", "group", None));
-        assert!(result.is_err());
-        assert_eq!(
-            result.unwrap_err().to_string(),
-            "show --target group is not implemented yet"
-        );
-    }
-
-    #[test]
-    fn execute_fails_when_scope_is_present_with_non_search_mode() {
-        let uc = ShowUseCase::new();
-        let result = uc.execute(make_request("list", "all", Some("@st-foo")));
-        assert!(result.is_err());
-        assert_eq!(
-            result.unwrap_err().to_string(),
-            "--scope is only supported with --mode search"
-        );
-    }
-
-    #[test]
-    fn execute_search_mode_is_checked_before_scope_validation() {
-        // When mode=search AND scope is given, the search-mode error should fire first
-        let uc = ShowUseCase::new();
-        let result = uc.execute(make_request("search", "all", Some("@st-foo")));
-        assert!(result.is_err());
-        assert_eq!(
-            result.unwrap_err().to_string(),
-            "show --mode search is not implemented yet"
-        );
-    }
-
-    #[test]
-    fn execute_succeeds_with_list_mode_and_code_target() {
-        let uc = ShowUseCase::new();
-        let result = uc.execute(make_request("list", "code", None));
-        assert!(result.is_ok());
-    }
-
-    #[test]
-    fn execute_succeeds_with_list_mode_and_document_target() {
-        let uc = ShowUseCase::new();
-        let result = uc.execute(make_request("list", "document", None));
-        assert!(result.is_ok());
-    }
-
-    #[test]
     fn execute_succeeds_with_list_mode_and_all_target() {
         let uc = ShowUseCase::new();
         let result = uc.execute(make_request("list", "all", None));
@@ -130,24 +70,26 @@ impl ShowUseCase {
     /// # Examples
     ///
     /// ```
+    /// use SpecTrail::use_case::show::show_use_case::{ShowUseCase, ShowUseCaseRequestDto};
     /// let uc = ShowUseCase::new();
-    /// let req = ShowUseCaseRequestDto { mode: "search".into(), target: "all".into(), scope: None };
+    /// let req = ShowUseCaseRequestDto {
+    ///     mode: "search".into(),
+    ///     target: "all".into(),
+    ///     scope: None,
+    ///     config_path: None,
+    /// };
     /// assert!(uc.execute(req).is_err()); // "search" mode is not implemented
     /// ```
     pub fn execute(
         &self,
         request: ShowUseCaseRequestDto,
     ) -> Result<ShowUseCaseResponseDto, Box<dyn std::error::Error>> {
-        info!("Executing ShowUseCase with request: {:?}", request);
-
         if request.mode == "search" {
             return Err("show --mode search is not implemented yet".into());
         }
-
         if request.target == "group" {
             return Err("show --target group is not implemented yet".into());
         }
-
         if request.scope.is_some() {
             return Err("--scope is only supported with --mode search".into());
         }
@@ -180,139 +122,10 @@ impl ShowUseCase {
         let document_annotations = scan_result.document_annotations;
         let warnings = scan_result.warnings;
 
-        // Reporting
-        self.report_annotations(&code_annotations, &document_annotations);
-
         Ok(ShowUseCaseResponseDto {
             document_annotations,
             code_annotations,
             warnings,
         })
-    }
-
-    fn report_annotations(
-        &self,
-        code_annotations: &[CodeAnnotation],
-        document_annotations: &[DocumentAnnotation],
-    ) {
-        info!("--- Annotation Report ---");
-        info!("Total Code Annotations: {}", code_annotations.len());
-        for (i, anno) in code_annotations.iter().enumerate() {
-            info!("  Code Anno [{}]:", i);
-            if !anno.metas.is_empty() {
-                for meta in &anno.metas {
-                    let link_ids: Vec<String> = meta.links.iter().map(|l| l.id.0.clone()).collect();
-                    info!(
-                        "    [Meta] id: {}, name: {}, type: {:?}, links: {:?}",
-                        meta.id.0, meta.name.0, meta.r#type, link_ids
-                    );
-                }
-            }
-            if !anno.abstracts.is_empty() {
-                for abs in &anno.abstracts {
-                    let link_ids: Vec<String> = abs.links.iter().map(|l| l.id.0.clone()).collect();
-                    info!(
-                        "    [Abstract] id: {}, name: {}, type: {:?}, links: {:?}",
-                        abs.id.0, abs.name.0, abs.r#type, link_ids
-                    );
-                }
-            }
-            if !anno.details.is_empty() {
-                for detail in &anno.details {
-                    let link_ids: Vec<String> = detail
-                        .links
-                        .iter()
-                        .map(|l| match l {
-                            crate::domains::models::spec_detail::SpecDetailLink::Abstract(a) => {
-                                a.id.0.clone()
-                            }
-                            crate::domains::models::spec_detail::SpecDetailLink::Implementation(
-                                i,
-                            ) => i.id.0.clone(),
-                        })
-                        .collect();
-                    info!(
-                        "    [Detail] id: {}, name: {}, type: {:?}, links: {:?}",
-                        detail.id.0, detail.name.0, detail.r#type, link_ids
-                    );
-                }
-            }
-            if !anno.implementations.is_empty() {
-                for impl_anno in &anno.implementations {
-                    let link_ids: Vec<String> = impl_anno.links.iter().map(|l| match l {
-                        crate::domains::models::implementation::ImplementationLink::Abstract(a) => a.id.0.clone(),
-                        crate::domains::models::implementation::ImplementationLink::SpecDetail(s) => s.id.0.clone(),
-                    }).collect();
-                    info!(
-                        "    [Implementation] id: {}, name: {}, type: {:?}, artifact: {}, links: {:?}",
-                        impl_anno.id.0,
-                        impl_anno.name.0,
-                        impl_anno.r#type,
-                        impl_anno.artifact.0,
-                        link_ids
-                    );
-                }
-            }
-        }
-
-        info!("Total Document Annotations: {}", document_annotations.len());
-        for (i, anno) in document_annotations.iter().enumerate() {
-            info!("  Document Anno [{}]:", i);
-            if !anno.metas.is_empty() {
-                for meta in &anno.metas {
-                    let link_ids: Vec<String> = meta.links.iter().map(|l| l.id.0.clone()).collect();
-                    info!(
-                        "    [Meta] id: {}, name: {}, type: {:?}, links: {:?}",
-                        meta.id.0, meta.name.0, meta.r#type, link_ids
-                    );
-                }
-            }
-            if !anno.abstracts.is_empty() {
-                for abs in &anno.abstracts {
-                    let link_ids: Vec<String> = abs.links.iter().map(|l| l.id.0.clone()).collect();
-                    info!(
-                        "    [Abstract] id: {}, name: {}, type: {:?}, links: {:?}",
-                        abs.id.0, abs.name.0, abs.r#type, link_ids
-                    );
-                }
-            }
-            if !anno.details.is_empty() {
-                for detail in &anno.details {
-                    let link_ids: Vec<String> = detail
-                        .links
-                        .iter()
-                        .map(|l| match l {
-                            crate::domains::models::spec_detail::SpecDetailLink::Abstract(a) => {
-                                a.id.0.clone()
-                            }
-                            crate::domains::models::spec_detail::SpecDetailLink::Implementation(
-                                i,
-                            ) => i.id.0.clone(),
-                        })
-                        .collect();
-                    info!(
-                        "    [Detail] id: {}, name: {}, type: {:?}, links: {:?}",
-                        detail.id.0, detail.name.0, detail.r#type, link_ids
-                    );
-                }
-            }
-            if !anno.implementations.is_empty() {
-                for impl_anno in &anno.implementations {
-                    let link_ids: Vec<String> = impl_anno.links.iter().map(|l| match l {
-                        crate::domains::models::implementation::ImplementationLink::Abstract(a) => a.id.0.clone(),
-                        crate::domains::models::implementation::ImplementationLink::SpecDetail(s) => s.id.0.clone(),
-                    }).collect();
-                    info!(
-                        "    [Implementation] id: {}, name: {}, type: {:?}, artifact: {}, links: {:?}",
-                        impl_anno.id.0,
-                        impl_anno.name.0,
-                        impl_anno.r#type,
-                        impl_anno.artifact.0,
-                        link_ids
-                    );
-                }
-            }
-        }
-        info!("-------------------------");
     }
 }

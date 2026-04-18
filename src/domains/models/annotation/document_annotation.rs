@@ -10,6 +10,7 @@ use crate::domains::models::spec_detail::SpecDetailAnnotation;
 /// This struct represents a document-space annotation, aggregating all annotation layers for document artifacts as described in the specification.
 #[derive(Debug, Clone)]
 pub struct DocumentAnnotation {
+    pub source_file: String,
     pub metas: Vec<MetaAnnotation>,
     pub abstracts: Vec<AbstractAnnotation>,
     pub details: Vec<SpecDetailAnnotation>,

@@ -51,7 +51,7 @@ pub struct ResolveResult {
 
 /// [@st-code-domain-services-annotation-resolver-resolve-warning] layer: abstract, type: Structure, name: ResolveWarning
 /// Represents an issue found during resolution, such as a missing link target or invalid layer name.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ResolveWarning {
     pub source_annotation_id: String,
     pub message: String,

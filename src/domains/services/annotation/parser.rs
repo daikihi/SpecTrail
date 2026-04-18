@@ -16,7 +16,7 @@ pub struct ParseResult {
 
 /// [@st-code-domain-services-annotation-parser-parse-warning] layer: abstract, type: Structure, name: ParseWarning
 /// Represents a non-fatal issue encountered during parsing, such as malformed syntax.
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct ParseWarning {
     pub source_file: String,
     pub line: usize,
