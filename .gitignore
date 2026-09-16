@@ -1,30 +1,32 @@
-# Rust build artifacts
+# Rust / Cargo
 target/
-
-# Cargo package files
 **/*.rs.bk
 
-# SpecKit
-.specify/
-.specify/**
+# Python / Environments & Caches
+.venv/
+.venv-test/
+*.venv/
+.pytest_cache/
+__pycache__/
+*.py[cod]
 
-
-# MacOS-specific files
-.DS_Store
-
-# IDE/editor settings
+# IDE & Editors
 .idea/
 .vscode/
 *.swp
+*.swo
 
-.venv/
+# OS-specific files
+.DS_Store
+Thumbs.db
+
+# Temporary & Backup files
 *.old/
+*.bak
 
-.venv-test
-/comments/
-/specs/**
-!/specs/001-spec-impl-annotations/
-!/specs/001-spec-impl-annotations/examples/
-!/specs/001-spec-impl-annotations/examples/manifest.local.json
-!/specs/001-spec-impl-annotations/examples/manifest.pr.json
-!/specs/001-spec-impl-annotations/examples/manifest.broken.json
+# SpecKit
+.specify/
+
+# Project-specific / Local notes
+comments/
+
