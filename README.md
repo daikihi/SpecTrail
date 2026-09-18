@@ -172,23 +172,28 @@ async fn login(req: LoginRequest) -> Result<Token> {
 
 ### 3. Show Annotations
 
-Use the `show` command to list or search annotations. You can also switch scan targets with a config file:
+Use the `show` command to list annotations. You can control the granularity and output format using the `--view` and `--format` flags. You can also switch scan targets with a config file:
 
 ```bash
-cargo run --bin show -- --mode list --target all --config src/config/default.toml
-cargo run --bin show -- --mode list --target all --config src/config/simple_sample.toml
+# Basic usage
+cargo run --bin show -- --target all --config test_config.toml
+
+# Specify view and format
+cargo run --bin show -- --target document --view summary --format text
+cargo run --bin show -- --target code --view list --format json
 ```
 
 Output: A detailed report of annotations found in both code and documents.
 
 #### Show Command Options
 
-| Option     | Description                                      | Example Value           |
-|------------|--------------------------------------------------|-------------------------|
-| `--mode`   | Operation mode (`list`, `search`)                | `list`                  |
-| `--target` | Target of scan (`all`, `document`, `code`, `group`) | `all`                   |
-| `--scope`  | Specific scope or ID to focus on                 | `CHK-001`               |
-| `--config` | Config file used to switch scan roots            | `src/config/default.toml` |
+| Option     | Description                                               | Example Value             |
+|------------|-----------------------------------------------------------|---------------------------|
+| `--target` | Target of scan (`all`, `document`, `code`)                | `all`                     |
+| `--view`   | Granularity of information (`summary`, `list`, `group`, `detail`) | `summary`                 |
+| `--format` | Output format (`text`, `json`)                            | `text`                    |
+| `--scope`  | Specific scope or ID to focus on (experimental)           | `CHK-001`                 |
+| `--config` | Config file used to switch scan roots                     | `src/config/default.toml` |
 
 #### Config Files
 
@@ -218,7 +223,7 @@ cd SpecTrail
 cargo build
 
 # Run show command
-cargo run --bin show -- --mode list --target all --config src/config/default.toml
+cargo run --bin show -- --target all --config src/config/default.toml
 ```
 
 ## Project Structure
@@ -237,9 +242,11 @@ SpecTrail/
 │   └── 001-spec-impl-annotations/
 ├── src/                         # Source code (Rust)
 │   ├── bin/                     # CLI entry points (e.g., show)
+│   │   └── show/                # show command implementation
+│   │       └── output/          # Presentation layer (rendering)
 │   ├── domains/                 # Domain logic and models
 │   ├── use_case/                # Application use cases
-│   └── infrastructures/         # External integrations
+│   └── config/                  # Configuration handling
 ├── tests/                       # Test suite
 └── Cargo.toml                   # Rust project configuration
 ```
