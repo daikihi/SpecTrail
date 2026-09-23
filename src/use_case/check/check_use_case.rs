@@ -36,7 +36,7 @@ impl CheckUseCase {
                         severity: CheckSeverity::Error,
                         issue_type: "invalid_annotation_format".to_string(),
                         file: pw.source_file,
-                        line: pw.line,
+                        line: pw.line.as_usize(),
                         spec_id: None,
                         message: pw.message,
                     });
@@ -45,8 +45,8 @@ impl CheckUseCase {
                     issues.push(CheckIssue {
                         severity: CheckSeverity::Error,
                         issue_type: "orphaned_annotation".to_string(),
-                        file: rw.source_annotation_id.clone(),
-                        line: 0,
+                        file: rw.source_file,
+                        line: rw.line.as_usize(),
                         spec_id: Some(rw.source_annotation_id),
                         message: rw.message,
                     });

@@ -70,6 +70,7 @@ mod tests {
     use super::*;
     use crate::domains::models::annotation::code_annotation::CodeAnnotation;
     use crate::domains::models::annotation::document_annotation::DocumentAnnotation;
+    use crate::domains::models::line_number::LineNumber;
     use crate::domains::models::meta::{MetaAnnotation, MetaAnnotationId, MetaName, MetaType};
 
     #[test]
@@ -80,6 +81,7 @@ mod tests {
             r#type: Some(MetaType::Rule),
             layer: crate::domains::models::layer::Layer::Meta,
             links: vec![],
+            line: LineNumber(1),
         };
         let doc = DocumentAnnotation {
             source_file: "doc.md".to_string(),
@@ -110,6 +112,7 @@ mod tests {
             r#type: Some(MetaType::Rule),
             layer: crate::domains::models::layer::Layer::Meta,
             links: vec![],
+            line: LineNumber(1),
         };
         let meta2 = MetaAnnotation {
             id: MetaAnnotationId("@st-test-code-only".to_string()),
@@ -117,6 +120,7 @@ mod tests {
             r#type: Some(MetaType::Guideline),
             layer: crate::domains::models::layer::Layer::Meta,
             links: vec![],
+            line: LineNumber(2),
         };
         let doc = DocumentAnnotation {
             source_file: "doc.md".to_string(),

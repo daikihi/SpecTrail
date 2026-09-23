@@ -24,7 +24,11 @@ pub fn print_warnings(warnings: &[ScanWarning]) {
                 );
             }
             ScanWarning::Resolve(rw) => {
-                eprintln!("WARNING [resolve] {}", rw.message);
+                if rw.line.as_usize() > 0 {
+                    eprintln!("WARNING [resolve] {}:{}: {}", rw.source_file, rw.line, rw.message);
+                } else {
+                    eprintln!("WARNING [resolve] {}", rw.message);
+                }
             }
         }
     }
@@ -136,18 +140,18 @@ pub fn render_group(view_model: &ShowResponseView) {
 fn print_file_detail(file: &impl AnnotationFile) {
     println!("File: {}", file.source_file());
     for m in file.metas() {
-        println!("  [@{}] Layer: Meta, Type: {:?}, Name: {}", m.id.0, m.r#type, m.name.0);
+        println!("  [@{}] line: {}, Layer: Meta, Type: {:?}, Name: {}", m.id.0, m.line, m.r#type, m.name.0);
     }
     for a in file.abstracts() {
-        println!("  [@{}] Layer: Abstract, Type: {:?}, Name: {}", a.id.0, a.r#type, a.name.0);
+        println!("  [@{}] line: {}, Layer: Abstract, Type: {:?}, Name: {}", a.id.0, a.line, a.r#type, a.name.0);
     }
     for d in file.details() {
-        println!("  [@{}] Layer: SpecDetail, Type: {:?}, Name: {}", d.id.0, d.r#type, d.name.0);
+        println!("  [@{}] line: {}, Layer: SpecDetail, Type: {:?}, Name: {}", d.id.0, d.line, d.r#type, d.name.0);
     }
     for i in file.implementations() {
         println!(
-            "  [@{}] Layer: Implementation, Type: {:?}, Name: {}, Status: {:?}",
-            i.id.0, i.r#type, i.name.0, i.status
+            "  [@{}] line: {}, Layer: Implementation, Type: {:?}, Name: {}, Status: {:?}",
+            i.id.0, i.line, i.r#type, i.name.0, i.status
         );
     }
     println!();

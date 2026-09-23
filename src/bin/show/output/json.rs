@@ -29,13 +29,15 @@ pub fn warnings_to_json(warnings: &[ScanWarning]) -> Vec<Value> {
             ScanWarning::Parse(pw) => json!({
                 "type": "parse",
                 "source_file": pw.source_file,
-                "line": pw.line,
+                "line": pw.line.as_usize(),
                 "message": pw.message,
                 "raw_text": pw.raw_text,
             }),
             ScanWarning::Resolve(rw) => json!({
                 "type": "resolve",
                 "source_annotation_id": rw.source_annotation_id,
+                "source_file": rw.source_file,
+                "line": rw.line.as_usize(),
                 "message": rw.message,
             }),
         })
@@ -131,6 +133,7 @@ fn meta_to_json(m: &MetaAnnotation) -> Value {
         "name": m.name.0,
         "type": format_type(m.r#type.as_ref()),
         "layer": layer_name(m.layer),
+        "line": m.line.as_usize(),
     })
 }
 
@@ -140,6 +143,7 @@ fn abstract_to_json(a: &AbstractAnnotation) -> Value {
         "name": a.name.0,
         "type": format_type(a.r#type.as_ref()),
         "layer": layer_name(a.layer),
+        "line": a.line.as_usize(),
     })
 }
 
@@ -149,6 +153,7 @@ fn detail_to_json(d: &SpecDetailAnnotation) -> Value {
         "name": d.name.0,
         "type": format_type(d.r#type.as_ref()),
         "layer": layer_name(d.layer),
+        "line": d.line.as_usize(),
     })
 }
 
@@ -159,6 +164,7 @@ fn implementation_to_json(i: &ImplementationAnnotation) -> Value {
         "type": format_type(i.r#type.as_ref()),
         "layer": layer_name(i.layer),
         "artifact": i.artifact.0,
+        "line": i.line.as_usize(),
     })
 }
 

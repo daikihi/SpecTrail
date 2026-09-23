@@ -37,6 +37,7 @@ mod tests {
         ImplementationSpecName,
     };
     use SpecTrail::domains::models::layer::Layer;
+    use SpecTrail::domains::models::line_number::LineNumber;
     use SpecTrail::domains::models::meta::{MetaAnnotation, MetaAnnotationId, MetaName};
     use SpecTrail::domains::models::spec_detail::{
         SpecDetailAnnotation, SpecDetailAnnotationId, SpecDetailLink, SpecDetailName,
@@ -50,6 +51,7 @@ mod tests {
             r#type: None,
             layer: Layer::Meta,
             links: vec![],
+            line: LineNumber(1),
         }
     }
 
@@ -60,6 +62,7 @@ mod tests {
             r#type: None,
             layer: Layer::Abstract,
             links: vec![],
+            line: LineNumber(1),
         }
     }
 
@@ -70,6 +73,7 @@ mod tests {
             r#type: None,
             layer: Layer::SpecDetail,
             links: vec![SpecDetailLink::Abstract(Box::new(make_abstract()))],
+            line: LineNumber(1),
         }
     }
 
@@ -84,6 +88,7 @@ mod tests {
             links: vec![ImplementationLink::Abstract(Box::new(make_abstract()))],
             artifact: ImplementationArtifact("artifact".to_string()),
             status: None,
+            line: LineNumber(1),
         }
     }
 
@@ -127,7 +132,7 @@ mod tests {
             code_annotations: vec![],
             warnings: vec![ScanWarning::Parse(ParseWarning {
                 source_file: "src/main.rs".to_string(),
-                line: 12,
+                line: LineNumber(12),
                 message: "broken".to_string(),
                 raw_text: "@bad".to_string(),
             })],

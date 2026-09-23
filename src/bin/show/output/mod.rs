@@ -89,6 +89,7 @@ mod tests {
     use super::*;
     use crate::dto::{ShowFormat, ShowView};
     use SpecTrail::domains::models::layer::Layer;
+    use SpecTrail::domains::models::line_number::LineNumber;
     use SpecTrail::domains::models::meta::{MetaAnnotation, MetaAnnotationId, MetaName};
 
     #[test]
@@ -111,6 +112,7 @@ mod tests {
             r#type: None,
             layer: Layer::Meta,
             links: vec![],
+            line: LineNumber(1),
         };
         let doc = DocumentAnnotation {
             source_file: "test.md".to_string(),
@@ -138,6 +140,7 @@ mod tests {
             r#type: None,
             layer: Layer::Meta,
             links: vec![],
+            line: LineNumber(1),
         };
         let doc = DocumentAnnotation {
             source_file: "test.md".to_string(),

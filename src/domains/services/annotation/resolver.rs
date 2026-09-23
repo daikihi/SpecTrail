@@ -8,6 +8,7 @@ use crate::domains::models::implementation::{
     ImplementationLink, ImplementationSpecName, ImplementationStatus, ImplementationType,
 };
 use crate::domains::models::layer::Layer;
+use crate::domains::models::line_number::LineNumber;
 use crate::domains::models::meta::{MetaAnnotation, MetaAnnotationId, MetaName, MetaType};
 use crate::domains::models::spec_detail::{
     SpecDetailAnnotation, SpecDetailAnnotationId, SpecDetailLink, SpecDetailName, SpecDetailType,
@@ -54,6 +55,8 @@ pub struct ResolveResult {
 #[derive(Debug, Clone)]
 pub struct ResolveWarning {
     pub source_annotation_id: String,
+    pub source_file: String,
+    pub line: LineNumber,
     pub message: String,
 }
 
@@ -80,6 +83,8 @@ impl AnnotationResolver {
                 _ => {
                     warnings.push(ResolveWarning {
                         source_annotation_id: raw.id.clone(),
+                        source_file: raw.source_file.clone(),
+                        line: raw.line,
                         message: format!("Unknown layer '{}', skipping @{}", raw.layer, raw.id),
                     });
                     continue;
@@ -93,6 +98,8 @@ impl AnnotationResolver {
                         Err(_) => {
                             warnings.push(ResolveWarning {
                                 source_annotation_id: raw.id.clone(),
+                                source_file: raw.source_file.clone(),
+                                line: raw.line,
                                 message: format!(
                                     "Unknown MetaType '{}' for @{}",
                                     raw.annotation_type, raw.id
@@ -113,10 +120,13 @@ impl AnnotationResolver {
                                 r#type: MetaType::from_str(&target.annotation_type).ok(),
                                 layer: Layer::Meta,
                                 links: vec![],
+                                line: target.line,
                             });
                         } else {
                             warnings.push(ResolveWarning {
                                 source_annotation_id: raw.id.clone(),
+                                source_file: raw.source_file.clone(),
+                                line: raw.line,
                                 message: format!(
                                     "Link target '{}' not found (referenced from @{})",
                                     link_id, raw.id
@@ -132,6 +142,7 @@ impl AnnotationResolver {
                             r#type: meta_type,
                             layer: Layer::Meta,
                             links,
+                            line: raw.line,
                         },
                         raw.source_file.clone(),
                     ));
@@ -142,6 +153,8 @@ impl AnnotationResolver {
                         Err(_) => {
                             warnings.push(ResolveWarning {
                                 source_annotation_id: raw.id.clone(),
+                                source_file: raw.source_file.clone(),
+                                line: raw.line,
                                 message: format!(
                                     "Unknown AbstractType '{}' for @{}",
                                     raw.annotation_type, raw.id
@@ -162,10 +175,13 @@ impl AnnotationResolver {
                                 r#type: SpecDetailType::from_str(&target.annotation_type).ok(),
                                 layer: Layer::SpecDetail,
                                 links: vec![],
+                                line: target.line,
                             });
                         } else {
                             warnings.push(ResolveWarning {
                                 source_annotation_id: raw.id.clone(),
+                                source_file: raw.source_file.clone(),
+                                line: raw.line,
                                 message: format!(
                                     "Link target '{}' not found (referenced from @{})",
                                     link_id, raw.id
@@ -181,6 +197,7 @@ impl AnnotationResolver {
                             r#type: abs_type,
                             layer: Layer::Abstract,
                             links,
+                            line: raw.line,
                         },
                         raw.source_file.clone(),
                     ));
@@ -191,6 +208,8 @@ impl AnnotationResolver {
                         Err(_) => {
                             warnings.push(ResolveWarning {
                                 source_annotation_id: raw.id.clone(),
+                                source_file: raw.source_file.clone(),
+                                line: raw.line,
                                 message: format!(
                                     "Unknown SpecDetailType '{}' for @{}",
                                     raw.annotation_type, raw.id
@@ -213,10 +232,13 @@ impl AnnotationResolver {
                                 r#type: AbstractType::from_str(&target.annotation_type).ok(),
                                 layer: Layer::Abstract,
                                 links: vec![],
+                                line: target.line,
                             })));
                         } else {
                             warnings.push(ResolveWarning {
                                 source_annotation_id: raw.id.clone(),
+                                source_file: raw.source_file.clone(),
+                                line: raw.line,
                                 message: format!(
                                     "Link target '{}' not found (referenced from @{})",
                                     link_id, raw.id
@@ -232,6 +254,7 @@ impl AnnotationResolver {
                             r#type: detail_type,
                             layer: Layer::SpecDetail,
                             links,
+                            line: raw.line,
                         },
                         raw.source_file.clone(),
                     ));
@@ -242,6 +265,8 @@ impl AnnotationResolver {
                         Err(_) => {
                             warnings.push(ResolveWarning {
                                 source_annotation_id: raw.id.clone(),
+                                source_file: raw.source_file.clone(),
+                                line: raw.line,
                                 message: format!(
                                     "Unknown ImplementationType '{}' for @{}",
                                     raw.annotation_type, raw.id
@@ -263,11 +288,14 @@ impl AnnotationResolver {
                                     r#type: AbstractType::from_str(&target.annotation_type).ok(),
                                     layer: Layer::Abstract,
                                     links: vec![],
+                                    line: target.line,
                                 },
                             )));
                         } else {
                             warnings.push(ResolveWarning {
                                 source_annotation_id: raw.id.clone(),
+                                source_file: raw.source_file.clone(),
+                                line: raw.line,
                                 message: format!(
                                     "Link target '{}' not found (referenced from @{})",
                                     link_id, raw.id
@@ -285,6 +313,7 @@ impl AnnotationResolver {
                             links,
                             artifact: ImplementationArtifact(raw.source_file.clone()),
                             status: ImplementationStatus::from_str(&raw.annotation_type).ok(),
+                            line: raw.line,
                         },
                         raw.source_file.clone(),
                     ));

@@ -1,5 +1,6 @@
 /// [@st-code-domain-services-annotation-parser-file] layer: abstract, type: File, name: parser.rs
 /// This file provides the parser for extracting raw annotations from source text using regular expressions.
+use crate::domains::models::line_number::LineNumber;
 use crate::domains::services::annotation::raw_annotation::RawAnnotation;
 use regex::Regex;
 
@@ -19,7 +20,7 @@ pub struct ParseResult {
 #[derive(Debug, Clone)]
 pub struct ParseWarning {
     pub source_file: String,
-    pub line: usize,
+    pub line: LineNumber,
     pub message: String,
     pub raw_text: String,
 }
@@ -50,6 +51,13 @@ impl AnnotationParser {
         let re = Regex::new(r"\[@(?P<id>[^\]]+)\]\s*layer:\s*(?P<layer>[^,]+),\s*type:\s*(?P<type>[^,]+),\s*name:\s*(?P<name>[^,\n]+)(?:,\s*links:\s*\[(?P<links>[^\]]+)\])?").unwrap();
 
         for cap in re.captures_iter(content) {
+            let full_match = cap.get(0).unwrap();
+            let line_idx = content[..full_match.start()]
+                .chars()
+                .filter(|&c| c == '\n')
+                .count() + 1;
+            let line = LineNumber::new(line_idx);
+
             let id = cap["id"].trim().to_string();
             let layer = cap["layer"].trim().to_string();
             let annotation_type = cap["type"].trim().to_string();
@@ -72,6 +80,7 @@ impl AnnotationParser {
                 name,
                 links,
                 source_file: source_file.to_string(),
+                line,
             });
         }
 
@@ -107,5 +116,14 @@ mod tests {
         assert_eq!(result.annotations.len(), 1);
         let anno = &result.annotations[0];
         assert_eq!(anno.links, vec!["@st-foo", "@st-baz"]);
+        assert_eq!(anno.line, LineNumber::new(1));
+    }
+
+    #[test]
+    fn test_parse_multiline_line_number() {
+        let content = "line 1\nline 2\n/// [@st-line3] layer: meta, type: Philosophy, name: Line3\nline 4";
+        let result = AnnotationParser::parse(content, "src/test.rs").unwrap();
+        assert_eq!(result.annotations.len(), 1);
+        assert_eq!(result.annotations[0].line, LineNumber::new(3));
     }
 }
