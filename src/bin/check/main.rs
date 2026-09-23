@@ -1,7 +1,7 @@
 mod dto;
 
 use dto::{CheckFormat, CheckRequestDto};
-use SpecTrail::use_case::check::check_use_case::{
+use SpecTrail::use_case::check::{
     CheckIssue, CheckSeverity, CheckUseCase, CheckUseCaseRequestDto,
 };
 use serde_json::json;
