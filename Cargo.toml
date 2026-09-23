@@ -18,3 +18,7 @@ env_logger = "0.11"
 [[bin]]
 name = "show"
 path = "src/bin/show/main.rs"
+
+[[bin]]
+name = "check"
+path = "src/bin/check/main.rs"
