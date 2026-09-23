@@ -42,7 +42,6 @@ mod tests {
         SpecDetailAnnotation, SpecDetailAnnotationId, SpecDetailLink, SpecDetailName,
     };
     use SpecTrail::domains::services::annotation::parser::ParseWarning;
-    use SpecTrail::domains::services::annotation::resolver::ResolveWarning;
 
     fn make_meta() -> MetaAnnotation {
         MetaAnnotation {
