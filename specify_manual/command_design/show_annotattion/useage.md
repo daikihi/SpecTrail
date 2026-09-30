@@ -21,7 +21,7 @@ cargo run --bin show -- --target code --config src/config/default.toml
 ```
 
 /// [@st-manual-usage-show-search] layer: spec-detail, type: Convention, name: Search Annotations
-To search for specific annotations using a query, and point `show` at the appropriate config:
+Future operation (not implemented by the initial output contract): search for specific annotations using a query and the appropriate config.
 ```bash
 cargo run --bin show -- --mode search --target all --scope "search_query" --config src/config/simple_sample.toml
 ```
@@ -29,5 +29,5 @@ cargo run --bin show -- --mode search --target all --scope "search_query" --conf
 /// [@st-manual-usage-show-group] layer: spec-detail, type: Convention, name: Show Grouped Annotations
 To show grouped annotations:
 ```bash
-cargo run --bin show -- --view group
+cargo run --bin show -- --target all --view group
 ```

@@ -28,9 +28,12 @@ Spec-detail-layer annotations represent concrete specifications such as function
 - `SpecDetailAnnotation`
   - `id: SpecDetailAnnotationId`
   - `name: SpecDetailName`
-  - `type: SpecDetailType`
+  - `type: Option<SpecDetailType>`
   - `layer: Layer` (typically `Layer::SpecDetail`)
   - `links: Vec<SpecDetailLink>`
 
 ## Relationships
 `links` connects to the abstract layer and/or the implementation layer.
+
+/// [@st-manual-data-model-spec-detail-test-kind] layer: spec-detail, type: Convention, name: Test as Spec Detail Type, links: [@st-manual-data-model-spec-detail-spec-detail-annotation]
+`Test` uses the same `SpecDetailAnnotation` fields as the other spec-detail types. No separate `TestAnnotation` structure or test-only fields are defined.

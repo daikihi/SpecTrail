@@ -23,7 +23,7 @@ Meta-layer annotations represent top-level policies such as design philosophy, g
 - `MetaAnnotation`
   - `id: MetaAnnotationId`
   - `name: MetaName`
-  - `type: MetaType`
+  - `type: Option<MetaType>`
   - `layer: Layer` (typically `Layer::Meta`)
   - `links: Vec<MetaAnnotation>`
 
