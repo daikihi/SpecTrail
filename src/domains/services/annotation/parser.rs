@@ -47,7 +47,8 @@ impl AnnotationParser {
         let mut annotations = Vec::new();
         let warnings = Vec::new();
 
-    /* Regex for standard single-line annotations: [@id] layer: L, type: T, name: N, links: [L1, L2] */
+    // Regular expression matching annotations of the form:
+    // `[@... ]` followed by comma-separated key-values for layer, type, name, and optional links.
         let re = Regex::new(r"\[@(?P<id>[^\]]+)\]\s*layer:\s*(?P<layer>[^,]+),\s*type:\s*(?P<type>[^,]+),\s*name:\s*(?P<name>[^,\n]+)(?:,\s*links:\s*\[(?P<links>[^\]]+)\])?").unwrap();
 
         for cap in re.captures_iter(content) {

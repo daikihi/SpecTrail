@@ -251,7 +251,7 @@ Traces are the structural backbone of SpecTrail, ensuring full bidirectional tra
 /// [@st-manual-meta-vocabulary] layer: meta, type: Convention, name: Vocabulary
 2. Vocabulary
 
-/// [@st-manual-meta-specdetailtype] layer: spec-detail, type: Structure, name: SpecDetailType
+/// [@st-manual-meta-specdetailtype] layer: meta, type: Convention, name: SpecDetailType
 2.1 SpecDetailType
 
 Defines the structural classification of a SpecDetailAnnotation.
