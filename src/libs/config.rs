@@ -25,7 +25,7 @@ impl SpecTrailConfig {
     /// # Examples
     ///
     /// ```
-    /// use SpecTrail::config::SpecTrailConfig;
+    /// use spec_trail::config::SpecTrailConfig;
     /// let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
     ///     .join("tests/resources/test_config.toml");
     /// let config = SpecTrailConfig::from_file(&path).unwrap();

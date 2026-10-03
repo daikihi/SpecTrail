@@ -70,7 +70,7 @@ impl ShowUseCase {
     /// # Examples
     ///
     /// ```
-    /// use SpecTrail::use_case::show::show_use_case::{ShowUseCase, ShowUseCaseRequestDto};
+    /// use spec_trail::use_case::show::show_use_case::{ShowUseCase, ShowUseCaseRequestDto};
     /// let uc = ShowUseCase::new();
     /// let req = ShowUseCaseRequestDto {
     ///     mode: "search".into(),

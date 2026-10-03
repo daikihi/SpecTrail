@@ -1,12 +1,12 @@
 use crate::dto::ShowFormat;
 use crate::show_response_adapter::ShowResponseView;
-use SpecTrail::domains::models::abstract_annotation::AbstractAnnotation;
-use SpecTrail::domains::models::annotation::code_annotation::CodeAnnotation;
-use SpecTrail::domains::models::annotation::document_annotation::DocumentAnnotation;
-use SpecTrail::domains::models::implementation::ImplementationAnnotation;
-use SpecTrail::domains::models::layer::Layer;
-use SpecTrail::domains::models::meta::MetaAnnotation;
-use SpecTrail::domains::models::spec_detail::SpecDetailAnnotation;
+use spec_trail::domains::models::abstract_annotation::AbstractAnnotation;
+use spec_trail::domains::models::annotation::code_annotation::CodeAnnotation;
+use spec_trail::domains::models::annotation::document_annotation::DocumentAnnotation;
+use spec_trail::domains::models::implementation::ImplementationAnnotation;
+use spec_trail::domains::models::layer::Layer;
+use spec_trail::domains::models::meta::MetaAnnotation;
+use spec_trail::domains::models::spec_detail::SpecDetailAnnotation;
 
 mod json;
 mod text;
@@ -88,9 +88,9 @@ pub fn render(view_model: &ShowResponseView) {
 mod tests {
     use super::*;
     use crate::dto::{ShowFormat, ShowView};
-    use SpecTrail::domains::models::layer::Layer;
-    use SpecTrail::domains::models::line_number::LineNumber;
-    use SpecTrail::domains::models::meta::{MetaAnnotation, MetaAnnotationId, MetaName};
+    use spec_trail::domains::models::layer::Layer;
+    use spec_trail::domains::models::line_number::LineNumber;
+    use spec_trail::domains::models::meta::{MetaAnnotation, MetaAnnotationId, MetaName};
 
     #[test]
     fn test_render_summary_does_not_panic() {

@@ -1,11 +1,11 @@
 use super::{format_type, layer_name, AnnotationFile};
 use crate::dto::ShowView;
 use crate::show_response_adapter::ShowResponseView;
-use SpecTrail::domains::models::abstract_annotation::AbstractAnnotation;
-use SpecTrail::domains::models::implementation::ImplementationAnnotation;
-use SpecTrail::domains::models::meta::MetaAnnotation;
-use SpecTrail::domains::models::spec_detail::SpecDetailAnnotation;
-use SpecTrail::domains::services::annotation::scanner::ScanWarning;
+use spec_trail::domains::models::abstract_annotation::AbstractAnnotation;
+use spec_trail::domains::models::implementation::ImplementationAnnotation;
+use spec_trail::domains::models::meta::MetaAnnotation;
+use spec_trail::domains::models::spec_detail::SpecDetailAnnotation;
+use spec_trail::domains::services::annotation::scanner::ScanWarning;
 use serde_json::{json, Value};
 use std::collections::BTreeMap;
 

@@ -1,10 +1,10 @@
 [package]
-name = "SpecTrail"
+name = "spec_trail"
 version = "0.1.0"
 edition = "2024"
 
 [lib]
-name = "SpecTrail"
+name = "spec_trail"
 path = "src/libs.rs"
 
 [dependencies]

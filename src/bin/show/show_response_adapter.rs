@@ -1,7 +1,7 @@
-use SpecTrail::domains::models::annotation::code_annotation::CodeAnnotation;
-use SpecTrail::domains::models::annotation::document_annotation::DocumentAnnotation;
-use SpecTrail::domains::services::annotation::scanner::ScanWarning;
-use SpecTrail::use_case::show::show_use_case::ShowUseCaseResponseDto;
+use spec_trail::domains::models::annotation::code_annotation::CodeAnnotation;
+use spec_trail::domains::models::annotation::document_annotation::DocumentAnnotation;
+use spec_trail::domains::services::annotation::scanner::ScanWarning;
+use spec_trail::use_case::show::show_use_case::ShowUseCaseResponseDto;
 
 #[derive(Debug)]
 pub struct ShowResponseView {
@@ -29,20 +29,20 @@ pub fn adapt_response(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use SpecTrail::domains::models::abstract_annotation::{
+    use spec_trail::domains::models::abstract_annotation::{
         AbstractAnnotation, AbstractAnnotationId, AbstractName,
     };
-    use SpecTrail::domains::models::implementation::{
+    use spec_trail::domains::models::implementation::{
         ImplementationAnnotation, ImplementationArtifact, ImplementationLink,
         ImplementationSpecName,
     };
-    use SpecTrail::domains::models::layer::Layer;
-    use SpecTrail::domains::models::line_number::LineNumber;
-    use SpecTrail::domains::models::meta::{MetaAnnotation, MetaAnnotationId, MetaName};
-    use SpecTrail::domains::models::spec_detail::{
+    use spec_trail::domains::models::layer::Layer;
+    use spec_trail::domains::models::line_number::LineNumber;
+    use spec_trail::domains::models::meta::{MetaAnnotation, MetaAnnotationId, MetaName};
+    use spec_trail::domains::models::spec_detail::{
         SpecDetailAnnotation, SpecDetailAnnotationId, SpecDetailLink, SpecDetailName,
     };
-    use SpecTrail::domains::services::annotation::parser::ParseWarning;
+    use spec_trail::domains::services::annotation::parser::ParseWarning;
 
     fn make_meta() -> MetaAnnotation {
         MetaAnnotation {
@@ -79,7 +79,7 @@ mod tests {
 
     fn make_implementation() -> ImplementationAnnotation {
         ImplementationAnnotation {
-            id: SpecTrail::domains::models::implementation::ImplementationAnnotationId(
+            id: spec_trail::domains::models::implementation::ImplementationAnnotationId(
                 "i".to_string(),
             ),
             name: ImplementationSpecName("Impl".to_string()),

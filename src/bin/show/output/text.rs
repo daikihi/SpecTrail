@@ -1,7 +1,7 @@
 use super::{format_type, layer_name, AnnotationFile};
 use crate::dto::ShowView;
 use crate::show_response_adapter::ShowResponseView;
-use SpecTrail::domains::services::annotation::scanner::ScanWarning;
+use spec_trail::domains::services::annotation::scanner::ScanWarning;
 use std::collections::BTreeMap;
 
 pub fn render(view_model: &ShowResponseView) {
