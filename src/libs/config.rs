@@ -14,6 +14,9 @@ pub struct SpecTrailConfig {
     pub document: DocumentConfig,
     /// [@st-code-libs-config-spec-trail-config-annotation] layer: abstract, type: Structure, name: annotation
     pub annotation: AnnotationConfig,
+    /// Scanner configuration including ignored prefixes
+    #[serde(default)]
+    pub scanner: ScannerConfig,
 }
 
 impl SpecTrailConfig {
@@ -65,6 +68,28 @@ pub struct DocumentConfig {
 #[derive(Debug, Deserialize)]
 pub struct AnnotationConfig {
     pub prefix: String,
+}
+
+/**
+ * Using for scanner configuration
+ */
+#[derive(Debug, Default, Deserialize)]
+pub struct ScannerConfig {
+    #[serde(default)]
+    pub ignored_prefixes: Vec<String>,
+}
+
+impl ScannerConfig {
+    /// Returns the effective ignored prefixes including the built-in default ["_fixture_"]
+    pub fn effective_ignored_prefixes(&self) -> Vec<String> {
+        let mut prefixes = vec!["_fixture_".to_string()];
+        for p in &self.ignored_prefixes {
+            if !prefixes.contains(p) {
+                prefixes.push(p.clone());
+            }
+        }
+        prefixes
+    }
 }
 
 #[cfg(test)]
@@ -159,5 +184,54 @@ prefix = "@st-"
         let path = write_temp_config("spectrail_test_missing_field.toml", toml);
         let result = SpecTrailConfig::from_file(&path);
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn defaults_scanner_ignored_prefixes_to_fixture() {
+        let toml = r#"
+[source]
+head = "src/"
+extension = ".rs"
+
+[document]
+head = "docs/"
+extension = ".md"
+
+[annotation]
+prefix = "@st-"
+"#;
+        let path = write_temp_config("spectrail_test_scanner_default.toml", toml);
+        let config = SpecTrailConfig::from_file(&path).expect("should parse");
+        assert_eq!(config.scanner.ignored_prefixes.len(), 0);
+        assert_eq!(
+            config.scanner.effective_ignored_prefixes(),
+            vec!["_fixture_".to_string()]
+        );
+    }
+
+    #[test]
+    fn loads_custom_scanner_ignored_prefixes() {
+        let toml = r#"
+[source]
+head = "src/"
+extension = ".rs"
+
+[document]
+head = "docs/"
+extension = ".md"
+
+[annotation]
+prefix = "@st-"
+
+[scanner]
+ignored_prefixes = ["mock_", "dummy_"]
+"#;
+        let path = write_temp_config("spectrail_test_scanner_custom.toml", toml);
+        let config = SpecTrailConfig::from_file(&path).expect("should parse");
+        assert_eq!(config.scanner.ignored_prefixes, vec!["mock_", "dummy_"]);
+        assert_eq!(
+            config.scanner.effective_ignored_prefixes(),
+            vec!["_fixture_".to_string(), "mock_".to_string(), "dummy_".to_string()]
+        );
     }
 }

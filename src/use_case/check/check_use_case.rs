@@ -19,11 +19,13 @@ impl CheckUseCase {
             .unwrap_or_else(|| String::from("src/config/default.toml"));
         let config = SpecTrailConfig::from_file(config_path)?;
 
-        let scan_result = AnnotationScanner::scan(
+        let ignored_prefixes = config.scanner.effective_ignored_prefixes();
+        let scan_result = AnnotationScanner::scan_with_ignored_prefixes(
             Path::new(&config.source.head),
             &config.source.extension,
             Path::new(&config.document.head),
             &config.document.extension,
+            &ignored_prefixes,
         );
 
         let mut issues = Vec::new();

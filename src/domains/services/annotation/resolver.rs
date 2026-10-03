@@ -63,18 +63,38 @@ pub struct ResolveWarning {
 impl AnnotationResolver {
     /* Resolves a list of RawAnnotations into a ResolveResult.
      *
-     * This method performs two main steps:
-     * 1. Building an index of all annotations by ID to allow for link resolution.
-     * 2. Iterating through each RawAnnotation, converting its string fields to domain Enums,
-     *    and resolving its links using the index. */
+     * Uses default ignored prefix ["_fixture_"]. */
     pub fn resolve(raw_annotations: Vec<RawAnnotation>) -> ResolveResult {
+        Self::resolve_with_ignored_prefixes(raw_annotations, &["_fixture_"])
+    }
+
+    /* Resolves a list of RawAnnotations into a ResolveResult, ignoring annotations
+     * whose ID starts with any of the ignored_prefixes.
+     *
+     * Also ignores broken links when the target ID starts with any of the ignored_prefixes. */
+    pub fn resolve_with_ignored_prefixes<S: AsRef<str>>(
+        raw_annotations: Vec<RawAnnotation>,
+        ignored_prefixes: &[S],
+    ) -> ResolveResult {
+        let is_ignored = |id: &str| -> bool {
+            let stripped = id.strip_prefix('@').unwrap_or(id);
+            ignored_prefixes.iter().any(|prefix| stripped.starts_with(prefix.as_ref()))
+        };
+
         let mut annotations = Vec::new();
         let mut warnings = Vec::new();
 
-        let index: HashMap<String, &RawAnnotation> =
-            raw_annotations.iter().map(|a| (a.id.clone(), a)).collect();
+        let index: HashMap<String, &RawAnnotation> = raw_annotations
+            .iter()
+            .filter(|a| !is_ignored(&a.id))
+            .map(|a| (a.id.clone(), a))
+            .collect();
 
         for raw in &raw_annotations {
+            if is_ignored(&raw.id) {
+                continue;
+            }
+
             let layer = match raw.layer.as_str() {
                 "meta" => Layer::Meta,
                 "abstract" => Layer::Abstract,
@@ -122,7 +142,7 @@ impl AnnotationResolver {
                                 links: vec![],
                                 line: target.line,
                             });
-                        } else {
+                        } else if !is_ignored(link_id) {
                             warnings.push(ResolveWarning {
                                 source_annotation_id: raw.id.clone(),
                                 source_file: raw.source_file.clone(),
@@ -177,7 +197,7 @@ impl AnnotationResolver {
                                 links: vec![],
                                 line: target.line,
                             });
-                        } else {
+                        } else if !is_ignored(link_id) {
                             warnings.push(ResolveWarning {
                                 source_annotation_id: raw.id.clone(),
                                 source_file: raw.source_file.clone(),
@@ -234,7 +254,7 @@ impl AnnotationResolver {
                                 links: vec![],
                                 line: target.line,
                             })));
-                        } else {
+                        } else if !is_ignored(link_id) {
                             warnings.push(ResolveWarning {
                                 source_annotation_id: raw.id.clone(),
                                 source_file: raw.source_file.clone(),
@@ -291,7 +311,7 @@ impl AnnotationResolver {
                                     line: target.line,
                                 },
                             )));
-                        } else {
+                        } else if !is_ignored(link_id) {
                             warnings.push(ResolveWarning {
                                 source_annotation_id: raw.id.clone(),
                                 source_file: raw.source_file.clone(),
@@ -325,5 +345,73 @@ impl AnnotationResolver {
             annotations,
             warnings,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_ignores_fixture_prefix_by_default() {
+        let raw = vec![
+            RawAnnotation {
+                id: "_fixture_bar".to_string(),
+                layer: "abstract".to_string(),
+                annotation_type: "Page".to_string(),
+                name: "Bar".to_string(),
+                links: vec!["@_fixture_foo".to_string()],
+                source_file: "src/bar.rs".to_string(),
+                line: LineNumber::new(1),
+            },
+        ];
+
+        let result = AnnotationResolver::resolve(raw);
+        // Annotation itself is ignored and not returned in resolved annotations
+        assert_eq!(result.annotations.len(), 0);
+        // No broken link warnings emitted
+        assert_eq!(result.warnings.len(), 0);
+    }
+
+    #[test]
+    fn test_ignores_broken_links_to_fixture() {
+        let raw = vec![
+            RawAnnotation {
+                id: "st-valid".to_string(),
+                layer: "abstract".to_string(),
+                annotation_type: "Page".to_string(),
+                name: "Valid".to_string(),
+                links: vec!["@_fixture_target".to_string()],
+                source_file: "src/valid.rs".to_string(),
+                line: LineNumber::new(1),
+            },
+        ];
+
+        let result = AnnotationResolver::resolve(raw);
+        assert_eq!(result.annotations.len(), 1);
+        // Link to _fixture_ is skipped from warnings
+        assert_eq!(result.warnings.len(), 0);
+    }
+
+    #[test]
+    fn test_ignores_custom_prefixes() {
+        let raw = vec![
+            RawAnnotation {
+                id: "mock_spec".to_string(),
+                layer: "abstract".to_string(),
+                annotation_type: "Page".to_string(),
+                name: "Mock".to_string(),
+                links: vec!["@dummy_target".to_string()],
+                source_file: "src/mock.rs".to_string(),
+                line: LineNumber::new(1),
+            },
+        ];
+
+        let result = AnnotationResolver::resolve_with_ignored_prefixes(
+            raw,
+            &["mock_", "dummy_"],
+        );
+        assert_eq!(result.annotations.len(), 0);
+        assert_eq!(result.warnings.len(), 0);
     }
 }

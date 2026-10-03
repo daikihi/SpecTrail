@@ -112,11 +112,11 @@ mod tests {
     #[test]
     fn test_parse_with_links() {
         let content =
-            "/// [@st-bar] layer: abstract, type: Page, name: Bar, links: [@st-foo, @st-baz]";
+            "/// [@_fixture_bar] layer: abstract, type: Page, name: Bar, links: [@_fixture_foo, @_fixture_baz]";
         let result = AnnotationParser::parse(content, "src/bar.rs").unwrap();
         assert_eq!(result.annotations.len(), 1);
         let anno = &result.annotations[0];
-        assert_eq!(anno.links, vec!["@st-foo", "@st-baz"]);
+        assert_eq!(anno.links, vec!["@_fixture_foo", "@_fixture_baz"]);
         assert_eq!(anno.line, LineNumber::new(1));
     }
 
