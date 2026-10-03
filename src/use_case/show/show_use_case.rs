@@ -70,7 +70,7 @@ impl ShowUseCase {
     /// # Examples
     ///
     /// ```
-    /// use SpecTrail::use_case::show::show_use_case::{ShowUseCase, ShowUseCaseRequestDto};
+    /// use spec_trail::use_case::show::show_use_case::{ShowUseCase, ShowUseCaseRequestDto};
     /// let uc = ShowUseCase::new();
     /// let req = ShowUseCaseRequestDto {
     ///     mode: "search".into(),
@@ -111,11 +111,13 @@ impl ShowUseCase {
             Path::new("")
         };
 
-        let scan_result = AnnotationScanner::scan(
+        let ignored_prefixes = config.scanner.effective_ignored_prefixes();
+        let scan_result = AnnotationScanner::scan_with_ignored_prefixes(
             code_path,
             &config.source.extension,
             doc_path,
             &config.document.extension,
+            &ignored_prefixes,
         );
 
         let code_annotations = scan_result.code_annotations;

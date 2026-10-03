@@ -41,6 +41,17 @@ impl AnnotationScanner {
         doc_path: P,
         doc_ext: &str,
     ) -> ScanResult {
+        Self::scan_with_ignored_prefixes(code_path, code_ext, doc_path, doc_ext, &["_fixture_"])
+    }
+
+    /* Performs a full scan of code and document directories with custom ignored prefixes. */
+    pub fn scan_with_ignored_prefixes<P: AsRef<Path>, S: AsRef<str>>(
+        code_path: P,
+        code_ext: &str,
+        doc_path: P,
+        doc_ext: &str,
+        ignored_prefixes: &[S],
+    ) -> ScanResult {
         let mut raw_annotations = Vec::new();
         let mut warnings = Vec::new();
 
@@ -55,7 +66,8 @@ impl AnnotationScanner {
         warnings.extend(doc_parse_warnings.into_iter().map(ScanWarning::Parse));
 
         /* 3. Resolve links */
-        let resolve_result = AnnotationResolver::resolve(raw_annotations);
+        let resolve_result =
+            AnnotationResolver::resolve_with_ignored_prefixes(raw_annotations, ignored_prefixes);
         warnings.extend(
             resolve_result
                 .warnings

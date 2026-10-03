@@ -3,6 +3,7 @@ use crate::domains::models::abstract_annotation::AbstractAnnotation;
 /// [@st-manual-meta-model-doc] layer: meta, type: Philosophy, name: Specification Model: Formal Definition
 /// This file defines the implementation-layer annotations, describing how specifications are realized at the technical level.
 use crate::domains::models::layer::Layer;
+use crate::domains::models::line_number::LineNumber;
 use crate::domains::models::spec_detail::SpecDetailAnnotation;
 
 /// [@st-code-domain-models-implementation-implementation-annotation-id] layer: abstract, type: Structure, name: ImplementationAnnotationId
@@ -87,4 +88,5 @@ pub struct ImplementationAnnotation {
     pub links: Vec<ImplementationLink>,
     pub artifact: ImplementationArtifact,
     pub status: Option<ImplementationStatus>,
+    pub line: LineNumber,
 }

@@ -8,6 +8,7 @@ use crate::domains::models::implementation::{
     ImplementationLink, ImplementationSpecName, ImplementationStatus, ImplementationType,
 };
 use crate::domains::models::layer::Layer;
+use crate::domains::models::line_number::LineNumber;
 use crate::domains::models::meta::{MetaAnnotation, MetaAnnotationId, MetaName, MetaType};
 use crate::domains::models::spec_detail::{
     SpecDetailAnnotation, SpecDetailAnnotationId, SpecDetailLink, SpecDetailName, SpecDetailType,
@@ -54,24 +55,46 @@ pub struct ResolveResult {
 #[derive(Debug, Clone)]
 pub struct ResolveWarning {
     pub source_annotation_id: String,
+    pub source_file: String,
+    pub line: LineNumber,
     pub message: String,
 }
 
 impl AnnotationResolver {
     /* Resolves a list of RawAnnotations into a ResolveResult.
      *
-     * This method performs two main steps:
-     * 1. Building an index of all annotations by ID to allow for link resolution.
-     * 2. Iterating through each RawAnnotation, converting its string fields to domain Enums,
-     *    and resolving its links using the index. */
+     * Uses default ignored prefix ["_fixture_"]. */
     pub fn resolve(raw_annotations: Vec<RawAnnotation>) -> ResolveResult {
+        Self::resolve_with_ignored_prefixes(raw_annotations, &["_fixture_"])
+    }
+
+    /* Resolves a list of RawAnnotations into a ResolveResult, ignoring annotations
+     * whose ID starts with any of the ignored_prefixes.
+     *
+     * Also ignores broken links when the target ID starts with any of the ignored_prefixes. */
+    pub fn resolve_with_ignored_prefixes<S: AsRef<str>>(
+        raw_annotations: Vec<RawAnnotation>,
+        ignored_prefixes: &[S],
+    ) -> ResolveResult {
+        let is_ignored = |id: &str| -> bool {
+            let stripped = id.strip_prefix('@').unwrap_or(id);
+            ignored_prefixes.iter().any(|prefix| stripped.starts_with(prefix.as_ref()))
+        };
+
         let mut annotations = Vec::new();
         let mut warnings = Vec::new();
 
-        let index: HashMap<String, &RawAnnotation> =
-            raw_annotations.iter().map(|a| (a.id.clone(), a)).collect();
+        let index: HashMap<String, &RawAnnotation> = raw_annotations
+            .iter()
+            .filter(|a| !is_ignored(&a.id))
+            .map(|a| (a.id.clone(), a))
+            .collect();
 
         for raw in &raw_annotations {
+            if is_ignored(&raw.id) {
+                continue;
+            }
+
             let layer = match raw.layer.as_str() {
                 "meta" => Layer::Meta,
                 "abstract" => Layer::Abstract,
@@ -80,6 +103,8 @@ impl AnnotationResolver {
                 _ => {
                     warnings.push(ResolveWarning {
                         source_annotation_id: raw.id.clone(),
+                        source_file: raw.source_file.clone(),
+                        line: raw.line,
                         message: format!("Unknown layer '{}', skipping @{}", raw.layer, raw.id),
                     });
                     continue;
@@ -93,6 +118,8 @@ impl AnnotationResolver {
                         Err(_) => {
                             warnings.push(ResolveWarning {
                                 source_annotation_id: raw.id.clone(),
+                                source_file: raw.source_file.clone(),
+                                line: raw.line,
                                 message: format!(
                                     "Unknown MetaType '{}' for @{}",
                                     raw.annotation_type, raw.id
@@ -113,10 +140,13 @@ impl AnnotationResolver {
                                 r#type: MetaType::from_str(&target.annotation_type).ok(),
                                 layer: Layer::Meta,
                                 links: vec![],
+                                line: target.line,
                             });
-                        } else {
+                        } else if !is_ignored(link_id) {
                             warnings.push(ResolveWarning {
                                 source_annotation_id: raw.id.clone(),
+                                source_file: raw.source_file.clone(),
+                                line: raw.line,
                                 message: format!(
                                     "Link target '{}' not found (referenced from @{})",
                                     link_id, raw.id
@@ -132,6 +162,7 @@ impl AnnotationResolver {
                             r#type: meta_type,
                             layer: Layer::Meta,
                             links,
+                            line: raw.line,
                         },
                         raw.source_file.clone(),
                     ));
@@ -142,6 +173,8 @@ impl AnnotationResolver {
                         Err(_) => {
                             warnings.push(ResolveWarning {
                                 source_annotation_id: raw.id.clone(),
+                                source_file: raw.source_file.clone(),
+                                line: raw.line,
                                 message: format!(
                                     "Unknown AbstractType '{}' for @{}",
                                     raw.annotation_type, raw.id
@@ -162,10 +195,13 @@ impl AnnotationResolver {
                                 r#type: SpecDetailType::from_str(&target.annotation_type).ok(),
                                 layer: Layer::SpecDetail,
                                 links: vec![],
+                                line: target.line,
                             });
-                        } else {
+                        } else if !is_ignored(link_id) {
                             warnings.push(ResolveWarning {
                                 source_annotation_id: raw.id.clone(),
+                                source_file: raw.source_file.clone(),
+                                line: raw.line,
                                 message: format!(
                                     "Link target '{}' not found (referenced from @{})",
                                     link_id, raw.id
@@ -181,6 +217,7 @@ impl AnnotationResolver {
                             r#type: abs_type,
                             layer: Layer::Abstract,
                             links,
+                            line: raw.line,
                         },
                         raw.source_file.clone(),
                     ));
@@ -191,6 +228,8 @@ impl AnnotationResolver {
                         Err(_) => {
                             warnings.push(ResolveWarning {
                                 source_annotation_id: raw.id.clone(),
+                                source_file: raw.source_file.clone(),
+                                line: raw.line,
                                 message: format!(
                                     "Unknown SpecDetailType '{}' for @{}",
                                     raw.annotation_type, raw.id
@@ -213,10 +252,13 @@ impl AnnotationResolver {
                                 r#type: AbstractType::from_str(&target.annotation_type).ok(),
                                 layer: Layer::Abstract,
                                 links: vec![],
+                                line: target.line,
                             })));
-                        } else {
+                        } else if !is_ignored(link_id) {
                             warnings.push(ResolveWarning {
                                 source_annotation_id: raw.id.clone(),
+                                source_file: raw.source_file.clone(),
+                                line: raw.line,
                                 message: format!(
                                     "Link target '{}' not found (referenced from @{})",
                                     link_id, raw.id
@@ -232,6 +274,7 @@ impl AnnotationResolver {
                             r#type: detail_type,
                             layer: Layer::SpecDetail,
                             links,
+                            line: raw.line,
                         },
                         raw.source_file.clone(),
                     ));
@@ -242,6 +285,8 @@ impl AnnotationResolver {
                         Err(_) => {
                             warnings.push(ResolveWarning {
                                 source_annotation_id: raw.id.clone(),
+                                source_file: raw.source_file.clone(),
+                                line: raw.line,
                                 message: format!(
                                     "Unknown ImplementationType '{}' for @{}",
                                     raw.annotation_type, raw.id
@@ -263,11 +308,14 @@ impl AnnotationResolver {
                                     r#type: AbstractType::from_str(&target.annotation_type).ok(),
                                     layer: Layer::Abstract,
                                     links: vec![],
+                                    line: target.line,
                                 },
                             )));
-                        } else {
+                        } else if !is_ignored(link_id) {
                             warnings.push(ResolveWarning {
                                 source_annotation_id: raw.id.clone(),
+                                source_file: raw.source_file.clone(),
+                                line: raw.line,
                                 message: format!(
                                     "Link target '{}' not found (referenced from @{})",
                                     link_id, raw.id
@@ -285,6 +333,7 @@ impl AnnotationResolver {
                             links,
                             artifact: ImplementationArtifact(raw.source_file.clone()),
                             status: ImplementationStatus::from_str(&raw.annotation_type).ok(),
+                            line: raw.line,
                         },
                         raw.source_file.clone(),
                     ));
@@ -296,5 +345,73 @@ impl AnnotationResolver {
             annotations,
             warnings,
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_ignores_fixture_prefix_by_default() {
+        let raw = vec![
+            RawAnnotation {
+                id: "_fixture_bar".to_string(),
+                layer: "abstract".to_string(),
+                annotation_type: "Page".to_string(),
+                name: "Bar".to_string(),
+                links: vec!["@_fixture_foo".to_string()],
+                source_file: "src/bar.rs".to_string(),
+                line: LineNumber::new(1),
+            },
+        ];
+
+        let result = AnnotationResolver::resolve(raw);
+        // Annotation itself is ignored and not returned in resolved annotations
+        assert_eq!(result.annotations.len(), 0);
+        // No broken link warnings emitted
+        assert_eq!(result.warnings.len(), 0);
+    }
+
+    #[test]
+    fn test_ignores_broken_links_to_fixture() {
+        let raw = vec![
+            RawAnnotation {
+                id: "st-valid".to_string(),
+                layer: "abstract".to_string(),
+                annotation_type: "Page".to_string(),
+                name: "Valid".to_string(),
+                links: vec!["@_fixture_target".to_string()],
+                source_file: "src/valid.rs".to_string(),
+                line: LineNumber::new(1),
+            },
+        ];
+
+        let result = AnnotationResolver::resolve(raw);
+        assert_eq!(result.annotations.len(), 1);
+        // Link to _fixture_ is skipped from warnings
+        assert_eq!(result.warnings.len(), 0);
+    }
+
+    #[test]
+    fn test_ignores_custom_prefixes() {
+        let raw = vec![
+            RawAnnotation {
+                id: "mock_spec".to_string(),
+                layer: "abstract".to_string(),
+                annotation_type: "Page".to_string(),
+                name: "Mock".to_string(),
+                links: vec!["@dummy_target".to_string()],
+                source_file: "src/mock.rs".to_string(),
+                line: LineNumber::new(1),
+            },
+        ];
+
+        let result = AnnotationResolver::resolve_with_ignored_prefixes(
+            raw,
+            &["mock_", "dummy_"],
+        );
+        assert_eq!(result.annotations.len(), 0);
+        assert_eq!(result.warnings.len(), 0);
     }
 }
