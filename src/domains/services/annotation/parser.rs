@@ -51,12 +51,15 @@ impl AnnotationParser {
     // `[@... ]` followed by comma-separated key-values for layer, type, name, and optional links.
         let re = Regex::new(r"\[@(?P<id>[^\]]+)\]\s*layer:\s*(?P<layer>[^,]+),\s*type:\s*(?P<type>[^,]+),\s*name:\s*(?P<name>[^,\n]+)(?:,\s*links:\s*\[(?P<links>[^\]]+)\])?").unwrap();
 
+        let mut previous_end = 0;
+        let mut line_idx = 1;
         for cap in re.captures_iter(content) {
             let full_match = cap.get(0).unwrap();
-            let line_idx = content[..full_match.start()]
+            line_idx += content[previous_end..full_match.start()]
                 .chars()
                 .filter(|&c| c == '\n')
-                .count() + 1;
+                .count();
+            previous_end = full_match.start();
             let line = LineNumber::new(line_idx);
 
             let id = cap["id"].trim().to_string();

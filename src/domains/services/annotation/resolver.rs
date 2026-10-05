@@ -78,7 +78,10 @@ impl AnnotationResolver {
     ) -> ResolveResult {
         let is_ignored = |id: &str| -> bool {
             let stripped = id.strip_prefix('@').unwrap_or(id);
-            ignored_prefixes.iter().any(|prefix| stripped.starts_with(prefix.as_ref()))
+            stripped.starts_with("_fixture_")
+                || ignored_prefixes
+                    .iter()
+                    .any(|prefix| stripped.starts_with(prefix.as_ref()))
         };
 
         let mut annotations = Vec::new();
@@ -413,5 +416,34 @@ mod tests {
         );
         assert_eq!(result.annotations.len(), 0);
         assert_eq!(result.warnings.len(), 0);
+    }
+
+    #[test]
+    fn custom_prefixes_do_not_disable_builtin_fixture_prefix() {
+        let raw = vec![
+            RawAnnotation {
+                id: "_fixture_sample".to_string(),
+                layer: "abstract".to_string(),
+                annotation_type: "Page".to_string(),
+                name: "Fixture".to_string(),
+                links: vec![],
+                source_file: "src/fixture.rs".to_string(),
+                line: LineNumber::new(1),
+            },
+            RawAnnotation {
+                id: "real_spec".to_string(),
+                layer: "abstract".to_string(),
+                annotation_type: "Page".to_string(),
+                name: "Real".to_string(),
+                links: vec!["@_fixture_sample".to_string()],
+                source_file: "src/real.rs".to_string(),
+                line: LineNumber::new(2),
+            },
+        ];
+
+        let result = AnnotationResolver::resolve_with_ignored_prefixes(raw, &["mock_"]);
+        assert_eq!(result.annotations.len(), 1);
+        assert_eq!(result.annotations[0].source_file(), "src/real.rs");
+        assert!(result.warnings.is_empty());
     }
 }
