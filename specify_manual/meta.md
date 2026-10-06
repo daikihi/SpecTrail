@@ -27,22 +27,34 @@ Status: Draft (Conceptually stable, subject to naming refinements)
 /// [@st-manual-meta-spectrail-unit] layer: abstract, type: Convention, name: SpecTrailUnit
 #### 1.1 SpecTrailUnit
 
-SpecTrail defines two parallel annotation domains that share a common structural schema:
+Let `C` denote the set of CodeAnnotations and `D` the set of DocumentAnnotations
+within a given SpecTrail scope. `C` and `D` are distinct annotation domains
+that share a common structural schema.
 
-```ebnf
-SpecTrailUnit = { CodeAnnotation, DocumentAnnotation }
+A single `SpecTrailUnit` is one tagged annotation from either domain:
+
+```text
+SpecTrailUnit =
+    Code(CodeAnnotation)
+  | Document(DocumentAnnotation)
 ```
 
-A SpecTrailUnit represents a traceable conceptual pair consisting of:
+If `U` denotes the set of SpecTrailUnits, then:
 
-- CodeAnnotation — an annotation appearing in source code or code-related metadata.
-- DocumentAnnotation — an annotation appearing in natural-language or semi-structured specification documents.
+```text
+U = C ⊎ D
+```
 
-Together, these two components form the dual representation of a single conceptual specification element within the SpecTrail system.
+Here, `⊎` denotes a disjoint (tagged) union for the current two-domain model.
+A SpecTrailUnit is not a CodeAnnotation–DocumentAnnotation pair and does not
+itself express a correspondence between the two domains. When such a semantic
+correspondence needs to be represented, it is the responsibility of a relation
+such as `Trace`. Additional annotation domains can extend this union.
 
 ### 1.2 SpecTrailAnnotation
 
-Both domains on `SpecTrailUnit` are constructed from the same four-layer annotation structure:
+Both annotation domains are constructed from the same four-layer annotation
+structure:
 
 - MetaAnnotation (M)
 - AbstractAnnotation (A)
@@ -67,7 +79,7 @@ Each component (M, A, D) follows the same structural definition across the two d
 
 A Trace relation establishes semantic correspondence between DocumentAnnotation and CodeAnnotation.
 
-```ebnf
+```text
 ∀ aᴰ ∈ DocumentAnnotation,
 ∃ aᶜ ∈ CodeAnnotation 
 
