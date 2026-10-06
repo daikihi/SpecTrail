@@ -23,7 +23,7 @@ Abstract-layer annotations represent conceptual units and structures of the syst
 - `AbstractAnnotation`
   - `id: AbstractAnnotationId`
   - `name: AbstractName`
-  - `type: AbstractType`
+  - `type: Option<AbstractType>`
   - `layer: Layer` (typically `Layer::Abstract`)
   - `links: Vec<SpecDetailAnnotation>`
 

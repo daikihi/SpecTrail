@@ -110,6 +110,7 @@ You can see all code annotations in your project.
   Code Anno [0]: @st-code-use-case-show-show-use-case-file (Layer: Abstract, Type: Structure)
   ```
 
+/// [@st-manual-usecase-show-group-view] layer: spec-detail, type: Func, name: Show Group View, links: [@st-manual-cli-show-output]
 ### List all annotation groups in your project
 
 - **Purpose:**
@@ -120,12 +121,12 @@ You can see all code annotations in your project.
 
 - **Precondition:**
 
-  The project contains at least one annotation.
+  No annotation is required; an empty result is valid.
 
 - **Steps:**
 
 ```bash
-$ strail show --mode list --target group
+$ strail show --mode list --target all --view group
 ```
 
 - **Expected Result:**
@@ -146,7 +147,7 @@ $ strail show --mode list --target group
     - @st-manual-spec-specification: SpecTrail Specification
 ```
 
-### Trace-related annotations starting from a specific annotation
+### Future trace-related annotations starting from a specific annotation
 
 - **Purpose:**
 
@@ -163,7 +164,7 @@ $ strail show --mode list --target group
 ```bash
 $ strail show --mode search --target all --scope "@st-manual-spec-cli-show-command" --config src/config/simple_sample.toml
 ```
-*(Note: Currently, tracing is often achieved via `search` mode with a specific ID, but future versions might have a dedicated trace mode.)*
+*(Note: `search` and trace traversal are future operations and are not implemented by the initial `show` output contract.)*
 
 - **Expected Result:**
 

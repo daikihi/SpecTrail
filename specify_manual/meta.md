@@ -27,22 +27,34 @@ Status: Draft (Conceptually stable, subject to naming refinements)
 /// [@st-manual-meta-spectrail-unit] layer: abstract, type: Convention, name: SpecTrailUnit
 #### 1.1 SpecTrailUnit
 
-SpecTrail defines two parallel annotation domains that share a common structural schema:
+Let `C` denote the set of CodeAnnotations and `D` the set of DocumentAnnotations
+within a given SpecTrail scope. `C` and `D` are distinct annotation domains
+that share a common structural schema.
 
-```ebnf
-SpecTrailUnit = { CodeAnnotation, DocumentAnnotation }
+A single `SpecTrailUnit` is one tagged annotation from either domain:
+
+```text
+SpecTrailUnit =
+    Code(CodeAnnotation)
+  | Document(DocumentAnnotation)
 ```
 
-A SpecTrailUnit represents a traceable conceptual pair consisting of:
+If `U` denotes the set of SpecTrailUnits, then:
 
-- CodeAnnotation — an annotation appearing in source code or code-related metadata.
-- DocumentAnnotation — an annotation appearing in natural-language or semi-structured specification documents.
+```text
+U = C ⊎ D
+```
 
-Together, these two components form the dual representation of a single conceptual specification element within the SpecTrail system.
+Here, `⊎` denotes a disjoint (tagged) union for the current two-domain model.
+A SpecTrailUnit is not a CodeAnnotation–DocumentAnnotation pair and does not
+itself express a correspondence between the two domains. When such a semantic
+correspondence needs to be represented, it is the responsibility of a relation
+such as `Trace`. Additional annotation domains can extend this union.
 
 ### 1.2 SpecTrailAnnotation
 
-Both domains on `SpecTrailUnit` are constructed from the same four-layer annotation structure:
+Both annotation domains are constructed from the same four-layer annotation
+structure:
 
 - MetaAnnotation (M)
 - AbstractAnnotation (A)
@@ -67,7 +79,7 @@ Each component (M, A, D) follows the same structural definition across the two d
 
 A Trace relation establishes semantic correspondence between DocumentAnnotation and CodeAnnotation.
 
-```ebnf
+```text
 ∀ aᴰ ∈ DocumentAnnotation,
 ∃ aᶜ ∈ CodeAnnotation 
 
@@ -98,9 +110,10 @@ MetaAnnotations generally do not appear in source code.
 M = {m₁, ..., mₙ}
 
 ∀ m ∈ M:
-    m = {n, t, l, link}  
+    m = {id, n, t, l, link}
+    id ∈ AnnotationId
     n ∈ MetaName  
-    t ∈ MetaType
+    t ∈ MetaType ∪ {None}
     l ∈ Layer
     link ⊆ {MetaAnnotation}
 ```
@@ -148,9 +161,10 @@ Each AbstractAnnotation owns multiple SpecDetailAnnotations.
 A = {a₁, ..., aₙ}
 
 ∀ a ∈ A:
-    a = {na, ta, l, link}
+    a = {id, na, ta, l, link}
+    id ∈ AnnotationId
     na ∈ AbstractName
-    ta ∈ AbstractType
+    ta ∈ AbstractType ∪ {None}
     l ∈ Layer
     link ⊆ SpecDetailAnnotation
 ```
@@ -171,14 +185,15 @@ Examples include:
 D = {d₁, ..., dₖ}
 
 ∀ d ∈ D:
-    d = {nd, td, l, link}
+    d = {id, nd, td, l, link}
+    id ∈ AnnotationId
     nd ∈ SpecDetailName
-    td ∈ SpecDetailType
+    td ∈ SpecDetailType ∪ {None}
     l ∈ Layer
     link ⊆ {AbstractAnnotation ∪ ImplementationAnnotation}
 ```
 
-The link forms a bidirectional trace between:
+Owned links express directed references between:
 
 - abstract concept (upward)
 - implementation realization (downward)
@@ -202,13 +217,14 @@ Examples:
 I = {i₁, ..., iₗ}
 
 ∀ i ∈ I:
-    i = {ni, ti, l, link, art, status}
+    i = {id, ni, ti, l, link, art, status}
+    id ∈ AnnotationId
     ni ∈ ImplementationSpecName
-    ti ∈ ImplementationType
+    ti ∈ ImplementationType ∪ {None}
     l ∈ Layer
     link ⊆ {SpecDetailAnnotation ∪ AbstractAnnotation}
     art ∈ ImplementationArtifact
-    status ∈ ImplementationStatus
+    status ∈ ImplementationStatus ∪ {None}
 ```
 
 #### 1.2.7 ImplementationType
@@ -291,16 +307,18 @@ classDiagram
     %% MetaAnnotation
     %% -------------------------
     class MetaAnnotation {
+        +id : AnnotationId
         +name : MetaName
-        +type : MetaType
+        +type : Option<MetaType>
         +layer : Layer
     }
 
     MetaAnnotation "1" --> "0..*" MetaAnnotation : link
 
     class AbstractAnnotation {
+        +id : AnnotationId
         +name : AbstractName
-        +type : AbstractType
+        +type : Option<AbstractType>
         +layer : Layer
     }
 
@@ -310,8 +328,9 @@ classDiagram
     %% SpecDetailAnnotation
     %% -------------------------
     class SpecDetailAnnotation {
+        +id : AnnotationId
         +name : SpecDetailName
-        +type : SpecDetailType
+        +type : Option<SpecDetailType>
         +layer : Layer
     }
 
@@ -321,11 +340,12 @@ classDiagram
     %% ImplementationAnnotation
     %% -------------------------
     class ImplementationAnnotation {
+        +id : AnnotationId
         +name : ImplementationSpecName
-        +type : ImplementationType
+        +type : Option<ImplementationType>
         +layer : Layer
         +artifact : ImplementationArtifact
-        +status : ImplementationStatus
+        +status : Option<ImplementationStatus>
     }
 
     %% -------------------------
@@ -408,3 +428,20 @@ classDiagram
         Completed
     }
 ```
+
+/// [@st-manual-meta-show-identity] layer: meta, type: Rule, name: Annotation Identity for Observation, links: [@st-manual-meta-model-doc]
+## Annotation Identity and Observation
+
+Every observed annotation has an `id` and a `layer`. `AnnotationId` is a nonempty string. The `id` identifies the annotation; the `layer` classifies it within the four-layer model. A human-readable `name` is descriptive and must not replace the `id` in a reference. Document and code annotations remain distinct even when they use the same structural fields.
+
+The current data model may lack a recognized Type, and an ImplementationAnnotation may lack a Status. Their absence is a value state, not a new Type or Status category.
+
+/// [@st-manual-meta-show-test-classification] layer: meta, type: Convention, name: Test Annotation Classification, links: [@st-manual-meta-show-identity]
+### Test Classification
+
+A test annotation is a `SpecDetailAnnotation` whose `SpecDetailType` is `Test`. It is not a fifth layer or a third annotation domain. The current metamodel assigns it the same shared fields as other spec-detail annotations; test-specific fields require a separate specification before they are introduced.
+
+/// [@st-manual-meta-show-owned-link] layer: meta, type: Rule, name: Direction of Annotation Links, links: [@st-manual-meta-show-identity]
+### Owned Links
+
+An annotation owns its outgoing `links`. A target reference carries its `id` and `layer`. A link does not imply a reverse link, a relation kind, or a required number of links. Owned links and the separately defined `Trace` relation have different semantics. A presentation may encode a link without embedding the target annotation. The CLI encoding is specified in [Show Output](command_design/show_annotattion/output.md).

@@ -12,22 +12,22 @@ By providing different targets and modes, it caters to various roles:
 - **Designers** can verify if their specifications are correctly annotated.
 - **Managers** can get an overview of the project's state and coverage.
 
-## Available functions
+/// [@st-manual-overview-show-selection] layer: spec-detail, type: Convention, name: Show Target and View Selection, links: [@st-manual-cli-show-output]
+## Available Functions
 
-This command lists all annotations in your project for both document and programming code.
-You can view annotations categorized as follows:
+`target` selects the annotation sources: `all`, `document`, or `code`. `view` determines how the selected annotations are shown:
 
-**Targets of this command:**
-- **All**: List all annotations in your project on both document and programming code. This is the entry point for a full project audit.
-- **Document**: List only document annotations. Useful for reviewing specifications.
-- **Code**: List only code annotations. Useful for developers working on the implementation.
-- **Group**: List all annotations grouped by their **layer** (Meta, Abstract, SpecDetail, Implementation) or **type** (Philosophy, Guideline, etc.). This helps in understanding the structural distribution of annotations.
-- **Search**: Find specific annotations based on a query (ID, Name, or Metadata).
-- **Trace**: (Experimental) Trace the relationship starting from a specific annotation to see its links across layers.
+- `summary`: counts by source, Layer, and Type.
+- `list`: a file-based identification list.
+- `group`: annotations grouped by Layer and then Type.
+- `detail`: available annotation details and nonrecursive link references.
+
+The initial supported mode is `list`. Search by `scope` and trace exploration are future operations. Text and JSON follow the same target and view semantics; see the [Show Output Contract](output.md).
 
 # Reference
 
 - [Input / output : io.md](./io.md)
 - [usecases](./use_case.md)
 - [flow](./flow.md)
-- [usage](./usage.md)
+- [usage](./useage.md)
+- [output](./output.md)

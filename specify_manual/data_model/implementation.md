@@ -35,11 +35,11 @@ Implementation-layer annotations describe how specifications are realized at the
 - `ImplementationAnnotation`
   - `id: ImplementationAnnotationId`
   - `name: ImplementationSpecName`
-  - `type: ImplementationType`
+  - `type: Option<ImplementationType>`
   - `layer: Layer` (typically `Layer::Implementation`)
   - `links: Vec<ImplementationLink>`
   - `artifact: ImplementationArtifact`
-  - `status: ImplementationStatus`
+  - `status: Option<ImplementationStatus>`
 
 ## Relationships
 `links` connects to either `SpecDetailAnnotation` or `AbstractAnnotation`.

@@ -82,9 +82,9 @@ In the future, there are several more tools as following
 /// [@st-manual-spec-annotation-structure] layer: abstract, type: Structure, name: Annotation Structure Overview, links: [@st-manual-meta-spectrail-annotation]
 #### 1.3.2 Annotation Structure Overview
 
-SpecTrail uses a three-layered annotation model to bridge specifications and implementation. Both specification documents and source code are tagged with corresponding annotations to enable traceability and alignment.
+SpecTrail annotates both specification documents and source code to enable traceability and alignment.
 
-SpecTrail annotations are categorized into three types: AbstractAnnotation, SpecDetailAnnotation, and ImplementationAnnotation. Each serves a different level of abstraction and purpose within the system. The details of these annotation categories will be discussed in Section 3: Data Model.
+SpecTrail uses four annotation layers: MetaAnnotation, AbstractAnnotation, SpecDetailAnnotation, and ImplementationAnnotation. Each serves a different purpose within the system. Test is a SpecDetail type, not a separate layer. The data model is described in Section 4.
 
 /// [@st-manual-spec-mapping] layer: spec-detail, type: Rule, name: Mapping Specification and Implementation
 #### 1.3.3 How to map specification between Specification and Implementation
@@ -119,20 +119,21 @@ Basically, both of those annotations should be exact same name for readability t
 #### show-command
  
 - **overview**: This command shows or finds annotations from specification documents and/or source code.
-- **config**: The command can load different `config/*.toml` files to switch scan roots between the main project and sample applications.
+- **config**: The command can load different configuration files to switch scan roots between the main project and sample applications.
 - **input**: 
-  - `target` (`--target all|document|code|group`):
+  - `target` (`--target all|document|code`):
     - `all`: Show all annotations (scans `src/` and `specify_manual/`).
     - `document`: Show annotations from documents (scans `specify_manual/`).
     - `code`: Show annotations from source code (scans `src/`).
-    - `group`: (Future implementation) Group annotations by specific criteria.
   - `mode` (`--mode list|search`):
     - `list`: List all found annotations.
-    - `search`: Search for specific annotations (requires `--scope`).
+    - `search`: Future search operation using `--scope`; not implemented in the initial output contract.
   - `scope` (`--scope <query>`): Search query for `search` mode.
-- **output**: reports of annotations (stdout/json)
+  - `view` (`--view summary|list|group|detail`): Select the presentation of the target set; default `list`.
+  - `format` (`--format text|json`): Select the renderer; default `text`. `--compact` is available only for JSON.
+- **output**: Text or JSON on stdout; warnings and errors on stderr. See the [Show Output Contract](command_design/show_annotattion/output.md).
 - **layer**: cli, usecase
-- **note**: Show command has annotation filtering and searching capabilities. It provides a way to inspect the state of annotations across the project.
+- **note**: The initial `list` mode inspects annotations across the selected sources. Search is a future operation.
  
 #### report-ui
 
@@ -189,7 +190,7 @@ SpecTrail uses a unified data model for annotations in both documents and source
 All annotation layers share some common attributes:
 - `id`: Unique identifier (e.g., `@st-manual-spec-goal`)
 - `name`: Human-readable name
-- `type`: Specific category within the layer (e.g., Philosophy, Func)
+- `type`: Specific category within the layer (e.g., Philosophy, Func); optional in the current data model
 - `layer`: The layer this annotation belongs to (Meta, Abstract, SpecDetail, Implementation)
 - `links`: References to other annotations
 
@@ -215,6 +216,7 @@ Describes technical realization.
 - **Types**: DatabaseSchema, DaoRepository, DomainEntity, ExternalApiGateway, WebInterfaceDataModel, Structure
 - **Artifact**: Path or identifier of the code artifact (e.g., file path, function name).
 - **Status**: Planned, InProgress, Completed.
+- **Optional value**: `status` can be absent in the current data model.
 - **Links**: Links to `SpecDetailAnnotation` or `AbstractAnnotation`.
 
 ### 4.3 Container Structures
@@ -230,146 +232,34 @@ These are aggregators that group annotations found in a specific file or artifac
 }
 ```
 
-### 4.4 JSON Schema Example (Show Command Output)
-When running `show --mode list --target all`, the output follows this structure:
+/// [@st-manual-spec-cli-show-json-contract] layer: spec-detail, type: Rule, name: Show JSON Output Contract, links: [@st-manual-cli-show-output]
+### 4.4 Show Command Output
+
+The structures in Section 4.3 are internal file aggregation models. The CLI presents the selected annotations through a shared output model. Text and JSON convey the same selected data; JSON adds a fixed envelope for machine processing. The normative behavior, view semantics, nullable fields, links, stream handling, and schema version rules are defined in the [Show Output Contract](command_design/show_annotattion/output.md).
+
+A successful list result has this envelope (illustrative empty result):
 
 ```json
 {
-  "document_annotations": [
-    {
-      "metas": [
-        {
-          "id": "@st-manual-meta-model-doc",
-          "name": "Specification Model: Formal Definition",
-          "type": "Philosophy",
-          "layer": "Meta",
-          "links": [
-            {
-              "id": "@st-manual-meta-vocabulary",
-              "name": "Vocabulary",
-              "type": "Convention",
-              "layer": "Meta"
-            }
-          ]
-        }
-      ],
-      "abstracts": [
-        {
-          "id": "@st-manual-spec-goal",
-          "name": "Goal of SpecTrail",
-          "type": "Philosophy",
-          "layer": "Abstract",
-          "links": [
-            {
-              "id": "@st-manual-spec-cli-show-command",
-              "name": "show-command",
-              "type": "Func",
-              "layer": "SpecDetail"
-            }
-          ]
-        }
-      ],
-      "details": [
-        {
-          "id": "@st-manual-spec-cli-show-command",
-          "name": "show-command",
-          "type": "Func",
-          "layer": "SpecDetail",
-          "links": [
-            {
-              "id": "@st-code-use-case-show-show-use-case",
-              "name": "ShowUseCase",
-              "type": "Structure",
-              "layer": "Implementation"
-            }
-          ]
-        }
-      ],
-      "implementations": [
-        {
-          "id": "@st-impl-report-json-format",
-          "name": "Show Command JSON Output Format",
-          "type": "WebInterfaceDataModel",
-          "layer": "Implementation",
-          "artifact": "specify_manual/command/show/io.md",
-          "status": "InProgress",
-          "links": [
-            {
-              "id": "@st-manual-spec-cli-show-command",
-              "name": "show-command",
-              "type": "Func",
-              "layer": "SpecDetail"
-            }
-          ]
-        }
-      ]
+  "schema_version": 1,
+  "created_at": "2026-09-30T09:11:23Z",
+  "view": "list",
+  "request": {
+    "target": "all",
+    "mode": "list",
+    "scope": null,
+    "config": {
+      "path": "src/config/default.toml"
     }
-  ],
-  "code_annotations": [
-    {
-      "metas": [
-        {
-          "id": "@st-meta-naming-convention",
-          "name": "Annotation ID Naming Convention",
-          "type": "Convention",
-          "layer": "Meta",
-          "links": []
-        }
-      ],
-      "abstracts": [
-        {
-          "id": "@st-abstract-cli",
-          "name": "Command Line Interface",
-          "type": "Structure",
-          "layer": "Abstract",
-          "links": [
-            {
-              "id": "@st-manual-spec-cli-show-command",
-              "name": "show-command",
-              "type": "Func",
-              "layer": "SpecDetail"
-            }
-          ]
-        }
-      ],
-      "details": [
-        {
-          "id": "@st-detail-show-list",
-          "name": "List annotations (show --mode list)",
-          "type": "Func",
-          "layer": "SpecDetail",
-          "links": [
-            {
-              "id": "@st-code-use-case-show-show-use-case",
-              "name": "ShowUseCase",
-              "type": "Structure",
-              "layer": "Implementation"
-            }
-          ]
-        }
-      ],
-      "implementations": [
-        {
-          "id": "@st-code-use-case-show-show-use-case",
-          "name": "ShowUseCase",
-          "type": "Structure",
-          "layer": "Implementation",
-          "artifact": "src/use_case/show/show_use_case.rs",
-          "status": "Completed",
-          "links": [
-            {
-              "id": "@st-detail-show-list",
-              "name": "List annotations (show --mode list)",
-              "type": "Func",
-              "layer": "SpecDetail"
-            }
-          ]
-        }
-      ]
-    }
-  ]
+  },
+  "result": {
+    "documents": [],
+    "code": []
+  }
 }
 ```
+
+Document and code remain distinct in the result. File entries use project-relative `source_file` paths and flattened `annotations` arrays. The versioned schema defines the exact result fields for each view.
 
 /// [@st-manual-spec-open-questions] layer: meta, type: Rule, name: Open Questions
 ## 5. Open Questions
