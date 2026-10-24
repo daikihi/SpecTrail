@@ -1,51 +1,38 @@
-# CodeRabbit Review Fix — SpecTrail
+language: "en-US"
+tone_instructions: >-
+  Keep findings concise and directly actionable. Avoid long summaries, repeated
+  context, and large code examples.
+reviews:
+  profile: "quiet"
+  high_level_summary: false
+  review_status: false
+  review_info: false
+  changed_files_summary: false
+  sequence_diagrams: false
+  estimate_code_review_effort: false
+  assess_linked_issues: false
+  related_issues: false
+  related_prs: false
+  path_instructions:
+    - path: "**/*"
+      instructions: |
+        Review the pull request diff and only the surrounding code needed to
+        evaluate it. Do not perform a full repository review. Focus on confirmed,
+        actionable correctness, security, and regression issues. Treat
+        specification-to-code traceability and consistency with `.specify` as
+        core invariants; do not invent requirements that are not supported by
+        repository specifications. Preserve existing architecture and public
+        interfaces unless a change is necessary to fix a confirmed defect.
 
-## Goal
+        Report only high-confidence, actionable defects. Group duplicate
+        findings that share the same root cause. Do not report stylistic
+        preferences, low-confidence suspicions, unrelated refactoring,
+        dependency changes, or formatting-only issues. When a finding requires
+        a significant architectural decision, state the concrete risk briefly
+        without prescribing a speculative redesign.
 
-Address actionable CodeRabbit review comments with minimal changes, minimal context consumption, and no unnecessary redesign.
-
-## Scope
-
-1. Read the review comments provided below.
-2. Inspect only the files and surrounding code necessary to evaluate them.
-3. Group comments that share the same root cause or require changes to the same component.
-4. Distinguish genuine defects from false positives and optional suggestions.
-5. Implement fixes for confirmed, actionable issues.
-
-## Project constraints
-
-- SpecTrail maintains traceability between `.specify` specifications and Rust source code.
-- Preserve existing architecture and public interfaces unless a change is necessary.
-- Treat specification-to-code traceability and consistency as core invariants.
-- Do not invent requirements that are not supported by repository specifications.
-- Follow the repository's `AGENTS.md` and relevant project specifications.
-- Avoid unrelated refactoring, dependency changes, and formatting-only changes.
-
-## Workflow
-
-1. Produce a compact table of comments, classifications, rationale, and proposed actions.
-2. Identify related comments and propose a single minimal patch for each related group.
-3. Implement the approved fixes without re-investigating unrelated parts of the repository.
-4. Run only the relevant tests and checks first.
-5. Inspect the final diff for regressions and unrelated modifications.
-6. Report any unresolved comments and the reason they remain unresolved.
-
-## Rules
-
-- Do not perform a full repository review.
-- Do not repeatedly re-read unchanged files.
-- Do not invoke another AI reviewer automatically.
-- Do not modify code merely to satisfy a stylistic preference.
-- Do not claim that a fix is verified unless the relevant check actually passed.
-- If a comment requires a significant architectural decision, stop and explain the decision needed instead of implementing a speculative solution.
-
-## Output
-
-- Summary of comments and decisions
-- Files changed and reasons
-- Tests and checks executed, with results
-- Unresolved comments and reasons
-
-## CodeRabbit comments
-
-[Paste the collected review comments here]
+        For each finding, state the affected behavior, concrete impact, and
+        smallest practical fix in a few sentences. Do not repeat the PR summary,
+        quote large code blocks, or include generic praise. Mention a test gap
+        only when it is directly relevant, and never claim a test or check was
+        run unless it was actually executed.
