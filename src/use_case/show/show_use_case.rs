@@ -118,7 +118,7 @@ impl ShowUseCase {
             doc_path,
             &config.document.extension,
             &ignored_prefixes,
-        );
+        )?;
 
         let code_annotations = scan_result.code_annotations;
         let document_annotations = scan_result.document_annotations;

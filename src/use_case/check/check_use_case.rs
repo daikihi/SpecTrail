@@ -57,7 +57,7 @@ impl CheckUseCase {
             Path::new(&config.document.head),
             &config.document.extension,
             &ignored_prefixes,
-        );
+        )?;
 
         let issues: Vec<CheckIssue> = scan_result
             .warnings
@@ -154,5 +154,36 @@ mod tests {
         assert_eq!(issue.file, "src/baz.rs");
         assert_eq!(issue.line, 5);
         assert_eq!(issue.spec_id, None);
+    }
+
+    #[test]
+    fn test_execute_fails_when_configured_path_does_not_exist() {
+        let temp_dir = std::env::temp_dir();
+        let config_file = temp_dir.join("spectrail_nonexistent_dir_config.toml");
+        std::fs::write(
+            &config_file,
+            r#"
+[source]
+head = "nonexistent_source_xyz"
+extension = ".rs"
+[document]
+head = "src/"
+extension = ".rs"
+[annotation]
+prefix = "@st-"
+"#,
+        )
+        .unwrap();
+
+        let uc = CheckUseCase::new();
+        let result = uc.execute(CheckUseCaseRequestDto {
+            strict: false,
+            warn_unimplemented: false,
+            config_path: Some(config_file.to_str().unwrap().to_string()),
+        });
+
+        let _ = std::fs::remove_file(&config_file);
+
+        assert!(result.is_err());
     }
 }
