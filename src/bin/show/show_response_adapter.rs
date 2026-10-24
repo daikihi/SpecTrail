@@ -1,7 +1,7 @@
-use SpecTrail::domains::models::annotation::code_annotation::CodeAnnotation;
-use SpecTrail::domains::models::annotation::document_annotation::DocumentAnnotation;
-use SpecTrail::domains::services::annotation::scanner::ScanWarning;
-use SpecTrail::use_case::show::show_use_case::ShowUseCaseResponseDto;
+use spec_trail::domains::models::annotation::code_annotation::CodeAnnotation;
+use spec_trail::domains::models::annotation::document_annotation::DocumentAnnotation;
+use spec_trail::domains::services::annotation::scanner::ScanWarning;
+use spec_trail::use_case::show::show_use_case::ShowUseCaseResponseDto;
 
 #[derive(Debug)]
 pub struct ShowResponseView {
@@ -29,20 +29,20 @@ pub fn adapt_response(
 #[cfg(test)]
 mod tests {
     use super::*;
-    use SpecTrail::domains::models::abstract_annotation::{
+    use spec_trail::domains::models::abstract_annotation::{
         AbstractAnnotation, AbstractAnnotationId, AbstractName,
     };
-    use SpecTrail::domains::models::implementation::{
+    use spec_trail::domains::models::implementation::{
         ImplementationAnnotation, ImplementationArtifact, ImplementationLink,
         ImplementationSpecName,
     };
-    use SpecTrail::domains::models::layer::Layer;
-    use SpecTrail::domains::models::meta::{MetaAnnotation, MetaAnnotationId, MetaName};
-    use SpecTrail::domains::models::spec_detail::{
+    use spec_trail::domains::models::layer::Layer;
+    use spec_trail::domains::models::line_number::LineNumber;
+    use spec_trail::domains::models::meta::{MetaAnnotation, MetaAnnotationId, MetaName};
+    use spec_trail::domains::models::spec_detail::{
         SpecDetailAnnotation, SpecDetailAnnotationId, SpecDetailLink, SpecDetailName,
     };
-    use SpecTrail::domains::services::annotation::parser::ParseWarning;
-    use SpecTrail::domains::services::annotation::resolver::ResolveWarning;
+    use spec_trail::domains::services::annotation::parser::ParseWarning;
 
     fn make_meta() -> MetaAnnotation {
         MetaAnnotation {
@@ -51,6 +51,7 @@ mod tests {
             r#type: None,
             layer: Layer::Meta,
             links: vec![],
+            line: LineNumber(1),
         }
     }
 
@@ -61,6 +62,7 @@ mod tests {
             r#type: None,
             layer: Layer::Abstract,
             links: vec![],
+            line: LineNumber(1),
         }
     }
 
@@ -71,12 +73,13 @@ mod tests {
             r#type: None,
             layer: Layer::SpecDetail,
             links: vec![SpecDetailLink::Abstract(Box::new(make_abstract()))],
+            line: LineNumber(1),
         }
     }
 
     fn make_implementation() -> ImplementationAnnotation {
         ImplementationAnnotation {
-            id: SpecTrail::domains::models::implementation::ImplementationAnnotationId(
+            id: spec_trail::domains::models::implementation::ImplementationAnnotationId(
                 "i".to_string(),
             ),
             name: ImplementationSpecName("Impl".to_string()),
@@ -85,6 +88,7 @@ mod tests {
             links: vec![ImplementationLink::Abstract(Box::new(make_abstract()))],
             artifact: ImplementationArtifact("artifact".to_string()),
             status: None,
+            line: LineNumber(1),
         }
     }
 
@@ -128,7 +132,7 @@ mod tests {
             code_annotations: vec![],
             warnings: vec![ScanWarning::Parse(ParseWarning {
                 source_file: "src/main.rs".to_string(),
-                line: 12,
+                line: LineNumber(12),
                 message: "broken".to_string(),
                 raw_text: "@bad".to_string(),
             })],

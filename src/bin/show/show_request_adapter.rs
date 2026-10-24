@@ -1,5 +1,5 @@
 use crate::dto::ShowRequestDto;
-use SpecTrail::use_case::show::show_use_case::ShowUseCaseRequestDto;
+use spec_trail::use_case::show::show_use_case::ShowUseCaseRequestDto;
 
 pub fn adapt_request(request: &ShowRequestDto) -> ShowUseCaseRequestDto {
     ShowUseCaseRequestDto {

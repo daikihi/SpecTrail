@@ -217,7 +217,23 @@ Describes technical realization.
 - **Status**: Planned, InProgress, Completed.
 - **Links**: Links to `SpecDetailAnnotation` or `AbstractAnnotation`.
 
-### 4.3 Container Structures
+### 4.3 Scanner Configuration and Ignore Rules
+
+SpecTrail supports ignoring specific annotations during scanning (e.g. mock or test fixtures).
+Annotations whose ID begins with an ignored prefix are excluded from domain models and broken link validation.
+
+- **Built-in Defaults**: `["_fixture_"]` (e.g. `@_fixture_foo` is always ignored)
+- **Configuration** (`config.toml`):
+  ```toml
+  [scanner]
+  # Additional prefixes to ignore alongside the built-in "_fixture_"
+  ignored_prefixes = [
+      "mock_",
+      "dummy_",
+  ]
+  ```
+
+### 4.4 Container Structures
 
 #### CodeAnnotation / DocumentAnnotation
 These are aggregators that group annotations found in a specific file or artifact.
@@ -230,7 +246,7 @@ These are aggregators that group annotations found in a specific file or artifac
 }
 ```
 
-### 4.4 JSON Schema Example (Show Command Output)
+### 4.5 JSON Schema Example (Show Command Output)
 When running `show --mode list --target all`, the output follows this structure:
 
 ```json

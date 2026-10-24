@@ -7,7 +7,7 @@ mod output;
 use dto::ShowRequestDto;
 use show_request_adapter::adapt_request;
 use show_response_adapter::adapt_response;
-use SpecTrail::use_case::show::show_use_case::ShowUseCase;
+use spec_trail::use_case::show::show_use_case::ShowUseCase;
 use std::env;
 use std::process;
 

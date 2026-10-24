@@ -1,0 +1,51 @@
+# CodeRabbit Review Fix — SpecTrail
+
+## Goal
+
+Address actionable CodeRabbit review comments with minimal changes, minimal context consumption, and no unnecessary redesign.
+
+## Scope
+
+1. Read the review comments provided below.
+2. Inspect only the files and surrounding code necessary to evaluate them.
+3. Group comments that share the same root cause or require changes to the same component.
+4. Distinguish genuine defects from false positives and optional suggestions.
+5. Implement fixes for confirmed, actionable issues.
+
+## Project constraints
+
+- SpecTrail maintains traceability between `.specify` specifications and Rust source code.
+- Preserve existing architecture and public interfaces unless a change is necessary.
+- Treat specification-to-code traceability and consistency as core invariants.
+- Do not invent requirements that are not supported by repository specifications.
+- Follow the repository's `AGENTS.md` and relevant project specifications.
+- Avoid unrelated refactoring, dependency changes, and formatting-only changes.
+
+## Workflow
+
+1. Produce a compact table of comments, classifications, rationale, and proposed actions.
+2. Identify related comments and propose a single minimal patch for each related group.
+3. Implement the approved fixes without re-investigating unrelated parts of the repository.
+4. Run only the relevant tests and checks first.
+5. Inspect the final diff for regressions and unrelated modifications.
+6. Report any unresolved comments and the reason they remain unresolved.
+
+## Rules
+
+- Do not perform a full repository review.
+- Do not repeatedly re-read unchanged files.
+- Do not invoke another AI reviewer automatically.
+- Do not modify code merely to satisfy a stylistic preference.
+- Do not claim that a fix is verified unless the relevant check actually passed.
+- If a comment requires a significant architectural decision, stop and explain the decision needed instead of implementing a speculative solution.
+
+## Output
+
+- Summary of comments and decisions
+- Files changed and reasons
+- Tests and checks executed, with results
+- Unresolved comments and reasons
+
+## CodeRabbit comments
+
+[Paste the collected review comments here]

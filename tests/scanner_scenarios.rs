@@ -1,6 +1,6 @@
 pub mod scenario_a {
-    use SpecTrail::domains::services::annotation::parser::AnnotationParser;
-    use SpecTrail::domains::services::annotation::resolver::AnnotationResolver;
+    use spec_trail::domains::services::annotation::parser::AnnotationParser;
+    use spec_trail::domains::services::annotation::resolver::AnnotationResolver;
 
     #[test]
     fn test_scenario_a_malformed_annotation() {
@@ -25,8 +25,8 @@ pub mod scenario_a {
 }
 
 pub mod scenario_b {
-    use SpecTrail::domains::services::annotation::parser::AnnotationParser;
-    use SpecTrail::domains::services::annotation::resolver::{
+    use spec_trail::domains::services::annotation::parser::AnnotationParser;
+    use spec_trail::domains::services::annotation::resolver::{
         AnnotationResolver, ResolvedAnnotation,
     };
 

@@ -1,14 +1,15 @@
 [package]
-name = "SpecTrail"
+name = "spec_trail"
 version = "0.1.0"
 edition = "2024"
 
 [lib]
-name = "SpecTrail"
+name = "spec_trail"
 path = "src/libs.rs"
 
 [dependencies]
 serde = { version = "1.0.228", features = ["derive"] }
+serde_json = "1.0"
 toml = "0.8"
 regex = "1.10"
 log = "0.4"
@@ -17,3 +18,7 @@ env_logger = "0.11"
 [[bin]]
 name = "show"
 path = "src/bin/show/main.rs"
+
+[[bin]]
+name = "check"
+path = "src/bin/check/main.rs"
