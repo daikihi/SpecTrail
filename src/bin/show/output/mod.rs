@@ -187,4 +187,80 @@ mod tests {
         assert_eq!(warnings[0]["type"], "parse");
         assert_eq!(warnings[0]["message"], "syntax error");
     }
+
+    #[test]
+    fn test_render_json_detail_implementation_fields() {
+        use spec_trail::domains::models::implementation::{
+            ImplementationAnnotation, ImplementationAnnotationId, ImplementationArtifact,
+            ImplementationSpecName, ImplementationStatus,
+        };
+        use spec_trail::domains::models::annotation::code_annotation::CodeAnnotation;
+
+        let impl_annotation = ImplementationAnnotation {
+            id: ImplementationAnnotationId("st-impl-test".to_string()),
+            name: ImplementationSpecName("Impl Test".to_string()),
+            r#type: None,
+            layer: Layer::Implementation,
+            links: vec![],
+            artifact: ImplementationArtifact("src/foo.rs".to_string()),
+            status: Some(ImplementationStatus::Completed),
+            line: LineNumber(10),
+        };
+        let code = CodeAnnotation {
+            source_file: "src/foo.rs".to_string(),
+            metas: vec![],
+            abstracts: vec![],
+            details: vec![],
+            implementations: vec![impl_annotation],
+        };
+        let view_model = ShowResponseView {
+            document_annotations: vec![],
+            code_annotations: vec![code],
+            warnings: vec![],
+            view: ShowView::Detail,
+            format: ShowFormat::Json,
+        };
+        let json_val = json::render_detail(&view_model);
+        let impls = &json_val["code_annotations"][0]["implementations"][0];
+        assert_eq!(impls["artifact"], "src/foo.rs");
+        assert_eq!(impls["status"], "Completed");
+    }
+
+    #[test]
+    fn test_render_text_detail_implementation_artifact() {
+        use spec_trail::domains::models::implementation::{
+            ImplementationAnnotation, ImplementationAnnotationId, ImplementationArtifact,
+            ImplementationSpecName,
+        };
+        use spec_trail::domains::models::annotation::code_annotation::CodeAnnotation;
+
+        // Smoke-test: render_detail must not panic and the impl includes artifact.
+        // (Captured stdout is not available in unit tests; we verify the call completes.)
+        let impl_annotation = ImplementationAnnotation {
+            id: ImplementationAnnotationId("st-impl-text".to_string()),
+            name: ImplementationSpecName("Impl Text".to_string()),
+            r#type: None,
+            layer: Layer::Implementation,
+            links: vec![],
+            artifact: ImplementationArtifact("src/bar.rs".to_string()),
+            status: None,
+            line: LineNumber(3),
+        };
+        let code = CodeAnnotation {
+            source_file: "src/bar.rs".to_string(),
+            metas: vec![],
+            abstracts: vec![],
+            details: vec![],
+            implementations: vec![impl_annotation],
+        };
+        let view_model = ShowResponseView {
+            document_annotations: vec![],
+            code_annotations: vec![code],
+            warnings: vec![],
+            view: ShowView::Detail,
+            format: ShowFormat::Text,
+        };
+        // Should not panic; artifact is now included in the format string.
+        text::render_detail(&view_model);
+    }
 }

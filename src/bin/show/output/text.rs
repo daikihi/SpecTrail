@@ -150,8 +150,8 @@ fn print_file_detail(file: &impl AnnotationFile) {
     }
     for i in file.implementations() {
         println!(
-            "  [@{}] line: {}, Layer: Implementation, Type: {:?}, Name: {}, Status: {:?}",
-            i.id.0, i.line, i.r#type, i.name.0, i.status
+            "  [@{}] line: {}, Layer: Implementation, Type: {:?}, Name: {}, Artifact: {}, Status: {:?}",
+            i.id.0, i.line, i.r#type, i.name.0, i.artifact.0, i.status
         );
     }
     println!();

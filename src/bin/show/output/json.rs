@@ -210,6 +210,7 @@ fn implementation_to_json(i: &ImplementationAnnotation) -> Value {
         "type": format_type(i.r#type.as_ref()),
         "layer": layer_name(i.layer),
         "artifact": i.artifact.0,
+        "status": i.status.as_ref().map(|s| format!("{:?}", s)),
         "line": i.line.as_usize(),
     })
 }
