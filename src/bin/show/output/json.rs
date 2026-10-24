@@ -1,12 +1,12 @@
 use super::{format_type, layer_name, AnnotationFile};
 use crate::dto::ShowView;
 use crate::show_response_adapter::ShowResponseView;
+use serde_json::{json, Value};
 use spec_trail::domains::models::abstract_annotation::AbstractAnnotation;
 use spec_trail::domains::models::implementation::ImplementationAnnotation;
 use spec_trail::domains::models::meta::MetaAnnotation;
 use spec_trail::domains::models::spec_detail::SpecDetailAnnotation;
 use spec_trail::domains::services::annotation::scanner::ScanWarning;
-use serde_json::{json, Value};
 use std::collections::BTreeMap;
 
 pub fn render(view_model: &ShowResponseView) {
@@ -75,8 +75,16 @@ pub fn render_list(view_model: &ShowResponseView) -> Value {
     let code_totals = count_annotations(&view_model.code_annotations);
     let doc_totals = count_annotations(&view_model.document_annotations);
 
-    let doc_files: Vec<_> = view_model.document_annotations.iter().map(file_summary_to_json).collect();
-    let code_files: Vec<_> = view_model.code_annotations.iter().map(file_summary_to_json).collect();
+    let doc_files: Vec<_> = view_model
+        .document_annotations
+        .iter()
+        .map(file_summary_to_json)
+        .collect();
+    let code_files: Vec<_> = view_model
+        .code_annotations
+        .iter()
+        .map(file_summary_to_json)
+        .collect();
 
     json!({
         "total_annotations": code_totals + doc_totals,
@@ -89,42 +97,80 @@ pub fn render_list(view_model: &ShowResponseView) -> Value {
 pub fn render_group(view_model: &ShowResponseView) -> Value {
     let mut tree: BTreeMap<&'static str, BTreeMap<String, Vec<Value>>> = BTreeMap::new();
 
-    let mut add_item = |layer: &'static str, anno_type: String, id: &str, name: &str, file: &str| {
-        tree.entry(layer)
-            .or_default()
-            .entry(anno_type)
-            .or_default()
-            .push(json!({
-                "id": format!("@{}", id),
-                "name": name,
-                "source_file": file,
-            }));
-    };
+    let mut add_item =
+        |layer: &'static str, anno_type: String, id: &str, name: &str, file: &str| {
+            tree.entry(layer)
+                .or_default()
+                .entry(anno_type)
+                .or_default()
+                .push(json!({
+                    "id": format!("@{}", id),
+                    "name": name,
+                    "source_file": file,
+                }));
+        };
 
     let files: Vec<&dyn AnnotationFile> = view_model
         .document_annotations
         .iter()
         .map(|d| d as &dyn AnnotationFile)
-        .chain(view_model.code_annotations.iter().map(|c| c as &dyn AnnotationFile))
+        .chain(
+            view_model
+                .code_annotations
+                .iter()
+                .map(|c| c as &dyn AnnotationFile),
+        )
         .collect();
 
     for file in files {
         let f = file.source_file();
         for m in file.metas() {
-            add_item(layer_name(m.layer), format_type(m.r#type.as_ref()), &m.id.0, &m.name.0, f);
+            add_item(
+                layer_name(m.layer),
+                format_type(m.r#type.as_ref()),
+                &m.id.0,
+                &m.name.0,
+                f,
+            );
         }
         for a in file.abstracts() {
-            add_item(layer_name(a.layer), format_type(a.r#type.as_ref()), &a.id.0, &a.name.0, f);
+            add_item(
+                layer_name(a.layer),
+                format_type(a.r#type.as_ref()),
+                &a.id.0,
+                &a.name.0,
+                f,
+            );
         }
         for d in file.details() {
-            add_item(layer_name(d.layer), format_type(d.r#type.as_ref()), &d.id.0, &d.name.0, f);
+            add_item(
+                layer_name(d.layer),
+                format_type(d.r#type.as_ref()),
+                &d.id.0,
+                &d.name.0,
+                f,
+            );
         }
         for i in file.implementations() {
-            add_item(layer_name(i.layer), format_type(i.r#type.as_ref()), &i.id.0, &i.name.0, f);
+            add_item(
+                layer_name(i.layer),
+                format_type(i.r#type.as_ref()),
+                &i.id.0,
+                &i.name.0,
+                f,
+            );
         }
     }
 
-    json!(tree)
+    let mut output = json!(tree);
+    if let Value::Object(ref mut map) = output {
+        map.insert(
+            "warnings".to_string(),
+            json!(warnings_to_json(&view_model.warnings)),
+        );
+    }
+
+    output
 }
 
 fn meta_to_json(m: &MetaAnnotation) -> Value {

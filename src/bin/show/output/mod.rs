@@ -73,7 +73,8 @@ pub fn layer_name(layer: Layer) -> &'static str {
 }
 
 pub fn format_type<T: std::fmt::Debug>(t: Option<&T>) -> String {
-    t.map(|v| format!("{:?}", v)).unwrap_or_else(|| "unknown".to_string())
+    t.map(|v| format!("{:?}", v))
+        .unwrap_or_else(|| "unknown".to_string())
 }
 
 /// Entry point for rendering the ShowResponseView according to requested view and format.
@@ -159,5 +160,31 @@ mod tests {
         let json_val = json::render_detail(&view_model);
         assert!(json_val.get("document_annotations").is_some());
         assert!(json_val.get("code_annotations").is_some());
+    }
+
+    #[test]
+    fn test_render_json_group_includes_warnings() {
+        use spec_trail::domains::services::annotation::parser::ParseWarning;
+        use spec_trail::domains::services::annotation::scanner::ScanWarning;
+
+        let view_model = ShowResponseView {
+            document_annotations: vec![],
+            code_annotations: vec![],
+            warnings: vec![ScanWarning::Parse(ParseWarning {
+                source_file: "test.rs".to_string(),
+                line: LineNumber(5),
+                message: "syntax error".to_string(),
+                raw_text: "@bad".to_string(),
+            })],
+            view: ShowView::Group,
+            format: ShowFormat::Json,
+        };
+        let json_val = json::render_group(&view_model);
+        let warnings = json_val
+            .get("warnings")
+            .expect("warnings should be present in group output");
+        assert_eq!(warnings.as_array().unwrap().len(), 1);
+        assert_eq!(warnings[0]["type"], "parse");
+        assert_eq!(warnings[0]["message"], "syntax error");
     }
 }
