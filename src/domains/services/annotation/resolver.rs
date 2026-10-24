@@ -87,10 +87,10 @@ impl AnnotationResolver {
         let mut annotations = Vec::new();
         let mut warnings = Vec::new();
 
-        let index: HashMap<String, &RawAnnotation> = raw_annotations
+        let index: HashMap<&str, &RawAnnotation> = raw_annotations
             .iter()
             .filter(|a| !is_ignored(&a.id))
-            .map(|a| (a.id.clone(), a))
+            .map(|a| (a.id.as_str(), a))
             .collect();
 
         for raw in &raw_annotations {
@@ -137,14 +137,11 @@ impl AnnotationResolver {
                         let link_id: &String = link_id;
                         let link_id_stripped = link_id.strip_prefix('@').unwrap_or(link_id);
                         if let Some(target) = index.get(link_id_stripped) {
-                            links.push(MetaAnnotation {
-                                id: MetaAnnotationId(target.id.clone()),
-                                name: MetaName(target.name.clone()),
-                                r#type: MetaType::from_str(&target.annotation_type).ok(),
-                                layer: Layer::Meta,
-                                links: vec![],
-                                line: target.line,
-                            });
+                            if target.layer == "meta" {
+                                links.push(MetaAnnotationId(target.id.clone()));
+                            } else {
+                                warn_unsupported_link(&mut warnings, raw, link_id, &target.layer);
+                            }
                         } else if !is_ignored(link_id) {
                             warnings.push(ResolveWarning {
                                 source_annotation_id: raw.id.clone(),
@@ -192,14 +189,11 @@ impl AnnotationResolver {
                         let link_id: &String = link_id;
                         let link_id_stripped = link_id.strip_prefix('@').unwrap_or(link_id);
                         if let Some(target) = index.get(link_id_stripped) {
-                            links.push(SpecDetailAnnotation {
-                                id: SpecDetailAnnotationId(target.id.clone()),
-                                name: SpecDetailName(target.name.clone()),
-                                r#type: SpecDetailType::from_str(&target.annotation_type).ok(),
-                                layer: Layer::SpecDetail,
-                                links: vec![],
-                                line: target.line,
-                            });
+                            if target.layer == "spec-detail" {
+                                links.push(SpecDetailAnnotationId(target.id.clone()));
+                            } else {
+                                warn_unsupported_link(&mut warnings, raw, link_id, &target.layer);
+                            }
                         } else if !is_ignored(link_id) {
                             warnings.push(ResolveWarning {
                                 source_annotation_id: raw.id.clone(),
@@ -247,16 +241,20 @@ impl AnnotationResolver {
                         let link_id: &String = link_id;
                         let link_id_stripped = link_id.strip_prefix('@').unwrap_or(link_id);
                         if let Some(target) = index.get(link_id_stripped) {
-                            /* Currently treating all links from SpecDetail as Abstract links
-                                (matching existing scanner.rs behavior). */
-                            links.push(SpecDetailLink::Abstract(Box::new(AbstractAnnotation {
-                                id: AbstractAnnotationId(target.id.clone()),
-                                name: AbstractName(target.name.clone()),
-                                r#type: AbstractType::from_str(&target.annotation_type).ok(),
-                                layer: Layer::Abstract,
-                                links: vec![],
-                                line: target.line,
-                            })));
+                            match target.layer.as_str() {
+                                "abstract" => links.push(SpecDetailLink::Abstract(
+                                    AbstractAnnotationId(target.id.clone()),
+                                )),
+                                "implementation" => links.push(SpecDetailLink::Implementation(
+                                    ImplementationAnnotationId(target.id.clone()),
+                                )),
+                                _ => warn_unsupported_link(
+                                    &mut warnings,
+                                    raw,
+                                    link_id,
+                                    &target.layer,
+                                ),
+                            }
                         } else if !is_ignored(link_id) {
                             warnings.push(ResolveWarning {
                                 source_annotation_id: raw.id.clone(),
@@ -304,16 +302,20 @@ impl AnnotationResolver {
                         let link_id: &String = link_id;
                         let link_id_stripped = link_id.strip_prefix('@').unwrap_or(link_id);
                         if let Some(target) = index.get(link_id_stripped) {
-                            links.push(ImplementationLink::Abstract(Box::new(
-                                AbstractAnnotation {
-                                    id: AbstractAnnotationId(target.id.clone()),
-                                    name: AbstractName(target.name.clone()),
-                                    r#type: AbstractType::from_str(&target.annotation_type).ok(),
-                                    layer: Layer::Abstract,
-                                    links: vec![],
-                                    line: target.line,
-                                },
-                            )));
+                            match target.layer.as_str() {
+                                "abstract" => links.push(ImplementationLink::Abstract(
+                                    AbstractAnnotationId(target.id.clone()),
+                                )),
+                                "spec-detail" => links.push(ImplementationLink::SpecDetail(
+                                    SpecDetailAnnotationId(target.id.clone()),
+                                )),
+                                _ => warn_unsupported_link(
+                                    &mut warnings,
+                                    raw,
+                                    link_id,
+                                    &target.layer,
+                                ),
+                            }
                         } else if !is_ignored(link_id) {
                             warnings.push(ResolveWarning {
                                 source_annotation_id: raw.id.clone(),
@@ -349,6 +351,23 @@ impl AnnotationResolver {
             warnings,
         }
     }
+}
+
+fn warn_unsupported_link(
+    warnings: &mut Vec<ResolveWarning>,
+    source: &RawAnnotation,
+    target_id: &str,
+    target_layer: &str,
+) {
+    warnings.push(ResolveWarning {
+        source_annotation_id: source.id.clone(),
+        source_file: source.source_file.clone(),
+        line: source.line,
+        message: format!(
+            "Unsupported link from layer '{}' to '{}' (target '{}' referenced from @{})",
+            source.layer, target_layer, target_id, source.id
+        ),
+    });
 }
 
 #[cfg(test)]
@@ -445,5 +464,77 @@ mod tests {
         assert_eq!(result.annotations.len(), 1);
         assert_eq!(result.annotations[0].source_file(), "src/real.rs");
         assert!(result.warnings.is_empty());
+    }
+
+    #[test]
+    fn resolves_only_supported_link_layer_pairs() {
+        let annotation = |id: &str, layer: &str, links: &[&str]| RawAnnotation {
+            id: id.to_string(),
+            layer: layer.to_string(),
+            annotation_type: if layer == "spec-detail" {
+                "Func"
+            } else {
+                "Structure"
+            }
+            .to_string(),
+            name: id.to_string(),
+            links: links.iter().map(|link| (*link).to_string()).collect(),
+            source_file: "src/annotations.rs".to_string(),
+            line: LineNumber::new(1),
+        };
+        let raw = vec![
+            annotation("meta", "meta", &["@meta-target", "@abstract"]),
+            annotation("abstract", "abstract", &["@detail", "@meta"]),
+            annotation(
+                "detail",
+                "spec-detail",
+                &["@abstract", "@implementation", "@meta", "@detail"],
+            ),
+            annotation(
+                "implementation",
+                "implementation",
+                &["@abstract", "@detail", "@meta", "@implementation"],
+            ),
+            annotation("meta-target", "meta", &[]),
+        ];
+
+        let result = AnnotationResolver::resolve(raw);
+
+        assert_eq!(result.warnings.len(), 6);
+        assert!(result.warnings.iter().all(|warning| warning
+            .message
+            .starts_with("Unsupported link from layer")));
+
+        let ResolvedAnnotation::Meta(meta, _) = &result.annotations[0] else {
+            panic!("expected meta annotation")
+        };
+        assert_eq!(meta.links.len(), 1);
+        let ResolvedAnnotation::Abstract(abstract_annotation, _) = &result.annotations[1] else {
+            panic!("expected abstract annotation")
+        };
+        assert_eq!(abstract_annotation.links.len(), 1);
+        let ResolvedAnnotation::SpecDetail(detail, _) = &result.annotations[2] else {
+            panic!("expected spec-detail annotation")
+        };
+        assert!(matches!(
+            &detail.links[0],
+            SpecDetailLink::Abstract(AbstractAnnotationId(id)) if id == "abstract"
+        ));
+        assert!(matches!(
+            &detail.links[1],
+            SpecDetailLink::Implementation(ImplementationAnnotationId(id))
+                if id == "implementation"
+        ));
+        let ResolvedAnnotation::Implementation(implementation, _) = &result.annotations[3] else {
+            panic!("expected implementation annotation")
+        };
+        assert!(matches!(
+            &implementation.links[0],
+            ImplementationLink::Abstract(AbstractAnnotationId(id)) if id == "abstract"
+        ));
+        assert!(matches!(
+            &implementation.links[1],
+            ImplementationLink::SpecDetail(SpecDetailAnnotationId(id)) if id == "detail"
+        ));
     }
 }

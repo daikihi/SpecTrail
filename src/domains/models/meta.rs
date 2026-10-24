@@ -47,6 +47,6 @@ pub struct MetaAnnotation {
     pub name: MetaName,
     pub r#type: Option<MetaType>,
     pub layer: Layer,
-    pub links: Vec<MetaAnnotation>,
+    pub links: Vec<MetaAnnotationId>,
     pub line: LineNumber,
 }

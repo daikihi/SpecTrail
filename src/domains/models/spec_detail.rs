@@ -1,5 +1,5 @@
-use crate::domains::models::abstract_annotation::AbstractAnnotation;
-use crate::domains::models::implementation::ImplementationAnnotation;
+use crate::domains::models::abstract_annotation::AbstractAnnotationId;
+use crate::domains::models::implementation::ImplementationAnnotationId;
 /// [@st-code-domain-models-spec-detail-file] layer: abstract, type: File, name: spec_detail.rs
 /// [@st-manual-meta-model-doc] layer: meta, type: Philosophy, name: Specification Model: Formal Definition
 /// This file defines the spec-detail-layer annotations, representing concrete functional or structural specifications.
@@ -47,8 +47,8 @@ impl std::str::FromStr for SpecDetailType {
 /// This enum represents the link type for spec detail annotation as described in the specification.
 #[derive(Debug, Clone)]
 pub enum SpecDetailLink {
-    Abstract(Box<AbstractAnnotation>),
-    Implementation(Box<ImplementationAnnotation>),
+    Abstract(AbstractAnnotationId),
+    Implementation(ImplementationAnnotationId),
 }
 
 /// [@st-code-domain-models-spec-detail-spec-detail-annotation] layer: abstract, type: Structure, name: SpecDetailAnnotation

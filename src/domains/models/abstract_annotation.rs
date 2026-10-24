@@ -3,7 +3,7 @@
 /// This file defines the abstract-layer annotations, representing high-level conceptual units of the system.
 use crate::domains::models::layer::Layer;
 use crate::domains::models::line_number::LineNumber;
-use crate::domains::models::spec_detail::SpecDetailAnnotation;
+use crate::domains::models::spec_detail::SpecDetailAnnotationId;
 
 /// [@st-code-domain-models-abstract-annotation-abstract-annotation-id] layer: abstract, type: Structure, name: AbstractAnnotationId
 /// This struct represents the unique identifier for an abstract annotation (id = tag) as described in the specification.
@@ -53,6 +53,6 @@ pub struct AbstractAnnotation {
     pub name: AbstractName,
     pub r#type: Option<AbstractType>,
     pub layer: Layer,
-    pub links: Vec<SpecDetailAnnotation>,
+    pub links: Vec<SpecDetailAnnotationId>,
     pub line: LineNumber,
 }
