@@ -137,6 +137,15 @@ pub fn render_group(view_model: &ShowResponseView) {
     }
 }
 
+pub(super) fn format_implementation_line(
+    i: &spec_trail::domains::models::implementation::ImplementationAnnotation,
+) -> String {
+    format!(
+        "  [@{}] line: {}, Layer: Implementation, Type: {:?}, Name: {}, Artifact: {}, Status: {:?}",
+        i.id.0, i.line, i.r#type, i.name.0, i.artifact.0, i.status
+    )
+}
+
 fn print_file_detail(file: &impl AnnotationFile) {
     println!("File: {}", file.source_file());
     for m in file.metas() {
@@ -149,10 +158,7 @@ fn print_file_detail(file: &impl AnnotationFile) {
         println!("  [@{}] line: {}, Layer: SpecDetail, Type: {:?}, Name: {}", d.id.0, d.line, d.r#type, d.name.0);
     }
     for i in file.implementations() {
-        println!(
-            "  [@{}] line: {}, Layer: Implementation, Type: {:?}, Name: {}, Artifact: {}, Status: {:?}",
-            i.id.0, i.line, i.r#type, i.name.0, i.artifact.0, i.status
-        );
+        println!("{}", format_implementation_line(i));
     }
     println!();
 }

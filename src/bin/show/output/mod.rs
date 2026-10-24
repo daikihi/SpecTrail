@@ -232,10 +232,7 @@ mod tests {
             ImplementationAnnotation, ImplementationAnnotationId, ImplementationArtifact,
             ImplementationSpecName,
         };
-        use spec_trail::domains::models::annotation::code_annotation::CodeAnnotation;
 
-        // Smoke-test: render_detail must not panic and the impl includes artifact.
-        // (Captured stdout is not available in unit tests; we verify the call completes.)
         let impl_annotation = ImplementationAnnotation {
             id: ImplementationAnnotationId("st-impl-text".to_string()),
             name: ImplementationSpecName("Impl Text".to_string()),
@@ -246,21 +243,11 @@ mod tests {
             status: None,
             line: LineNumber(3),
         };
-        let code = CodeAnnotation {
-            source_file: "src/bar.rs".to_string(),
-            metas: vec![],
-            abstracts: vec![],
-            details: vec![],
-            implementations: vec![impl_annotation],
-        };
-        let view_model = ShowResponseView {
-            document_annotations: vec![],
-            code_annotations: vec![code],
-            warnings: vec![],
-            view: ShowView::Detail,
-            format: ShowFormat::Text,
-        };
-        // Should not panic; artifact is now included in the format string.
-        text::render_detail(&view_model);
+
+        let line = text::format_implementation_line(&impl_annotation);
+        assert!(
+            line.contains("Artifact: src/bar.rs"),
+            "expected 'Artifact: src/bar.rs' in formatted line, got: {line:?}"
+        );
     }
 }
