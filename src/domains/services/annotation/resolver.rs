@@ -87,10 +87,10 @@ impl AnnotationResolver {
         let mut annotations = Vec::new();
         let mut warnings = Vec::new();
 
-        let index: HashMap<String, &RawAnnotation> = raw_annotations
+        let index: HashMap<&str, &RawAnnotation> = raw_annotations
             .iter()
             .filter(|a| !is_ignored(&a.id))
-            .map(|a| (a.id.clone(), a))
+            .map(|a| (a.id.as_str(), a))
             .collect();
 
         for raw in &raw_annotations {
@@ -137,14 +137,7 @@ impl AnnotationResolver {
                         let link_id: &String = link_id;
                         let link_id_stripped = link_id.strip_prefix('@').unwrap_or(link_id);
                         if let Some(target) = index.get(link_id_stripped) {
-                            links.push(MetaAnnotation {
-                                id: MetaAnnotationId(target.id.clone()),
-                                name: MetaName(target.name.clone()),
-                                r#type: MetaType::from_str(&target.annotation_type).ok(),
-                                layer: Layer::Meta,
-                                links: vec![],
-                                line: target.line,
-                            });
+                            links.push(MetaAnnotationId(target.id.clone()));
                         } else if !is_ignored(link_id) {
                             warnings.push(ResolveWarning {
                                 source_annotation_id: raw.id.clone(),
@@ -192,14 +185,7 @@ impl AnnotationResolver {
                         let link_id: &String = link_id;
                         let link_id_stripped = link_id.strip_prefix('@').unwrap_or(link_id);
                         if let Some(target) = index.get(link_id_stripped) {
-                            links.push(SpecDetailAnnotation {
-                                id: SpecDetailAnnotationId(target.id.clone()),
-                                name: SpecDetailName(target.name.clone()),
-                                r#type: SpecDetailType::from_str(&target.annotation_type).ok(),
-                                layer: Layer::SpecDetail,
-                                links: vec![],
-                                line: target.line,
-                            });
+                            links.push(SpecDetailAnnotationId(target.id.clone()));
                         } else if !is_ignored(link_id) {
                             warnings.push(ResolveWarning {
                                 source_annotation_id: raw.id.clone(),
@@ -249,14 +235,9 @@ impl AnnotationResolver {
                         if let Some(target) = index.get(link_id_stripped) {
                             /* Currently treating all links from SpecDetail as Abstract links
                                 (matching existing scanner.rs behavior). */
-                            links.push(SpecDetailLink::Abstract(Box::new(AbstractAnnotation {
-                                id: AbstractAnnotationId(target.id.clone()),
-                                name: AbstractName(target.name.clone()),
-                                r#type: AbstractType::from_str(&target.annotation_type).ok(),
-                                layer: Layer::Abstract,
-                                links: vec![],
-                                line: target.line,
-                            })));
+                            links.push(SpecDetailLink::Abstract(AbstractAnnotationId(
+                                target.id.clone(),
+                            )));
                         } else if !is_ignored(link_id) {
                             warnings.push(ResolveWarning {
                                 source_annotation_id: raw.id.clone(),
@@ -304,15 +285,8 @@ impl AnnotationResolver {
                         let link_id: &String = link_id;
                         let link_id_stripped = link_id.strip_prefix('@').unwrap_or(link_id);
                         if let Some(target) = index.get(link_id_stripped) {
-                            links.push(ImplementationLink::Abstract(Box::new(
-                                AbstractAnnotation {
-                                    id: AbstractAnnotationId(target.id.clone()),
-                                    name: AbstractName(target.name.clone()),
-                                    r#type: AbstractType::from_str(&target.annotation_type).ok(),
-                                    layer: Layer::Abstract,
-                                    links: vec![],
-                                    line: target.line,
-                                },
+                            links.push(ImplementationLink::Abstract(AbstractAnnotationId(
+                                target.id.clone(),
                             )));
                         } else if !is_ignored(link_id) {
                             warnings.push(ResolveWarning {

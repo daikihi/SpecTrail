@@ -72,7 +72,9 @@ mod tests {
             name: SpecDetailName("Detail".to_string()),
             r#type: None,
             layer: Layer::SpecDetail,
-            links: vec![SpecDetailLink::Abstract(Box::new(make_abstract()))],
+            links: vec![SpecDetailLink::Abstract(AbstractAnnotationId(
+                "a".to_string(),
+            ))],
             line: LineNumber(1),
         }
     }
@@ -85,7 +87,9 @@ mod tests {
             name: ImplementationSpecName("Impl".to_string()),
             r#type: None,
             layer: Layer::Implementation,
-            links: vec![ImplementationLink::Abstract(Box::new(make_abstract()))],
+            links: vec![ImplementationLink::Abstract(AbstractAnnotationId(
+                "a".to_string(),
+            ))],
             artifact: ImplementationArtifact("artifact".to_string()),
             status: None,
             line: LineNumber(1),
