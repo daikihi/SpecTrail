@@ -37,6 +37,14 @@ impl SpecTrailConfig {
     pub fn from_file<P: AsRef<Path>>(path: P) -> Result<Self, Box<dyn std::error::Error>> {
         let content: String = fs::read_to_string(path)?;
         let config: SpecTrailConfig = toml::from_str(&content)?;
+        if config
+            .scanner
+            .ignored_prefixes
+            .iter()
+            .any(String::is_empty)
+        {
+            return Err("scanner.ignored_prefixes must not contain empty prefixes".into());
+        }
         Ok(config)
     }
 }
@@ -233,5 +241,27 @@ ignored_prefixes = ["mock_", "dummy_"]
             config.scanner.effective_ignored_prefixes(),
             vec!["_fixture_".to_string(), "mock_".to_string(), "dummy_".to_string()]
         );
+    }
+
+    #[test]
+    fn from_file_rejects_empty_scanner_ignored_prefixes() {
+        let toml = r#"
+[source]
+head = "src/"
+extension = ".rs"
+
+[document]
+head = "docs/"
+extension = ".md"
+
+[annotation]
+prefix = "@st-"
+
+[scanner]
+ignored_prefixes = ["mock_", ""]
+"#;
+        let path = write_temp_config("spectrail_test_empty_ignored_prefix.toml", toml);
+        let result = SpecTrailConfig::from_file(&path);
+        assert!(result.is_err());
     }
 }
