@@ -33,6 +33,7 @@ fn scan_warning_to_issue(
     }
 }
 
+/// [@st-code-use-case-check-check-use-case] layer: abstract, type: Structure, name: CheckUseCase, links: [@st-manual-spec-cli-check-command]
 #[derive(Default)]
 pub struct CheckUseCase;
 

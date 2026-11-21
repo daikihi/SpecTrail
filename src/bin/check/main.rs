@@ -1,3 +1,4 @@
+/// [@st-code-bin-check-main-file] layer: abstract, type: File, name: main.rs, links: [@st-manual-spec-cli-check-command]
 mod dto;
 
 use dto::{CheckFormat, CheckRequestDto};

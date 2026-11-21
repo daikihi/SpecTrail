@@ -1,5 +1,4 @@
-/// [@st-code-domain-models-abstract-annotation-file] layer: abstract, type: File, name: abstract_annotation.rs
-/// [@st-manual-meta-model-doc] layer: meta, type: Philosophy, name: Specification Model: Formal Definition
+/// [@st-code-domain-models-abstract-annotation-file] layer: abstract, type: File, name: abstract_annotation.rs, links: [@st-manual-data-model-abstract-annotation-file, @st-manual-meta-model-doc]
 /// This file defines the abstract-layer annotations, representing high-level conceptual units of the system.
 use crate::domains::models::layer::Layer;
 use crate::domains::models::line_number::LineNumber;
@@ -46,7 +45,7 @@ impl std::str::FromStr for AbstractType {
     }
 }
 
-/// [@st-code-domain-models-abstract-annotation-abstract-link] layer: abstract, type: Structure, name: AbstractLink
+/// [@st-code-domain-models-abstract-annotation-abstract-link] layer: abstract, type: Structure, name: AbstractLink, links: [@st-manual-data-model-abstract-annotation-abstract-link]
 /// This enum represents the link type for abstract annotation as described in the specification.
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum AbstractLink {
@@ -55,7 +54,7 @@ pub enum AbstractLink {
     SpecDetail(SpecDetailAnnotationId),
 }
 
-/// [@st-code-domain-models-abstract-annotation-abstract-annotation] layer: abstract, type: Structure, name: AbstractAnnotation
+/// [@st-code-domain-models-abstract-annotation-abstract-annotation] layer: abstract, type: Structure, name: AbstractAnnotation, links: [@st-manual-data-model-abstract-annotation-abstract-annotation]
 /// This struct represents the abstract annotation model as described in the specification.
 #[derive(Debug, Clone)]
 pub struct AbstractAnnotation {

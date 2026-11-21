@@ -120,7 +120,7 @@ impl std::str::FromStr for ShowTarget {
     }
 }
 
-/// [@st-code-bin-show-dto-show-request-dto] layer: abstract, type: Structure, name: ShowRequestDto
+/// [@st-code-bin-show-dto-show-request-dto] layer: abstract, type: Structure, name: ShowRequestDto, links: [@st-manual-spec-cli-show-command, @st-manual-io-show-config]
 #[derive(Debug, Clone)]
 pub struct ShowRequestDto {
     pub mode: ShowMode,

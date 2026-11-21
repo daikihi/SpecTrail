@@ -1,7 +1,6 @@
 use crate::domains::models::abstract_annotation::AbstractAnnotationId;
 use crate::domains::models::implementation::ImplementationAnnotationId;
-/// [@st-code-domain-models-spec-detail-file] layer: abstract, type: File, name: spec_detail.rs
-/// [@st-manual-meta-model-doc] layer: meta, type: Philosophy, name: Specification Model: Formal Definition
+/// [@st-code-domain-models-spec-detail-file] layer: abstract, type: File, name: spec_detail.rs, links: [@st-manual-data-model-spec-detail-file, @st-manual-meta-model-doc]
 /// This file defines the spec-detail-layer annotations, representing concrete functional or structural specifications.
 use crate::domains::models::layer::Layer;
 use crate::domains::models::line_number::LineNumber;
@@ -51,7 +50,7 @@ pub enum SpecDetailLink {
     Implementation(ImplementationAnnotationId),
 }
 
-/// [@st-code-domain-models-spec-detail-spec-detail-annotation] layer: abstract, type: Structure, name: SpecDetailAnnotation
+/// [@st-code-domain-models-spec-detail-spec-detail-annotation] layer: abstract, type: Structure, name: SpecDetailAnnotation, links: [@st-manual-data-model-spec-detail-spec-detail-annotation]
 /// This struct represents the spec detail annotation model as described in the specification.
 #[derive(Debug, Clone)]
 pub struct SpecDetailAnnotation {

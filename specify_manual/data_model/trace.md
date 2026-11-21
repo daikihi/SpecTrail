@@ -8,11 +8,13 @@ Represents traceability relationships between specification and implementation.
 ## Structure
 /// [@st-manual-data-model-trace-trace-source] layer: spec-detail, type: Func, name: TraceSource
 - `TraceSource`
+  - `Meta(MetaAnnotation)`
   - `Abstract(AbstractAnnotation)`
   - `SpecDetail(SpecDetailAnnotation)`
   - `Implementation(ImplementationAnnotation)`
 /// [@st-manual-data-model-trace-trace-destination] layer: spec-detail, type: Func, name: TraceDestination
 - `TraceDestination`
+  - `Meta(MetaAnnotation)`
   - `Abstract(AbstractAnnotation)`
   - `SpecDetail(SpecDetailAnnotation)`
   - `Implementation(ImplementationAnnotation)`

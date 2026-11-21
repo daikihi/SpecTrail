@@ -1,8 +1,10 @@
 use crate::config::SpecTrailConfig;
-/// [@st-code-use-case-show-show-use-case-file] layer: abstract, type: File, name: show_use_case.rs
+/// [@st-code-use-case-show-show-use-case-file] layer: abstract, type: File, name: show_use_case.rs, links: [@st-manual-spec-cli-show-command]
 use crate::domains::models::annotation::code_annotation::CodeAnnotation;
 use crate::domains::models::annotation::document_annotation::DocumentAnnotation;
+use crate::domains::models::trace::Trace;
 use crate::domains::services::annotation::scanner::{AnnotationScanner, ScanWarning};
+use crate::domains::services::annotation::trace_resolver::TraceResolver;
 use std::path::Path;
 
 /// [@st-code-use-case-show-show-use-case-request-dto] layer: abstract, type: Structure, name: ShowUseCaseRequestDto
@@ -20,10 +22,11 @@ pub struct ShowUseCaseRequestDto {
 pub struct ShowUseCaseResponseDto {
     pub document_annotations: Vec<DocumentAnnotation>,
     pub code_annotations: Vec<CodeAnnotation>,
+    pub traces: Vec<Trace>,
     pub warnings: Vec<ScanWarning>,
 }
 
-/// [@st-code-use-case-show-show-use-case] layer: abstract, type: Structure, name: ShowUseCase
+/// [@st-code-use-case-show-show-use-case] layer: abstract, type: Structure, name: ShowUseCase, links: [@st-manual-spec-cli-show-command, @st-manual-usecase-show-config-split]
 pub struct ShowUseCase;
 
 #[cfg(test)]
@@ -59,6 +62,10 @@ mod tests {
                 .iter()
                 .all(|a| a.source_file.starts_with("specify_manual/")
                     && a.source_file.ends_with(".md"))
+        );
+        assert!(
+            !response.traces.is_empty(),
+            "expected at least one resolved trace between code and document annotations"
         );
         // Warnings collection should exist (may be empty or non-empty depending on scan)
         let _ = response.warnings;
@@ -172,11 +179,13 @@ impl ShowUseCase {
 
         let code_annotations = scan_result.code_annotations;
         let document_annotations = scan_result.document_annotations;
+        let traces = TraceResolver::resolve(&document_annotations, &code_annotations);
         let warnings = scan_result.warnings;
 
         Ok(ShowUseCaseResponseDto {
             document_annotations,
             code_annotations,
+            traces,
             warnings,
         })
     }

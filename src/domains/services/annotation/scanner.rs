@@ -26,7 +26,7 @@ pub enum ScanWarning {
     Resolve(ResolveWarning),
 }
 
-/// [@st-code-domain-services-annotation-scanner-annotation-scanner] layer: abstract, type: Structure, name: AnnotationScanner
+/// [@st-code-domain-services-annotation-scanner-annotation-scanner] layer: abstract, type: Structure, name: AnnotationScanner, links: [@st-manual-spec-annotation-parser, @st-manual-spec-mapping-engine]
 /// Orchestrates the end-to-end scanning process: file traversal, parsing, resolution, and categorization.
 pub struct AnnotationScanner;
 

@@ -1,4 +1,4 @@
-/// [@st-code-bin-show-main-file] layer: abstract, type: File, name: main.rs
+/// [@st-code-bin-show-main-file] layer: abstract, type: File, name: main.rs, links: [@st-manual-spec-cli-show-command]
 mod dto;
 mod show_request_adapter;
 mod show_response_adapter;

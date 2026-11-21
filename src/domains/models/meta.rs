@@ -1,5 +1,4 @@
-/// [@st-code-domain-models-meta-file] layer: abstract, type: File, name: meta.rs
-/// [@st-manual-meta-model-doc] layer: meta, type: Philosophy, name: Specification Model: Formal Definition
+/// [@st-code-domain-models-meta-file] layer: abstract, type: File, name: meta.rs, links: [@st-manual-data-model-meta-file, @st-manual-meta-model-doc]
 /// This file defines the meta-layer annotations, which represent high-level philosophies, guidelines, and rules.
 use crate::domains::models::layer::Layer;
 use crate::domains::models::line_number::LineNumber;
@@ -39,7 +38,7 @@ impl std::str::FromStr for MetaType {
     }
 }
 
-/// [@st-code-domain-models-meta-meta-annotation] layer: abstract, type: Structure, name: MetaAnnotation
+/// [@st-code-domain-models-meta-meta-annotation] layer: abstract, type: Structure, name: MetaAnnotation, links: [@st-manual-data-model-meta-meta-annotation]
 /// This struct represents the meta annotation model as described in the specification.
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct MetaAnnotation {

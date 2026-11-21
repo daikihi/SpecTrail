@@ -5,7 +5,7 @@ use crate::domains::models::meta::{MetaAnnotation, MetaAnnotationId};
 /// This file defines the logic and data structure for comparing meta annotations between document and code annotations, supporting traceability and consistency checks.
 use std::collections::{HashMap, HashSet};
 
-/// [@st-code-domain-models-annotation-meta-annotation-diff] layer: abstract, type: Structure, name: MetaAnnotationDiff
+/// [@st-code-domain-models-annotation-meta-annotation-diff] layer: abstract, type: Structure, name: MetaAnnotationDiff, links: [@st-manual-data-model-annotation-meta-annotation-diff]
 /// This struct represents the diff of meta annotations between document and code as described in the specification.
 #[derive(Debug, PartialEq, Eq)]
 pub struct MetaAnnotationDiff {

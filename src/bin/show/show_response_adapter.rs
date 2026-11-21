@@ -1,5 +1,6 @@
 use spec_trail::domains::models::annotation::code_annotation::CodeAnnotation;
 use spec_trail::domains::models::annotation::document_annotation::DocumentAnnotation;
+use spec_trail::domains::models::trace::Trace;
 use spec_trail::domains::services::annotation::scanner::ScanWarning;
 use spec_trail::use_case::show::show_use_case::ShowUseCaseResponseDto;
 
@@ -7,6 +8,7 @@ use spec_trail::use_case::show::show_use_case::ShowUseCaseResponseDto;
 pub struct ShowResponseView {
     pub document_annotations: Vec<DocumentAnnotation>,
     pub code_annotations: Vec<CodeAnnotation>,
+    pub traces: Vec<Trace>,
     pub warnings: Vec<ScanWarning>,
     pub view: crate::dto::ShowView,
     pub format: crate::dto::ShowFormat,
@@ -20,6 +22,7 @@ pub fn adapt_response(
     ShowResponseView {
         document_annotations: response.document_annotations,
         code_annotations: response.code_annotations,
+        traces: response.traces,
         warnings: response.warnings,
         view,
         format,
@@ -113,6 +116,7 @@ mod tests {
                 details: vec![make_detail()],
                 implementations: vec![make_implementation()],
             }],
+            traces: vec![],
             warnings: vec![],
         };
 
@@ -124,6 +128,7 @@ mod tests {
 
         assert_eq!(view.document_annotations.len(), 1);
         assert_eq!(view.code_annotations.len(), 1);
+        assert!(view.traces.is_empty());
         assert_eq!(view.view, crate::dto::ShowView::List);
         assert_eq!(view.format, crate::dto::ShowFormat::Text);
         assert!(view.warnings.is_empty());
@@ -134,6 +139,7 @@ mod tests {
         let response = ShowUseCaseResponseDto {
             document_annotations: vec![],
             code_annotations: vec![],
+            traces: vec![],
             warnings: vec![ScanWarning::Parse(ParseWarning {
                 source_file: "src/main.rs".to_string(),
                 line: LineNumber(12),
