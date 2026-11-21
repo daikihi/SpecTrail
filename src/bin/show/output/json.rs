@@ -36,6 +36,7 @@ pub fn warnings_to_json(warnings: &[ScanWarning]) -> Vec<Value> {
             }),
             ScanWarning::Resolve(rw) => json!({
                 "type": "resolve",
+                "kind": rw.kind.as_str(),
                 "source_annotation_id": rw.source_annotation_id,
                 "source_file": rw.source_file,
                 "line": rw.line.as_usize(),
