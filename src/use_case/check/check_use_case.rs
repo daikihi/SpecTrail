@@ -99,6 +99,18 @@ mod tests {
             config_path: None,
         });
         assert!(result.is_ok());
+        let response = result.unwrap();
+        assert_eq!(
+            response.errors_count, 0,
+            "expected no check errors in repository, got: {:?}",
+            response.issues
+        );
+        assert_eq!(
+            response.warnings_count, 0,
+            "expected no check warnings in repository, got: {:?}",
+            response.issues
+        );
+        assert!(response.issues.is_empty());
     }
 
     #[test]

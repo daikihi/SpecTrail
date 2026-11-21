@@ -1,7 +1,7 @@
 /// [@st-code-domain-services-annotation-resolver-file] layer: abstract, type: File, name: resolver.rs
 /// This file provides the resolver that transforms RawAnnotations into fully typed domain models.
 use crate::domains::models::abstract_annotation::{
-    AbstractAnnotation, AbstractAnnotationId, AbstractName, AbstractType,
+    AbstractAnnotation, AbstractAnnotationId, AbstractLink, AbstractName, AbstractType,
 };
 use crate::domains::models::implementation::{
     ImplementationAnnotation, ImplementationAnnotationId, ImplementationArtifact,
@@ -189,10 +189,22 @@ impl AnnotationResolver {
                         let link_id: &String = link_id;
                         let link_id_stripped = link_id.strip_prefix('@').unwrap_or(link_id);
                         if let Some(target) = index.get(link_id_stripped) {
-                            if target.layer == "spec-detail" {
-                                links.push(SpecDetailAnnotationId(target.id.clone()));
-                            } else {
-                                warn_unsupported_link(&mut warnings, raw, link_id, &target.layer);
+                            match target.layer.as_str() {
+                                "meta" => links.push(AbstractLink::Meta(
+                                    MetaAnnotationId(target.id.clone()),
+                                )),
+                                "abstract" => links.push(AbstractLink::Abstract(
+                                    AbstractAnnotationId(target.id.clone()),
+                                )),
+                                "spec-detail" => links.push(AbstractLink::SpecDetail(
+                                    SpecDetailAnnotationId(target.id.clone()),
+                                )),
+                                _ => warn_unsupported_link(
+                                    &mut warnings,
+                                    raw,
+                                    link_id,
+                                    &target.layer,
+                                ),
                             }
                         } else if !is_ignored(link_id) {
                             warnings.push(ResolveWarning {
@@ -484,7 +496,11 @@ mod tests {
         };
         let raw = vec![
             annotation("meta", "meta", &["@meta-target", "@abstract"]),
-            annotation("abstract", "abstract", &["@detail", "@meta"]),
+            annotation(
+                "abstract",
+                "abstract",
+                &["@meta", "@abstract-target", "@detail", "@implementation"],
+            ),
             annotation(
                 "detail",
                 "spec-detail",
@@ -496,6 +512,7 @@ mod tests {
                 &["@abstract", "@detail", "@meta", "@implementation"],
             ),
             annotation("meta-target", "meta", &[]),
+            annotation("abstract-target", "abstract", &[]),
         ];
 
         let result = AnnotationResolver::resolve(raw);
@@ -512,7 +529,19 @@ mod tests {
         let ResolvedAnnotation::Abstract(abstract_annotation, _) = &result.annotations[1] else {
             panic!("expected abstract annotation")
         };
-        assert_eq!(abstract_annotation.links.len(), 1);
+        assert_eq!(abstract_annotation.links.len(), 3);
+        assert_eq!(
+            abstract_annotation.links[0],
+            AbstractLink::Meta(MetaAnnotationId("meta".to_string()))
+        );
+        assert_eq!(
+            abstract_annotation.links[1],
+            AbstractLink::Abstract(AbstractAnnotationId("abstract-target".to_string()))
+        );
+        assert_eq!(
+            abstract_annotation.links[2],
+            AbstractLink::SpecDetail(SpecDetailAnnotationId("detail".to_string()))
+        );
         let ResolvedAnnotation::SpecDetail(detail, _) = &result.annotations[2] else {
             panic!("expected spec-detail annotation")
         };
