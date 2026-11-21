@@ -1,9 +1,8 @@
-
 [source]
-head = "specify_manual/"
+head = "src/"
 extension = ".rs"
 [document]
-head = "docs/"
+head = "specify_manual/"
 extension = ".md"
 [annotation]
 prefix = "@st-code"

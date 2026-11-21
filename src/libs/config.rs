@@ -32,7 +32,8 @@ impl SpecTrailConfig {
     /// let path = std::path::Path::new(env!("CARGO_MANIFEST_DIR"))
     ///     .join("tests/resources/test_config.toml");
     /// let config = SpecTrailConfig::from_file(&path).unwrap();
-    /// assert_eq!(config.source.head, "specify_manual/");
+    /// assert_eq!(config.source.head, "src/");
+    /// assert_eq!(config.document.head, "specify_manual/");
     /// ```
     pub fn from_file<P: AsRef<Path>>(path: P) -> Result<Self, Box<dyn std::error::Error>> {
         let content: String = fs::read_to_string(path)?;
@@ -117,7 +118,32 @@ mod tests_spec_trail_config {
             SpecTrailConfig::from_file("src/config/default.toml");
         assert!(config_result.is_ok());
         let config = config_result.unwrap();
-        assert_eq!(config.source.head, "specify_manual/");
+        assert_eq!(config.source.head, "src/");
+        assert_eq!(config.source.extension, ".rs");
+        assert_eq!(config.document.head, "specify_manual/");
+        assert_eq!(config.document.extension, ".md");
+    }
+
+    #[test]
+    fn config_toml_maps_source_to_src_and_document_to_specify_manual() {
+        let config = SpecTrailConfig::from_file("src/config/config.toml")
+            .expect("src/config/config.toml should parse");
+        assert_eq!(config.source.head, "src/");
+        assert_eq!(config.source.extension, ".rs");
+        assert_eq!(config.document.head, "specify_manual/");
+        assert_eq!(config.document.extension, ".md");
+    }
+
+    #[test]
+    fn test_config_toml_maps_source_to_src_and_document_to_specify_manual() {
+        for path in ["test_config.toml", "tests/resources/test_config.toml"] {
+            let config = SpecTrailConfig::from_file(path)
+                .unwrap_or_else(|e| panic!("{} should parse: {}", path, e));
+            assert_eq!(config.source.head, "src/");
+            assert_eq!(config.source.extension, ".rs");
+            assert_eq!(config.document.head, "specify_manual/");
+            assert_eq!(config.document.extension, ".md");
+        }
     }
 
     #[test]

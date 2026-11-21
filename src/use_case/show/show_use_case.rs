@@ -45,8 +45,58 @@ mod tests {
         let result = uc.execute(make_request("list", "all", None));
         assert!(result.is_ok());
         let response = result.unwrap();
+        assert!(!response.code_annotations.is_empty());
+        assert!(!response.document_annotations.is_empty());
+        assert!(
+            response
+                .code_annotations
+                .iter()
+                .all(|a| a.source_file.starts_with("src/") && a.source_file.ends_with(".rs"))
+        );
+        assert!(
+            response
+                .document_annotations
+                .iter()
+                .all(|a| a.source_file.starts_with("specify_manual/")
+                    && a.source_file.ends_with(".md"))
+        );
         // Warnings collection should exist (may be empty or non-empty depending on scan)
         let _ = response.warnings;
+    }
+
+    #[test]
+    fn execute_with_code_target_returns_only_rust_source_annotations() {
+        let uc = ShowUseCase::new();
+        let response = uc
+            .execute(make_request("list", "code", None))
+            .expect("code target scan should succeed");
+
+        assert!(!response.code_annotations.is_empty());
+        assert!(response.document_annotations.is_empty());
+        assert!(
+            response
+                .code_annotations
+                .iter()
+                .all(|a| a.source_file.starts_with("src/") && a.source_file.ends_with(".rs"))
+        );
+    }
+
+    #[test]
+    fn execute_with_document_target_returns_only_markdown_document_annotations() {
+        let uc = ShowUseCase::new();
+        let response = uc
+            .execute(make_request("list", "document", None))
+            .expect("document target scan should succeed");
+
+        assert!(response.code_annotations.is_empty());
+        assert!(!response.document_annotations.is_empty());
+        assert!(
+            response
+                .document_annotations
+                .iter()
+                .all(|a| a.source_file.starts_with("specify_manual/")
+                    && a.source_file.ends_with(".md"))
+        );
     }
 }
 
