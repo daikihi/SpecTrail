@@ -1,13 +1,15 @@
 use super::dto::{CheckIssue, CheckSeverity, CheckUseCaseRequestDto, CheckUseCaseResponseDto};
 use crate::config::SpecTrailConfig;
-use crate::domains::services::annotation::scanner::AnnotationScanner;
+use crate::domains::models::annotation::code_annotation::CodeAnnotation;
+use crate::domains::models::annotation::document_annotation::DocumentAnnotation;
+use crate::domains::services::annotation::scanner::{AnnotationScanner, ScanWarning};
+use crate::domains::services::annotation::trace_resolver::TraceResolver;
+use std::collections::HashSet;
 use std::path::Path;
 
-fn scan_warning_to_issue(
-    warning: crate::domains::services::annotation::scanner::ScanWarning,
-) -> CheckIssue {
+fn scan_warning_to_issue(warning: ScanWarning) -> CheckIssue {
     match warning {
-        crate::domains::services::annotation::scanner::ScanWarning::Parse(pw) => CheckIssue {
+        ScanWarning::Parse(pw) => CheckIssue {
             severity: CheckSeverity::Error,
             issue_type: "invalid_annotation_format".to_string(),
             file: pw.source_file,
@@ -15,21 +17,85 @@ fn scan_warning_to_issue(
             spec_id: None,
             message: pw.message,
         },
-        crate::domains::services::annotation::scanner::ScanWarning::Resolve(rw) => {
-            let issue_type = if rw.message.starts_with("Link target") {
-                "broken_link"
-            } else {
-                "orphaned_annotation"
-            };
-            CheckIssue {
-                severity: CheckSeverity::Error,
-                issue_type: issue_type.to_string(),
-                file: rw.source_file,
-                line: rw.line.as_usize(),
-                spec_id: Some(rw.source_annotation_id),
-                message: rw.message,
+        ScanWarning::Resolve(rw) => CheckIssue {
+            severity: CheckSeverity::Error,
+            issue_type: rw.kind.as_str().to_string(),
+            file: rw.source_file,
+            line: rw.line.as_usize(),
+            spec_id: Some(rw.source_annotation_id),
+            message: rw.message,
+        },
+    }
+}
+
+fn find_unimplemented_spec_issues(
+    documents: &[DocumentAnnotation],
+    codes: &[CodeAnnotation],
+) -> Vec<CheckIssue> {
+    let traces = TraceResolver::resolve(documents, codes);
+
+    let mut traced_ids: HashSet<&str> = HashSet::new();
+    for trace in &traces {
+        traced_ids.insert(trace.src.id());
+        traced_ids.insert(trace.dst.id());
+    }
+
+    let mut issues = Vec::new();
+    for doc in documents {
+        for a in &doc.abstracts {
+            if !traced_ids.contains(a.id.0.as_str()) {
+                issues.push(CheckIssue {
+                    severity: CheckSeverity::Warning,
+                    issue_type: "unimplemented_spec".to_string(),
+                    file: doc.source_file.clone(),
+                    line: a.line.as_usize(),
+                    spec_id: Some(a.id.0.clone()),
+                    message: format!(
+                        "Unimplemented Spec: '@{}' ({}) is not referenced in code",
+                        a.id.0, a.name.0
+                    ),
+                });
             }
         }
+        for d in &doc.details {
+            if !traced_ids.contains(d.id.0.as_str()) {
+                issues.push(CheckIssue {
+                    severity: CheckSeverity::Warning,
+                    issue_type: "unimplemented_spec".to_string(),
+                    file: doc.source_file.clone(),
+                    line: d.line.as_usize(),
+                    spec_id: Some(d.id.0.clone()),
+                    message: format!(
+                        "Unimplemented Spec: '@{}' ({}) is not referenced in code",
+                        d.id.0, d.name.0
+                    ),
+                });
+            }
+        }
+        for i in &doc.implementations {
+            if !traced_ids.contains(i.id.0.as_str()) {
+                issues.push(CheckIssue {
+                    severity: CheckSeverity::Warning,
+                    issue_type: "unimplemented_spec".to_string(),
+                    file: doc.source_file.clone(),
+                    line: i.line.as_usize(),
+                    spec_id: Some(i.id.0.clone()),
+                    message: format!(
+                        "Unimplemented Spec: '@{}' ({}) is not referenced in code",
+                        i.id.0, i.name.0
+                    ),
+                });
+            }
+        }
+    }
+
+    issues
+}
+
+fn severity_rank(severity: &CheckSeverity) -> u8 {
+    match severity {
+        CheckSeverity::Error => 0,
+        CheckSeverity::Warning => 1,
     }
 }
 
@@ -60,11 +126,27 @@ impl CheckUseCase {
             &ignored_prefixes,
         )?;
 
-        let issues: Vec<CheckIssue> = scan_result
+        let mut issues: Vec<CheckIssue> = scan_result
             .warnings
             .into_iter()
             .map(scan_warning_to_issue)
             .collect();
+
+        if request.warn_unimplemented {
+            issues.extend(find_unimplemented_spec_issues(
+                &scan_result.document_annotations,
+                &scan_result.code_annotations,
+            ));
+        }
+
+        issues.sort_by(|a, b| {
+            severity_rank(&a.severity)
+                .cmp(&severity_rank(&b.severity))
+                .then_with(|| a.file.cmp(&b.file))
+                .then_with(|| a.line.cmp(&b.line))
+                .then_with(|| a.issue_type.cmp(&b.issue_type))
+                .then_with(|| a.spec_id.cmp(&b.spec_id))
+        });
 
         let errors_count = issues
             .iter()
@@ -86,9 +168,17 @@ impl CheckUseCase {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::domains::models::abstract_annotation::{
+        AbstractAnnotation, AbstractAnnotationId, AbstractLink, AbstractName,
+    };
+    use crate::domains::models::layer::Layer;
     use crate::domains::models::line_number::LineNumber;
+    use crate::domains::models::meta::{MetaAnnotation, MetaAnnotationId, MetaName};
+    use crate::domains::models::spec_detail::{
+        SpecDetailAnnotation, SpecDetailAnnotationId, SpecDetailName,
+    };
     use crate::domains::services::annotation::parser::ParseWarning;
-    use crate::domains::services::annotation::resolver::ResolveWarning;
+    use crate::domains::services::annotation::resolver::{ResolveWarning, ResolveWarningKind};
     use crate::domains::services::annotation::scanner::ScanWarning;
 
     #[test]
@@ -115,41 +205,128 @@ mod tests {
     }
 
     #[test]
-    fn test_broken_link_resolve_warning_mapped_to_broken_link() {
-        let warning = ScanWarning::Resolve(ResolveWarning {
-            source_annotation_id: "st-src".to_string(),
-            source_file: "src/foo.rs".to_string(),
-            line: LineNumber::new(12),
-            message: "Link target '@st-missing' not found (referenced from @st-src)".to_string(),
-        });
+    fn test_execute_with_warn_unimplemented_reports_only_warnings() {
+        let uc = CheckUseCase::new();
+        let response = uc
+            .execute(CheckUseCaseRequestDto {
+                strict: false,
+                warn_unimplemented: true,
+                config_path: None,
+            })
+            .expect("check with --warn-unimplemented should succeed");
 
-        let issue = scan_warning_to_issue(warning);
-        assert_eq!(issue.issue_type, "broken_link");
-        assert_eq!(issue.severity, CheckSeverity::Error);
-        assert_eq!(issue.file, "src/foo.rs");
-        assert_eq!(issue.line, 12);
-        assert_eq!(issue.spec_id, Some("st-src".to_string()));
-        assert_eq!(
-            issue.message,
-            "Link target '@st-missing' not found (referenced from @st-src)"
+        assert_eq!(response.errors_count, 0);
+        assert!(response.warnings_count > 0);
+        assert_eq!(response.warnings_count, response.issues.len());
+        assert!(response.issues.iter().all(|issue| {
+            issue.severity == CheckSeverity::Warning && issue.issue_type == "unimplemented_spec"
+        }));
+        // Referenced spec IDs must not appear as unimplemented warnings
+        assert!(
+            !response
+                .issues
+                .iter()
+                .any(|i| i.spec_id.as_deref() == Some("st-manual-spec-cli-show-command"))
         );
     }
 
     #[test]
-    fn test_other_resolve_warning_preserves_orphaned_annotation() {
-        let warning = ScanWarning::Resolve(ResolveWarning {
-            source_annotation_id: "st-orphan".to_string(),
-            source_file: "src/bar.rs".to_string(),
-            line: LineNumber::new(42),
-            message: "Orphaned annotation without links".to_string(),
-        });
+    fn test_resolve_warning_kinds_map_to_distinct_issue_types() {
+        let cases = [
+            (ResolveWarningKind::BrokenLink, "broken_link"),
+            (ResolveWarningKind::UnknownLayer, "unknown_layer"),
+            (ResolveWarningKind::UnknownType, "unknown_type"),
+            (
+                ResolveWarningKind::UnsupportedLinkLayer,
+                "unsupported_link_layer",
+            ),
+        ];
 
-        let issue = scan_warning_to_issue(warning);
-        assert_eq!(issue.issue_type, "orphaned_annotation");
-        assert_eq!(issue.severity, CheckSeverity::Error);
-        assert_eq!(issue.file, "src/bar.rs");
-        assert_eq!(issue.line, 42);
-        assert_eq!(issue.spec_id, Some("st-orphan".to_string()));
+        for (kind, expected_type) in cases {
+            let warning = ScanWarning::Resolve(ResolveWarning {
+                kind,
+                source_annotation_id: "st-src".to_string(),
+                source_file: "src/foo.rs".to_string(),
+                line: LineNumber::new(12),
+                message: "sample warning".to_string(),
+            });
+
+            let issue = scan_warning_to_issue(warning);
+            assert_eq!(issue.issue_type, expected_type);
+            assert_eq!(issue.severity, CheckSeverity::Error);
+            assert_eq!(issue.file, "src/foo.rs");
+            assert_eq!(issue.line, 12);
+            assert_eq!(issue.spec_id, Some("st-src".to_string()));
+        }
+    }
+
+    #[test]
+    fn test_find_unimplemented_spec_issues_ignores_meta_and_traced_specs() {
+        let doc = DocumentAnnotation {
+            source_file: "specify_manual/spec.md".to_string(),
+            metas: vec![MetaAnnotation {
+                id: MetaAnnotationId("st-meta-only".to_string()),
+                name: MetaName("Meta Only".to_string()),
+                r#type: None,
+                layer: Layer::Meta,
+                links: vec![],
+                line: LineNumber::new(1),
+            }],
+            abstracts: vec![AbstractAnnotation {
+                id: AbstractAnnotationId("st-abs-unimplemented".to_string()),
+                name: AbstractName("Unimplemented Abstract".to_string()),
+                r#type: None,
+                layer: Layer::Abstract,
+                links: vec![],
+                line: LineNumber::new(10),
+            }],
+            details: vec![
+                SpecDetailAnnotation {
+                    id: SpecDetailAnnotationId("st-detail-implemented".to_string()),
+                    name: SpecDetailName("Implemented Detail".to_string()),
+                    r#type: None,
+                    layer: Layer::SpecDetail,
+                    links: vec![],
+                    line: LineNumber::new(20),
+                },
+                SpecDetailAnnotation {
+                    id: SpecDetailAnnotationId("st-detail-missing".to_string()),
+                    name: SpecDetailName("Missing Detail".to_string()),
+                    r#type: None,
+                    layer: Layer::SpecDetail,
+                    links: vec![],
+                    line: LineNumber::new(30),
+                },
+            ],
+            implementations: vec![],
+        };
+
+        let code = CodeAnnotation {
+            source_file: "src/impl.rs".to_string(),
+            metas: vec![],
+            abstracts: vec![AbstractAnnotation {
+                id: AbstractAnnotationId("st-code-impl".to_string()),
+                name: AbstractName("Impl".to_string()),
+                r#type: None,
+                layer: Layer::Abstract,
+                links: vec![AbstractLink::SpecDetail(SpecDetailAnnotationId(
+                    "st-detail-implemented".to_string(),
+                ))],
+                line: LineNumber::new(5),
+            }],
+            details: vec![],
+            implementations: vec![],
+        };
+
+        let issues = find_unimplemented_spec_issues(&[doc], &[code]);
+        assert_eq!(issues.len(), 2);
+        let ids: Vec<_> = issues
+            .iter()
+            .filter_map(|i| i.spec_id.as_deref())
+            .collect();
+        assert_eq!(ids, vec!["st-abs-unimplemented", "st-detail-missing"]);
+        assert!(issues.iter().all(|i| i.severity == CheckSeverity::Warning));
+        assert!(issues.iter().all(|i| i.issue_type == "unimplemented_spec"));
     }
 
     #[test]

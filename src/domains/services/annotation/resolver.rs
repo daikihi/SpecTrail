@@ -50,10 +50,32 @@ pub struct ResolveResult {
     pub warnings: Vec<ResolveWarning>,
 }
 
+/// [@st-code-domain-services-annotation-resolver-resolve-warning-kind] layer: abstract, type: Structure, name: ResolveWarningKind
+/// Categorizes issues discovered during annotation resolution.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ResolveWarningKind {
+    UnknownLayer,
+    UnknownType,
+    BrokenLink,
+    UnsupportedLinkLayer,
+}
+
+impl ResolveWarningKind {
+    pub fn as_str(&self) -> &'static str {
+        match self {
+            ResolveWarningKind::UnknownLayer => "unknown_layer",
+            ResolveWarningKind::UnknownType => "unknown_type",
+            ResolveWarningKind::BrokenLink => "broken_link",
+            ResolveWarningKind::UnsupportedLinkLayer => "unsupported_link_layer",
+        }
+    }
+}
+
 /// [@st-code-domain-services-annotation-resolver-resolve-warning] layer: abstract, type: Structure, name: ResolveWarning
 /// Represents an issue found during resolution, such as a missing link target or invalid layer name.
 #[derive(Debug, Clone)]
 pub struct ResolveWarning {
+    pub kind: ResolveWarningKind,
     pub source_annotation_id: String,
     pub source_file: String,
     pub line: LineNumber,
@@ -105,6 +127,7 @@ impl AnnotationResolver {
                 "implementation" => Layer::Implementation,
                 _ => {
                     warnings.push(ResolveWarning {
+                        kind: ResolveWarningKind::UnknownLayer,
                         source_annotation_id: raw.id.clone(),
                         source_file: raw.source_file.clone(),
                         line: raw.line,
@@ -120,6 +143,7 @@ impl AnnotationResolver {
                         Ok(t) => Some(t),
                         Err(_) => {
                             warnings.push(ResolveWarning {
+                                kind: ResolveWarningKind::UnknownType,
                                 source_annotation_id: raw.id.clone(),
                                 source_file: raw.source_file.clone(),
                                 line: raw.line,
@@ -144,6 +168,7 @@ impl AnnotationResolver {
                             }
                         } else if !is_ignored(link_id) {
                             warnings.push(ResolveWarning {
+                                kind: ResolveWarningKind::BrokenLink,
                                 source_annotation_id: raw.id.clone(),
                                 source_file: raw.source_file.clone(),
                                 line: raw.line,
@@ -172,6 +197,7 @@ impl AnnotationResolver {
                         Ok(t) => Some(t),
                         Err(_) => {
                             warnings.push(ResolveWarning {
+                                kind: ResolveWarningKind::UnknownType,
                                 source_annotation_id: raw.id.clone(),
                                 source_file: raw.source_file.clone(),
                                 line: raw.line,
@@ -208,6 +234,7 @@ impl AnnotationResolver {
                             }
                         } else if !is_ignored(link_id) {
                             warnings.push(ResolveWarning {
+                                kind: ResolveWarningKind::BrokenLink,
                                 source_annotation_id: raw.id.clone(),
                                 source_file: raw.source_file.clone(),
                                 line: raw.line,
@@ -236,6 +263,7 @@ impl AnnotationResolver {
                         Ok(t) => Some(t),
                         Err(_) => {
                             warnings.push(ResolveWarning {
+                                kind: ResolveWarningKind::UnknownType,
                                 source_annotation_id: raw.id.clone(),
                                 source_file: raw.source_file.clone(),
                                 line: raw.line,
@@ -269,6 +297,7 @@ impl AnnotationResolver {
                             }
                         } else if !is_ignored(link_id) {
                             warnings.push(ResolveWarning {
+                                kind: ResolveWarningKind::BrokenLink,
                                 source_annotation_id: raw.id.clone(),
                                 source_file: raw.source_file.clone(),
                                 line: raw.line,
@@ -297,6 +326,7 @@ impl AnnotationResolver {
                         Ok(t) => Some(t),
                         Err(_) => {
                             warnings.push(ResolveWarning {
+                                kind: ResolveWarningKind::UnknownType,
                                 source_annotation_id: raw.id.clone(),
                                 source_file: raw.source_file.clone(),
                                 line: raw.line,
@@ -330,6 +360,7 @@ impl AnnotationResolver {
                             }
                         } else if !is_ignored(link_id) {
                             warnings.push(ResolveWarning {
+                                kind: ResolveWarningKind::BrokenLink,
                                 source_annotation_id: raw.id.clone(),
                                 source_file: raw.source_file.clone(),
                                 line: raw.line,
@@ -372,6 +403,7 @@ fn warn_unsupported_link(
     target_layer: &str,
 ) {
     warnings.push(ResolveWarning {
+        kind: ResolveWarningKind::UnsupportedLinkLayer,
         source_annotation_id: source.id.clone(),
         source_file: source.source_file.clone(),
         line: source.line,
@@ -518,9 +550,10 @@ mod tests {
         let result = AnnotationResolver::resolve(raw);
 
         assert_eq!(result.warnings.len(), 6);
-        assert!(result.warnings.iter().all(|warning| warning
-            .message
-            .starts_with("Unsupported link from layer")));
+        assert!(result.warnings.iter().all(|warning| {
+            warning.kind == ResolveWarningKind::UnsupportedLinkLayer
+                && warning.message.starts_with("Unsupported link from layer")
+        }));
 
         let ResolvedAnnotation::Meta(meta, _) = &result.annotations[0] else {
             panic!("expected meta annotation")
