@@ -213,9 +213,10 @@ Represents concrete functional or structural specifications.
 #### ImplementationAnnotation
 Describes technical realization.
 - **Types**: DatabaseSchema, DaoRepository, DomainEntity, ExternalApiGateway, WebInterfaceDataModel, Structure
-- **Artifact**: Path or identifier of the code artifact (e.g., file path, function name).
-- **Status**: Planned, InProgress, Completed.
+- **Artifact**: Path or identifier of the code artifact (optional `artifact: <path>` field; defaults to the source file path).
+- **Status**: Planned, InProgress, Completed (optional `status: <status>` field).
 - **Links**: Links to `SpecDetailAnnotation` or `AbstractAnnotation`.
+- **Syntax example**: `/// [@_fixture_impl-example] layer: implementation, type: DomainEntity, name: Example, links: [@_fixture_detail-example], status: Completed, artifact: src/example.rs`
 
 ### 4.3 Scanner Configuration and Ignore Rules
 
