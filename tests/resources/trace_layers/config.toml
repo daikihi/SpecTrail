@@ -1,0 +1,8 @@
+[source]
+head = "tests/resources/trace_layers/code"
+extension = ".rs"
+[document]
+head = "tests/resources/trace_layers/docs"
+extension = ".md"
+[annotation]
+prefix = "@"

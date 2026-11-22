@@ -1,10 +1,9 @@
 /// [@st-code-domain-services-annotation-trace-resolver-file] layer: abstract, type: File, name: trace_resolver.rs, links: [@st-manual-spec-mapping-engine, @st-manual-spec-mapping-match-spec-to-code]
 /// This file resolves traceability relationships (`Trace`) between document annotations and code annotations.
-use crate::domains::models::abstract_annotation::AbstractLink;
 use crate::domains::models::annotation::code_annotation::CodeAnnotation;
 use crate::domains::models::annotation::document_annotation::DocumentAnnotation;
-use crate::domains::models::implementation::ImplementationLink;
-use crate::domains::models::spec_detail::{SpecDetailLink, SpecDetailType};
+use crate::domains::models::layer::Layer;
+use crate::domains::models::spec_detail::SpecDetailType;
 use crate::domains::models::trace::{Trace, TraceDestination, TraceKind, TraceSource};
 use std::collections::{HashMap, HashSet};
 
@@ -56,19 +55,24 @@ impl TraceResolver {
         let mut traces: Vec<(TraceDirection, Trace)> = Vec::new();
         let mut seen: HashSet<(TraceDirection, String, String, TraceKind)> = HashSet::new();
 
-        let mut push_trace =
-            |direction: TraceDirection, src: TraceSource, dst: TraceDestination, kind: TraceKind| {
-                let key = (direction, src.id().to_string(), dst.id().to_string(), kind);
-                if seen.insert(key) {
-                    traces.push((direction, Trace { src, dst, kind }));
-                }
-            };
+        let mut push_trace = |direction: TraceDirection,
+                              src: TraceSource,
+                              dst: TraceDestination,
+                              kind: TraceKind| {
+            let key = (direction, src.id().to_string(), dst.id().to_string(), kind);
+            if seen.insert(key) {
+                traces.push((direction, Trace { src, dst, kind }));
+            }
+        };
 
         // 1. Explicit links from code annotations to document annotations
         for code in codes {
             for m in &code.metas {
                 for target_id in &m.links {
-                    if let Some(dst) = doc_index.get(&target_id.0) {
+                    if let Some(dst) = doc_index
+                        .get(&target_id.0)
+                        .filter(|dst| dst.layer() == Layer::Meta)
+                    {
                         push_trace(
                             TraceDirection::CodeToDocument,
                             TraceSource::Meta(m.clone()),
@@ -88,12 +92,13 @@ impl TraceResolver {
             }
             for a in &code.abstracts {
                 for link in &a.links {
-                    let (target_id, kind) = match link {
-                        AbstractLink::Meta(id) => (&id.0, TraceKind::Derives),
-                        AbstractLink::Abstract(id) => (&id.0, TraceKind::Implements),
-                        AbstractLink::SpecDetail(id) => (&id.0, TraceKind::Implements),
+                    let (target_id, layer) = link.target();
+                    let kind = if layer == Layer::Meta {
+                        TraceKind::Derives
+                    } else {
+                        TraceKind::Implements
                     };
-                    if let Some(dst) = doc_index.get(target_id) {
+                    if let Some(dst) = doc_index.get(target_id).filter(|dst| dst.layer() == layer) {
                         push_trace(
                             TraceDirection::CodeToDocument,
                             TraceSource::Abstract(a.clone()),
@@ -118,11 +123,8 @@ impl TraceResolver {
                     TraceKind::Implements
                 };
                 for link in &d.links {
-                    let target_id = match link {
-                        SpecDetailLink::Abstract(id) => &id.0,
-                        SpecDetailLink::Implementation(id) => &id.0,
-                    };
-                    if let Some(dst) = doc_index.get(target_id) {
+                    let (target_id, layer) = link.target();
+                    if let Some(dst) = doc_index.get(target_id).filter(|dst| dst.layer() == layer) {
                         push_trace(
                             TraceDirection::CodeToDocument,
                             TraceSource::SpecDetail(d.clone()),
@@ -142,11 +144,8 @@ impl TraceResolver {
             }
             for i in &code.implementations {
                 for link in &i.links {
-                    let target_id = match link {
-                        ImplementationLink::SpecDetail(id) => &id.0,
-                        ImplementationLink::Abstract(id) => &id.0,
-                    };
-                    if let Some(dst) = doc_index.get(target_id) {
+                    let (target_id, layer) = link.target();
+                    if let Some(dst) = doc_index.get(target_id).filter(|dst| dst.layer() == layer) {
                         push_trace(
                             TraceDirection::CodeToDocument,
                             TraceSource::Implementation(i.clone()),
@@ -170,7 +169,10 @@ impl TraceResolver {
         for doc in documents {
             for m in &doc.metas {
                 for target_id in &m.links {
-                    if let Some(dst) = code_index.get(&target_id.0) {
+                    if let Some(dst) = code_index
+                        .get(&target_id.0)
+                        .filter(|dst| dst.layer() == Layer::Meta)
+                    {
                         push_trace(
                             TraceDirection::DocumentToCode,
                             TraceSource::Meta(m.clone()),
@@ -182,12 +184,9 @@ impl TraceResolver {
             }
             for a in &doc.abstracts {
                 for link in &a.links {
-                    let target_id = match link {
-                        AbstractLink::Meta(id) => &id.0,
-                        AbstractLink::Abstract(id) => &id.0,
-                        AbstractLink::SpecDetail(id) => &id.0,
-                    };
-                    if let Some(dst) = code_index.get(target_id) {
+                    let (target_id, layer) = link.target();
+                    if let Some(dst) = code_index.get(target_id).filter(|dst| dst.layer() == layer)
+                    {
                         push_trace(
                             TraceDirection::DocumentToCode,
                             TraceSource::Abstract(a.clone()),
@@ -199,11 +198,14 @@ impl TraceResolver {
             }
             for d in &doc.details {
                 for link in &d.links {
-                    let (target_id, kind) = match link {
-                        SpecDetailLink::Abstract(id) => (&id.0, TraceKind::Refines),
-                        SpecDetailLink::Implementation(id) => (&id.0, TraceKind::Implements),
+                    let (target_id, layer) = link.target();
+                    let kind = if layer == Layer::Abstract {
+                        TraceKind::Refines
+                    } else {
+                        TraceKind::Implements
                     };
-                    if let Some(dst) = code_index.get(target_id) {
+                    if let Some(dst) = code_index.get(target_id).filter(|dst| dst.layer() == layer)
+                    {
                         push_trace(
                             TraceDirection::DocumentToCode,
                             TraceSource::SpecDetail(d.clone()),
@@ -215,11 +217,9 @@ impl TraceResolver {
             }
             for i in &doc.implementations {
                 for link in &i.links {
-                    let target_id = match link {
-                        ImplementationLink::SpecDetail(id) => &id.0,
-                        ImplementationLink::Abstract(id) => &id.0,
-                    };
-                    if let Some(dst) = code_index.get(target_id) {
+                    let (target_id, layer) = link.target();
+                    if let Some(dst) = code_index.get(target_id).filter(|dst| dst.layer() == layer)
+                    {
                         push_trace(
                             TraceDirection::DocumentToCode,
                             TraceSource::Implementation(i.clone()),
@@ -248,7 +248,7 @@ impl TraceResolver {
 mod tests {
     use super::*;
     use crate::domains::models::abstract_annotation::{
-        AbstractAnnotation, AbstractAnnotationId, AbstractName,
+        AbstractAnnotation, AbstractAnnotationId, AbstractLink, AbstractName,
     };
     use crate::domains::models::implementation::{
         ImplementationAnnotation, ImplementationAnnotationId, ImplementationArtifact,
