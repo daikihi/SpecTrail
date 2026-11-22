@@ -17,7 +17,7 @@ use crate::domains::services::annotation::raw_annotation::RawAnnotation;
 use std::collections::HashMap;
 use std::str::FromStr;
 
-/// [@st-code-domain-services-annotation-resolver-annotation-resolver] layer: abstract, type: Structure, name: AnnotationResolver
+/// [@st-code-domain-services-annotation-resolver-annotation-resolver] layer: abstract, type: Structure, name: AnnotationResolver, links: [@st-manual-spec-mapping-engine]
 /// Responsible for validating layers/types and resolving links between annotations.
 pub struct AnnotationResolver;
 

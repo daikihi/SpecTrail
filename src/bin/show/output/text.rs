@@ -1,6 +1,10 @@
 use super::{format_type, layer_name, AnnotationFile};
 use crate::dto::ShowView;
 use crate::show_response_adapter::ShowResponseView;
+use spec_trail::domains::models::abstract_annotation::AbstractLink;
+use spec_trail::domains::models::implementation::ImplementationLink;
+use spec_trail::domains::models::spec_detail::SpecDetailLink;
+use spec_trail::domains::models::trace::Trace;
 use spec_trail::domains::services::annotation::scanner::ScanWarning;
 use std::collections::BTreeMap;
 
@@ -47,6 +51,7 @@ pub fn render_summary(view_model: &ShowResponseView) {
     println!("  code annotations: {}", code_totals);
     println!("  document files: {}", view_model.document_annotations.len());
     println!("  document annotations: {}", document_totals);
+    println!("  traces: {}", view_model.traces.len());
     println!("  warnings: {}", view_model.warnings.len());
 }
 
@@ -137,25 +142,101 @@ pub fn render_group(view_model: &ShowResponseView) {
     }
 }
 
+fn format_links_suffix(links: &[String]) -> String {
+    if links.is_empty() {
+        String::new()
+    } else {
+        format!(", Links: [{}]", links.join(", "))
+    }
+}
+
 pub(super) fn format_implementation_line(
     i: &spec_trail::domains::models::implementation::ImplementationAnnotation,
 ) -> String {
+    let links: Vec<String> = i
+        .links
+        .iter()
+        .map(|link| match link {
+            ImplementationLink::SpecDetail(id) => format!("@{} (SpecDetail)", id.0),
+            ImplementationLink::Abstract(id) => format!("@{} (Abstract)", id.0),
+        })
+        .collect();
     format!(
-        "  [@{}] line: {}, Layer: Implementation, Type: {:?}, Name: {}, Artifact: {}, Status: {:?}",
-        i.id.0, i.line, i.r#type, i.name.0, i.artifact.0, i.status
+        "  [@{}] line: {}, Layer: Implementation, Type: {:?}, Name: {}, Artifact: {}, Status: {:?}{}",
+        i.id.0,
+        i.line,
+        i.r#type,
+        i.name.0,
+        i.artifact.0,
+        i.status,
+        format_links_suffix(&links)
+    )
+}
+
+pub(super) fn format_trace_line(trace: &Trace) -> String {
+    format!(
+        "  [@{}] ({}) --{}--> [@{}] ({})",
+        trace.src.id(),
+        layer_name(trace.src.layer()),
+        trace.kind,
+        trace.dst.id(),
+        layer_name(trace.dst.layer())
     )
 }
 
 fn print_file_detail(file: &impl AnnotationFile) {
     println!("File: {}", file.source_file());
     for m in file.metas() {
-        println!("  [@{}] line: {}, Layer: Meta, Type: {:?}, Name: {}", m.id.0, m.line, m.r#type, m.name.0);
+        let links: Vec<String> = m
+            .links
+            .iter()
+            .map(|id| format!("@{} (Meta)", id.0))
+            .collect();
+        println!(
+            "  [@{}] line: {}, Layer: Meta, Type: {:?}, Name: {}{}",
+            m.id.0,
+            m.line,
+            m.r#type,
+            m.name.0,
+            format_links_suffix(&links)
+        );
     }
     for a in file.abstracts() {
-        println!("  [@{}] line: {}, Layer: Abstract, Type: {:?}, Name: {}", a.id.0, a.line, a.r#type, a.name.0);
+        let links: Vec<String> = a
+            .links
+            .iter()
+            .map(|link| match link {
+                AbstractLink::Meta(id) => format!("@{} (Meta)", id.0),
+                AbstractLink::Abstract(id) => format!("@{} (Abstract)", id.0),
+                AbstractLink::SpecDetail(id) => format!("@{} (SpecDetail)", id.0),
+            })
+            .collect();
+        println!(
+            "  [@{}] line: {}, Layer: Abstract, Type: {:?}, Name: {}{}",
+            a.id.0,
+            a.line,
+            a.r#type,
+            a.name.0,
+            format_links_suffix(&links)
+        );
     }
     for d in file.details() {
-        println!("  [@{}] line: {}, Layer: SpecDetail, Type: {:?}, Name: {}", d.id.0, d.line, d.r#type, d.name.0);
+        let links: Vec<String> = d
+            .links
+            .iter()
+            .map(|link| match link {
+                SpecDetailLink::Abstract(id) => format!("@{} (Abstract)", id.0),
+                SpecDetailLink::Implementation(id) => format!("@{} (Implementation)", id.0),
+            })
+            .collect();
+        println!(
+            "  [@{}] line: {}, Layer: SpecDetail, Type: {:?}, Name: {}{}",
+            d.id.0,
+            d.line,
+            d.r#type,
+            d.name.0,
+            format_links_suffix(&links)
+        );
     }
     for i in file.implementations() {
         println!("{}", format_implementation_line(i));
@@ -172,5 +253,10 @@ pub fn render_detail(view_model: &ShowResponseView) {
     println!("=== Code Annotations ===");
     for code in &view_model.code_annotations {
         print_file_detail(code);
+    }
+
+    println!("=== Traces ===");
+    for trace in &view_model.traces {
+        println!("{}", format_trace_line(trace));
     }
 }

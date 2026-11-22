@@ -1,6 +1,5 @@
 use crate::domains::models::abstract_annotation::AbstractAnnotationId;
-/// [@st-code-domain-models-implementation-file] layer: abstract, type: File, name: implementation.rs
-/// [@st-manual-meta-model-doc] layer: meta, type: Philosophy, name: Specification Model: Formal Definition
+/// [@st-code-domain-models-implementation-file] layer: abstract, type: File, name: implementation.rs, links: [@st-manual-data-model-implementation-file, @st-manual-meta-model-doc]
 /// This file defines the implementation-layer annotations, describing how specifications are realized at the technical level.
 use crate::domains::models::layer::Layer;
 use crate::domains::models::line_number::LineNumber;
@@ -77,7 +76,7 @@ impl std::str::FromStr for ImplementationStatus {
     }
 }
 
-/// [@st-code-domain-models-implementation-implementation-annotation] layer: abstract, type: Structure, name: ImplementationAnnotation
+/// [@st-code-domain-models-implementation-implementation-annotation] layer: abstract, type: Structure, name: ImplementationAnnotation, links: [@st-manual-data-model-implementation-implementation-annotation]
 /// This struct represents the implementation annotation model as described in the specification.
 #[derive(Debug, Clone)]
 pub struct ImplementationAnnotation {

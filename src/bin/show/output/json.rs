@@ -2,10 +2,11 @@ use super::{format_type, layer_name, AnnotationFile};
 use crate::dto::ShowView;
 use crate::show_response_adapter::ShowResponseView;
 use serde_json::{json, Value};
-use spec_trail::domains::models::abstract_annotation::AbstractAnnotation;
-use spec_trail::domains::models::implementation::ImplementationAnnotation;
+use spec_trail::domains::models::abstract_annotation::{AbstractAnnotation, AbstractLink};
+use spec_trail::domains::models::implementation::{ImplementationAnnotation, ImplementationLink};
 use spec_trail::domains::models::meta::MetaAnnotation;
-use spec_trail::domains::models::spec_detail::SpecDetailAnnotation;
+use spec_trail::domains::models::spec_detail::{SpecDetailAnnotation, SpecDetailLink};
+use spec_trail::domains::models::trace::Trace;
 use spec_trail::domains::services::annotation::scanner::ScanWarning;
 use std::collections::BTreeMap;
 
@@ -57,6 +58,7 @@ pub fn render_summary(view_model: &ShowResponseView) -> Value {
         "code_annotations": code_totals,
         "document_files": view_model.document_annotations.len(),
         "document_annotations": document_totals,
+        "traces": view_model.traces.len(),
         "warnings": warnings_to_json(&view_model.warnings),
     })
 }
@@ -173,45 +175,92 @@ pub fn render_group(view_model: &ShowResponseView) -> Value {
     output
 }
 
+fn link_to_json(id: &str, layer: &str) -> Value {
+    json!({
+        "id": id,
+        "layer": layer,
+    })
+}
+
 fn meta_to_json(m: &MetaAnnotation) -> Value {
+    let links: Vec<_> = m.links.iter().map(|id| link_to_json(&id.0, "Meta")).collect();
     json!({
         "id": m.id.0,
         "name": m.name.0,
         "type": format_type(m.r#type.as_ref()),
         "layer": layer_name(m.layer),
+        "links": links,
         "line": m.line.as_usize(),
     })
 }
 
 fn abstract_to_json(a: &AbstractAnnotation) -> Value {
+    let links: Vec<_> = a
+        .links
+        .iter()
+        .map(|link| match link {
+            AbstractLink::Meta(id) => link_to_json(&id.0, "Meta"),
+            AbstractLink::Abstract(id) => link_to_json(&id.0, "Abstract"),
+            AbstractLink::SpecDetail(id) => link_to_json(&id.0, "SpecDetail"),
+        })
+        .collect();
     json!({
         "id": a.id.0,
         "name": a.name.0,
         "type": format_type(a.r#type.as_ref()),
         "layer": layer_name(a.layer),
+        "links": links,
         "line": a.line.as_usize(),
     })
 }
 
 fn detail_to_json(d: &SpecDetailAnnotation) -> Value {
+    let links: Vec<_> = d
+        .links
+        .iter()
+        .map(|link| match link {
+            SpecDetailLink::Abstract(id) => link_to_json(&id.0, "Abstract"),
+            SpecDetailLink::Implementation(id) => link_to_json(&id.0, "Implementation"),
+        })
+        .collect();
     json!({
         "id": d.id.0,
         "name": d.name.0,
         "type": format_type(d.r#type.as_ref()),
         "layer": layer_name(d.layer),
+        "links": links,
         "line": d.line.as_usize(),
     })
 }
 
 fn implementation_to_json(i: &ImplementationAnnotation) -> Value {
+    let links: Vec<_> = i
+        .links
+        .iter()
+        .map(|link| match link {
+            ImplementationLink::SpecDetail(id) => link_to_json(&id.0, "SpecDetail"),
+            ImplementationLink::Abstract(id) => link_to_json(&id.0, "Abstract"),
+        })
+        .collect();
     json!({
         "id": i.id.0,
         "name": i.name.0,
         "type": format_type(i.r#type.as_ref()),
         "layer": layer_name(i.layer),
+        "links": links,
         "artifact": i.artifact.0,
         "status": i.status.as_ref().map(|s| format!("{:?}", s)),
         "line": i.line.as_usize(),
+    })
+}
+
+fn trace_to_json(t: &Trace) -> Value {
+    json!({
+        "src_id": t.src.id(),
+        "src_layer": layer_name(t.src.layer()),
+        "dst_id": t.dst.id(),
+        "dst_layer": layer_name(t.dst.layer()),
+        "kind": t.kind.to_string(),
     })
 }
 
@@ -229,6 +278,7 @@ pub fn render_detail(view_model: &ShowResponseView) -> Value {
     json!({
         "document_annotations": view_model.document_annotations.iter().map(file_detail_to_json).collect::<Vec<_>>(),
         "code_annotations": view_model.code_annotations.iter().map(file_detail_to_json).collect::<Vec<_>>(),
+        "traces": view_model.traces.iter().map(trace_to_json).collect::<Vec<_>>(),
         "warnings": warnings_to_json(&view_model.warnings),
     })
 }

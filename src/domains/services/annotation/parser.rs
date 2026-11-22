@@ -4,7 +4,7 @@ use crate::domains::models::line_number::LineNumber;
 use crate::domains::services::annotation::raw_annotation::RawAnnotation;
 use regex::Regex;
 
-/// [@st-code-domain-services-annotation-parser-annotation-parser] layer: abstract, type: Structure, name: AnnotationParser
+/// [@st-code-domain-services-annotation-parser-annotation-parser] layer: abstract, type: Structure, name: AnnotationParser, links: [@st-manual-spec-annotation-parser, @st-manual-spec-parser-code-annotations, @st-manual-spec-parser-spec-docs]
 /// Responsible for scanning file content and identifying annotation patterns.
 pub struct AnnotationParser;
 

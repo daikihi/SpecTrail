@@ -98,6 +98,7 @@ mod tests {
         let view_model = ShowResponseView {
             document_annotations: vec![],
             code_annotations: vec![],
+            traces: vec![],
             warnings: vec![],
             view: ShowView::Summary,
             format: ShowFormat::Text,
@@ -125,6 +126,7 @@ mod tests {
         let view_model = ShowResponseView {
             document_annotations: vec![doc],
             code_annotations: vec![],
+            traces: vec![],
             warnings: vec![],
             view: ShowView::Group,
             format: ShowFormat::Json,
@@ -140,7 +142,7 @@ mod tests {
             name: MetaName("Meta Test".to_string()),
             r#type: None,
             layer: Layer::Meta,
-            links: vec![],
+            links: vec![MetaAnnotationId("st-meta-other".to_string())],
             line: LineNumber(1),
         };
         let doc = DocumentAnnotation {
@@ -153,6 +155,7 @@ mod tests {
         let view_model = ShowResponseView {
             document_annotations: vec![doc],
             code_annotations: vec![],
+            traces: vec![],
             warnings: vec![],
             view: ShowView::Detail,
             format: ShowFormat::Json,
@@ -160,6 +163,10 @@ mod tests {
         let json_val = json::render_detail(&view_model);
         assert!(json_val.get("document_annotations").is_some());
         assert!(json_val.get("code_annotations").is_some());
+        assert!(json_val.get("traces").is_some());
+        let meta_links = &json_val["document_annotations"][0]["metas"][0]["links"];
+        assert_eq!(meta_links[0]["id"], "st-meta-other");
+        assert_eq!(meta_links[0]["layer"], "Meta");
     }
 
     #[test]
@@ -170,6 +177,7 @@ mod tests {
         let view_model = ShowResponseView {
             document_annotations: vec![],
             code_annotations: vec![],
+            traces: vec![],
             warnings: vec![ScanWarning::Parse(ParseWarning {
                 source_file: "test.rs".to_string(),
                 line: LineNumber(5),
@@ -190,18 +198,21 @@ mod tests {
 
     #[test]
     fn test_render_json_detail_implementation_fields() {
+        use spec_trail::domains::models::abstract_annotation::AbstractAnnotationId;
+        use spec_trail::domains::models::annotation::code_annotation::CodeAnnotation;
         use spec_trail::domains::models::implementation::{
             ImplementationAnnotation, ImplementationAnnotationId, ImplementationArtifact,
-            ImplementationSpecName, ImplementationStatus,
+            ImplementationLink, ImplementationSpecName, ImplementationStatus,
         };
-        use spec_trail::domains::models::annotation::code_annotation::CodeAnnotation;
 
         let impl_annotation = ImplementationAnnotation {
             id: ImplementationAnnotationId("st-impl-test".to_string()),
             name: ImplementationSpecName("Impl Test".to_string()),
             r#type: None,
             layer: Layer::Implementation,
-            links: vec![],
+            links: vec![ImplementationLink::Abstract(AbstractAnnotationId(
+                "st-abs-target".to_string(),
+            ))],
             artifact: ImplementationArtifact("src/foo.rs".to_string()),
             status: Some(ImplementationStatus::Completed),
             line: LineNumber(10),
@@ -216,6 +227,7 @@ mod tests {
         let view_model = ShowResponseView {
             document_annotations: vec![],
             code_annotations: vec![code],
+            traces: vec![],
             warnings: vec![],
             view: ShowView::Detail,
             format: ShowFormat::Json,
@@ -224,13 +236,16 @@ mod tests {
         let impls = &json_val["code_annotations"][0]["implementations"][0];
         assert_eq!(impls["artifact"], "src/foo.rs");
         assert_eq!(impls["status"], "Completed");
+        assert_eq!(impls["links"][0]["id"], "st-abs-target");
+        assert_eq!(impls["links"][0]["layer"], "Abstract");
     }
 
     #[test]
     fn test_render_text_detail_implementation_artifact() {
+        use spec_trail::domains::models::abstract_annotation::AbstractAnnotationId;
         use spec_trail::domains::models::implementation::{
             ImplementationAnnotation, ImplementationAnnotationId, ImplementationArtifact,
-            ImplementationSpecName,
+            ImplementationLink, ImplementationSpecName,
         };
 
         let impl_annotation = ImplementationAnnotation {
@@ -238,7 +253,9 @@ mod tests {
             name: ImplementationSpecName("Impl Text".to_string()),
             r#type: None,
             layer: Layer::Implementation,
-            links: vec![],
+            links: vec![ImplementationLink::Abstract(AbstractAnnotationId(
+                "st-abs-target".to_string(),
+            ))],
             artifact: ImplementationArtifact("src/bar.rs".to_string()),
             status: None,
             line: LineNumber(3),
@@ -249,5 +266,68 @@ mod tests {
             line.contains("Artifact: src/bar.rs"),
             "expected 'Artifact: src/bar.rs' in formatted line, got: {line:?}"
         );
+        assert!(
+            line.contains("Links: [@st-abs-target (Abstract)]"),
+            "expected formatted links in line, got: {line:?}"
+        );
+    }
+
+    #[test]
+    fn test_render_detail_and_summary_include_traces() {
+        use spec_trail::domains::models::abstract_annotation::{
+            AbstractAnnotation, AbstractAnnotationId, AbstractLink, AbstractName,
+        };
+        use spec_trail::domains::models::spec_detail::{
+            SpecDetailAnnotation, SpecDetailAnnotationId, SpecDetailName,
+        };
+        use spec_trail::domains::models::trace::{Trace, TraceDestination, TraceKind, TraceSource};
+
+        let code_abs = AbstractAnnotation {
+            id: AbstractAnnotationId("st-code-show".to_string()),
+            name: AbstractName("ShowUseCase".to_string()),
+            r#type: None,
+            layer: Layer::Abstract,
+            links: vec![AbstractLink::SpecDetail(SpecDetailAnnotationId(
+                "st-doc-show".to_string(),
+            ))],
+            line: LineNumber(1),
+        };
+        let doc_detail = SpecDetailAnnotation {
+            id: SpecDetailAnnotationId("st-doc-show".to_string()),
+            name: SpecDetailName("show-command".to_string()),
+            r#type: None,
+            layer: Layer::SpecDetail,
+            links: vec![],
+            line: LineNumber(10),
+        };
+        let trace = Trace {
+            src: TraceSource::Abstract(code_abs),
+            dst: TraceDestination::SpecDetail(doc_detail),
+            kind: TraceKind::Implements,
+        };
+
+        let trace_line = text::format_trace_line(&trace);
+        assert_eq!(
+            trace_line,
+            "  [@st-code-show] (Abstract) --Implements--> [@st-doc-show] (SpecDetail)"
+        );
+
+        let view_model = ShowResponseView {
+            document_annotations: vec![],
+            code_annotations: vec![],
+            traces: vec![trace],
+            warnings: vec![],
+            view: ShowView::Detail,
+            format: ShowFormat::Json,
+        };
+
+        let summary_json = json::render_summary(&view_model);
+        assert_eq!(summary_json["traces"], 1);
+
+        let detail_json = json::render_detail(&view_model);
+        assert_eq!(detail_json["traces"].as_array().unwrap().len(), 1);
+        assert_eq!(detail_json["traces"][0]["src_id"], "st-code-show");
+        assert_eq!(detail_json["traces"][0]["dst_id"], "st-doc-show");
+        assert_eq!(detail_json["traces"][0]["kind"], "Implements");
     }
 }
