@@ -256,7 +256,14 @@ fn implementation_to_json(i: &ImplementationAnnotation) -> Value {
 }
 
 fn trace_to_json(t: &Trace) -> Value {
+    let (src_space, dst_space) = t.direction.spaces();
     json!({
+        "src_space": src_space,
+        "src_file": t.src_file,
+        "src_line": t.src.line().as_usize(),
+        "dst_space": dst_space,
+        "dst_file": t.dst_file,
+        "dst_line": t.dst.line().as_usize(),
         "src_id": t.src.id(),
         "src_layer": layer_name(t.src.layer()),
         "dst_id": t.dst.id(),

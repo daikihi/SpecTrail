@@ -185,6 +185,14 @@ cargo run --bin show -- --target code --view list --format json
 
 Output: A detailed report of annotations found in both code and documents.
 
+To find every code location for a specification in the bundled sample, run:
+
+```bash
+cargo run --bin show -- --target all --view detail --format text --config src/config/simple_sample.toml
+```
+
+In the **Traces** section, the `ss-simple-sample` entry in `spec.md` links to both `src/application.rs:1` and `src/domain.rs:1` through `Implements` traces. Each end shows its file and line. Use `--format json` for the [structured trace fields](specify_manual/command_design/show_annotattion/io.md#traces-in-detail-view).
+
 #### Show Command Options
 
 | Option     | Description                                               | Example Value             |

@@ -66,6 +66,28 @@ The output is managed by the `Presentation` layer (`output` module) and can be c
 - `group`: Grouped by attributes (Layer, Type, etc.).
 - `detail`: Full annotation details.
 
+### Traces in detail view
+
+The JSON `traces` array contains one entry per directed relationship between two annotation locations. The `src_` and `dst_` fields identify each endpoint. Lines start at 1. For example, the bundled sample produces this entry as well as a separate one for `domain.rs`:
+
+```json
+{
+  "src_space": "code",
+  "src_file": "samples/rust/simple_sample/src/application.rs",
+  "src_line": 1,
+  "src_layer": "Implementation",
+  "src_id": "ss-simple-sample",
+  "dst_space": "document",
+  "dst_file": "samples/rust/simple_sample/spec.md",
+  "dst_line": 3,
+  "dst_layer": "Meta",
+  "dst_id": "ss-simple-sample",
+  "kind": "Implements"
+}
+```
+
+A link originating in a document has `src_space: "document"` and `dst_space: "code"`. Summary view counts the same entries.
+
 ### Format Options
 
 - `text`: Human-readable text (Standard Output/Error).

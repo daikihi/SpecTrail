@@ -3,7 +3,7 @@
 
 /// [@st-code-domain-models-layer-layer] layer: abstract, type: Structure, name: Layer, links: [@st-manual-data-model-layer-layer]
 /// This enum represents the layer concept as described in the specification.
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
 pub enum Layer {
     Meta,
     Abstract,

@@ -1,67 +1,10 @@
 use crate::dto::ShowFormat;
 use crate::show_response_adapter::ShowResponseView;
-use spec_trail::domains::models::abstract_annotation::AbstractAnnotation;
-use spec_trail::domains::models::annotation::code_annotation::CodeAnnotation;
-use spec_trail::domains::models::annotation::document_annotation::DocumentAnnotation;
-use spec_trail::domains::models::implementation::ImplementationAnnotation;
+use spec_trail::domains::models::annotation::AnnotationFile;
 use spec_trail::domains::models::layer::Layer;
-use spec_trail::domains::models::meta::MetaAnnotation;
-use spec_trail::domains::models::spec_detail::SpecDetailAnnotation;
 
 mod json;
 mod text;
-
-/// Trait abstracting over DocumentAnnotation and CodeAnnotation file containers.
-pub trait AnnotationFile {
-    fn source_file(&self) -> &str;
-    fn metas(&self) -> &[MetaAnnotation];
-    fn abstracts(&self) -> &[AbstractAnnotation];
-    fn details(&self) -> &[SpecDetailAnnotation];
-    fn implementations(&self) -> &[ImplementationAnnotation];
-
-    fn total_count(&self) -> usize {
-        self.metas().len()
-            + self.abstracts().len()
-            + self.details().len()
-            + self.implementations().len()
-    }
-}
-
-impl AnnotationFile for DocumentAnnotation {
-    fn source_file(&self) -> &str {
-        &self.source_file
-    }
-    fn metas(&self) -> &[MetaAnnotation] {
-        &self.metas
-    }
-    fn abstracts(&self) -> &[AbstractAnnotation] {
-        &self.abstracts
-    }
-    fn details(&self) -> &[SpecDetailAnnotation] {
-        &self.details
-    }
-    fn implementations(&self) -> &[ImplementationAnnotation] {
-        &self.implementations
-    }
-}
-
-impl AnnotationFile for CodeAnnotation {
-    fn source_file(&self) -> &str {
-        &self.source_file
-    }
-    fn metas(&self) -> &[MetaAnnotation] {
-        &self.metas
-    }
-    fn abstracts(&self) -> &[AbstractAnnotation] {
-        &self.abstracts
-    }
-    fn details(&self) -> &[SpecDetailAnnotation] {
-        &self.details
-    }
-    fn implementations(&self) -> &[ImplementationAnnotation] {
-        &self.implementations
-    }
-}
 
 pub fn layer_name(layer: Layer) -> &'static str {
     match layer {
@@ -89,6 +32,7 @@ pub fn render(view_model: &ShowResponseView) {
 mod tests {
     use super::*;
     use crate::dto::{ShowFormat, ShowView};
+    use spec_trail::domains::models::annotation::document_annotation::DocumentAnnotation;
     use spec_trail::domains::models::layer::Layer;
     use spec_trail::domains::models::line_number::LineNumber;
     use spec_trail::domains::models::meta::{MetaAnnotation, MetaAnnotationId, MetaName};
@@ -280,7 +224,9 @@ mod tests {
         use spec_trail::domains::models::spec_detail::{
             SpecDetailAnnotation, SpecDetailAnnotationId, SpecDetailName,
         };
-        use spec_trail::domains::models::trace::{Trace, TraceDestination, TraceKind, TraceSource};
+        use spec_trail::domains::models::trace::{
+            Trace, TraceDestination, TraceDirection, TraceKind, TraceSource,
+        };
 
         let code_abs = AbstractAnnotation {
             id: AbstractAnnotationId("st-code-show".to_string()),
@@ -301,6 +247,9 @@ mod tests {
             line: LineNumber(10),
         };
         let trace = Trace {
+            direction: TraceDirection::CodeToDocument,
+            src_file: "src/show.rs".into(),
+            dst_file: "docs/show.md".into(),
             src: TraceSource::Abstract(code_abs),
             dst: TraceDestination::SpecDetail(doc_detail),
             kind: TraceKind::Implements,
@@ -309,7 +258,7 @@ mod tests {
         let trace_line = text::format_trace_line(&trace);
         assert_eq!(
             trace_line,
-            "  [@st-code-show] (Abstract) --Implements--> [@st-doc-show] (SpecDetail)"
+            "  [@st-code-show] (Abstract; code src/show.rs:1) --Implements--> [@st-doc-show] (SpecDetail; document docs/show.md:10)"
         );
 
         let view_model = ShowResponseView {

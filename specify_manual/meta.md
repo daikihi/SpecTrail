@@ -230,17 +230,19 @@ WebInterfaceDataModel : API or UI data structures
 
 1.2.8 Annotation Trace
 
-Traces define explicit semantic relationships across all annotation layers.
+Traces connect code and document annotations through resolved links or matching IDs.
 
 ```
 T = {t₁, ..., tₘ}
 
 ∀ t ∈ T:
     t = {src, dst, kind}
-    src ∈ (A ∪ D ∪ I)
-    dst ∈ (A ∪ D ∪ I)
+    src, dst ∈ occurrences(M ∪ A ∪ D ∪ I)
+    space(src) ≠ space(dst)
     kind ∈ TraceKind
 ```
+
+Each endpoint identifies one annotation occurrence by space (code or document), file, one-based line, layer, and ID. Two traces are equal when both ordered endpoints and the kind are equal. The [trace matching rules](data_model/trace.md#matching-rules) apply to these occurrences.
 
 TraceKind expresses semantics such as:
 
@@ -341,6 +343,9 @@ classDiagram
     class Trace {
         +kind : TraceKind
     }
+
+    Trace "1" --> "1" MetaAnnotation : src
+    Trace "1" --> "1" MetaAnnotation : dst
 
     Trace "1" --> "1" AbstractAnnotation : src
     Trace "1" --> "1" AbstractAnnotation : dst

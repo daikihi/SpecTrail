@@ -174,13 +174,20 @@ pub(super) fn format_implementation_line(
 }
 
 pub(super) fn format_trace_line(trace: &Trace) -> String {
+    let (src_space, dst_space) = trace.direction.spaces();
     format!(
-        "  [@{}] ({}) --{}--> [@{}] ({})",
+        "  [@{}] ({}; {} {}:{}) --{}--> [@{}] ({}; {} {}:{})",
         trace.src.id(),
         layer_name(trace.src.layer()),
+        src_space,
+        trace.src_file,
+        trace.src.line(),
         trace.kind,
         trace.dst.id(),
-        layer_name(trace.dst.layer())
+        layer_name(trace.dst.layer()),
+        dst_space,
+        trace.dst_file,
+        trace.dst.line()
     )
 }
 

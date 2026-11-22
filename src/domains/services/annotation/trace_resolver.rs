@@ -1,16 +1,108 @@
 /// [@st-code-domain-services-annotation-trace-resolver-file] layer: abstract, type: File, name: trace_resolver.rs, links: [@st-manual-spec-mapping-engine, @st-manual-spec-mapping-match-spec-to-code]
 /// This file resolves traceability relationships (`Trace`) between document annotations and code annotations.
+use crate::domains::models::annotation::AnnotationFile;
 use crate::domains::models::annotation::code_annotation::CodeAnnotation;
 use crate::domains::models::annotation::document_annotation::DocumentAnnotation;
 use crate::domains::models::layer::Layer;
+use crate::domains::models::line_number::LineNumber;
 use crate::domains::models::spec_detail::SpecDetailType;
-use crate::domains::models::trace::{Trace, TraceDestination, TraceKind, TraceSource};
-use std::collections::{HashMap, HashSet};
+use crate::domains::models::trace::{Trace, TraceDirection, TraceKind, TraceSource};
+use std::collections::{BTreeMap, HashMap};
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-enum TraceDirection {
-    CodeToDocument,
-    DocumentToCode,
+struct Occurrence<'a> {
+    file: &'a str,
+    annotation: TraceSource,
+}
+
+impl Occurrence<'_> {
+    fn location(&self) -> (&str, LineNumber, Layer) {
+        (self.file, self.annotation.line(), self.annotation.layer())
+    }
+}
+
+type Index<'a> = HashMap<String, Vec<Occurrence<'a>>>;
+
+fn index_files<T: AnnotationFile>(files: &[T]) -> Index<'_> {
+    let mut index = Index::new();
+    for file in files {
+        let mut insert = |annotation: TraceSource| {
+            index
+                .entry(annotation.id().to_owned())
+                .or_default()
+                .push(Occurrence {
+                    file: file.source_file(),
+                    annotation,
+                });
+        };
+        for meta in file.metas() {
+            insert(TraceSource::Meta(meta.clone()));
+        }
+        for abstract_annotation in file.abstracts() {
+            insert(TraceSource::Abstract(abstract_annotation.clone()));
+        }
+        for detail in file.details() {
+            insert(TraceSource::SpecDetail(detail.clone()));
+        }
+        for implementation in file.implementations() {
+            insert(TraceSource::Implementation(implementation.clone()));
+        }
+    }
+    index
+}
+
+// Explicit links carry a target layer. The code-to-document ID match accepts any layer.
+fn visit_targets(
+    source: &TraceSource,
+    direction: TraceDirection,
+    mut visit: impl FnMut(&str, Option<Layer>, TraceKind),
+) {
+    let matching_id_kind = match source {
+        TraceSource::Meta(m) => {
+            for id in &m.links {
+                visit(&id.0, Some(Layer::Meta), TraceKind::Derives);
+            }
+            TraceKind::Derives
+        }
+        TraceSource::Abstract(a) => {
+            for link in &a.links {
+                let (id, layer) = link.target();
+                let kind = match (direction, layer) {
+                    (TraceDirection::DocumentToCode, _) => TraceKind::Refines,
+                    (TraceDirection::CodeToDocument, Layer::Meta) => TraceKind::Derives,
+                    _ => TraceKind::Implements,
+                };
+                visit(id, Some(layer), kind);
+            }
+            TraceKind::Implements
+        }
+        TraceSource::SpecDetail(d) => {
+            let code_kind = if d.r#type == Some(SpecDetailType::Test) {
+                TraceKind::Verifies
+            } else {
+                TraceKind::Implements
+            };
+            for link in &d.links {
+                let (id, layer) = link.target();
+                let kind = match (direction, layer) {
+                    (TraceDirection::CodeToDocument, _) => code_kind,
+                    (TraceDirection::DocumentToCode, Layer::Abstract) => TraceKind::Refines,
+                    _ => TraceKind::Implements,
+                };
+                visit(id, Some(layer), kind);
+            }
+            code_kind
+        }
+        TraceSource::Implementation(i) => {
+            for link in &i.links {
+                let (id, layer) = link.target();
+                visit(id, Some(layer), TraceKind::Implements);
+            }
+            TraceKind::Implements
+        }
+    };
+    if direction == TraceDirection::CodeToDocument {
+        visit(source.id(), None, matching_id_kind);
+    }
 }
 
 /// [@st-code-domain-services-annotation-trace-resolver] layer: abstract, type: Structure, name: TraceResolver, links: [@st-manual-spec-mapping-match-spec-to-code]
@@ -18,229 +110,45 @@ enum TraceDirection {
 pub struct TraceResolver;
 
 impl TraceResolver {
-    /// Resolves deterministic, deduplicated `Trace` edges between document and code annotations.
+    /// Resolves deterministic, deduplicated traces between annotation occurrences.
     pub fn resolve(documents: &[DocumentAnnotation], codes: &[CodeAnnotation]) -> Vec<Trace> {
-        let mut doc_index: HashMap<String, TraceDestination> = HashMap::new();
-        for doc in documents {
-            for m in &doc.metas {
-                doc_index.insert(m.id.0.clone(), TraceDestination::Meta(m.clone()));
-            }
-            for a in &doc.abstracts {
-                doc_index.insert(a.id.0.clone(), TraceDestination::Abstract(a.clone()));
-            }
-            for d in &doc.details {
-                doc_index.insert(d.id.0.clone(), TraceDestination::SpecDetail(d.clone()));
-            }
-            for i in &doc.implementations {
-                doc_index.insert(i.id.0.clone(), TraceDestination::Implementation(i.clone()));
-            }
-        }
-
-        let mut code_index: HashMap<String, TraceDestination> = HashMap::new();
-        for code in codes {
-            for m in &code.metas {
-                code_index.insert(m.id.0.clone(), TraceDestination::Meta(m.clone()));
-            }
-            for a in &code.abstracts {
-                code_index.insert(a.id.0.clone(), TraceDestination::Abstract(a.clone()));
-            }
-            for d in &code.details {
-                code_index.insert(d.id.0.clone(), TraceDestination::SpecDetail(d.clone()));
-            }
-            for i in &code.implementations {
-                code_index.insert(i.id.0.clone(), TraceDestination::Implementation(i.clone()));
-            }
-        }
-
-        let mut traces: Vec<(TraceDirection, Trace)> = Vec::new();
-        let mut seen: HashSet<(TraceDirection, String, String, TraceKind)> = HashSet::new();
-
-        let mut push_trace = |direction: TraceDirection,
-                              src: TraceSource,
-                              dst: TraceDestination,
-                              kind: TraceKind| {
-            let key = (direction, src.id().to_string(), dst.id().to_string(), kind);
-            if seen.insert(key) {
-                traces.push((direction, Trace { src, dst, kind }));
-            }
-        };
-
-        // 1. Explicit links from code annotations to document annotations
-        for code in codes {
-            for m in &code.metas {
-                for target_id in &m.links {
-                    if let Some(dst) = doc_index
-                        .get(&target_id.0)
-                        .filter(|dst| dst.layer() == Layer::Meta)
-                    {
-                        push_trace(
-                            TraceDirection::CodeToDocument,
-                            TraceSource::Meta(m.clone()),
-                            dst.clone(),
-                            TraceKind::Derives,
-                        );
-                    }
-                }
-                if let Some(dst) = doc_index.get(&m.id.0) {
-                    push_trace(
-                        TraceDirection::CodeToDocument,
-                        TraceSource::Meta(m.clone()),
-                        dst.clone(),
-                        TraceKind::Derives,
-                    );
-                }
-            }
-            for a in &code.abstracts {
-                for link in &a.links {
-                    let (target_id, layer) = link.target();
-                    let kind = if layer == Layer::Meta {
-                        TraceKind::Derives
-                    } else {
-                        TraceKind::Implements
+        let documents = index_files(documents);
+        let codes = index_files(codes);
+        let mut traces = BTreeMap::new();
+        for (direction, sources, targets) in [
+            (TraceDirection::CodeToDocument, &codes, &documents),
+            (TraceDirection::DocumentToCode, &documents, &codes),
+        ] {
+            for src in sources.values().flatten() {
+                visit_targets(&src.annotation, direction, |id, layer, kind| {
+                    let Some(candidates) = targets.get(id) else {
+                        return;
                     };
-                    if let Some(dst) = doc_index.get(target_id).filter(|dst| dst.layer() == layer) {
-                        push_trace(
-                            TraceDirection::CodeToDocument,
-                            TraceSource::Abstract(a.clone()),
-                            dst.clone(),
+                    for dst in candidates {
+                        if layer.is_some_and(|layer| layer != dst.annotation.layer()) {
+                            continue;
+                        }
+                        let key = (
+                            src.annotation.id(),
+                            dst.annotation.id(),
                             kind,
+                            direction,
+                            src.location(),
+                            dst.location(),
                         );
-                    }
-                }
-                if let Some(dst) = doc_index.get(&a.id.0) {
-                    push_trace(
-                        TraceDirection::CodeToDocument,
-                        TraceSource::Abstract(a.clone()),
-                        dst.clone(),
-                        TraceKind::Implements,
-                    );
-                }
-            }
-            for d in &code.details {
-                let kind = if d.r#type == Some(SpecDetailType::Test) {
-                    TraceKind::Verifies
-                } else {
-                    TraceKind::Implements
-                };
-                for link in &d.links {
-                    let (target_id, layer) = link.target();
-                    if let Some(dst) = doc_index.get(target_id).filter(|dst| dst.layer() == layer) {
-                        push_trace(
-                            TraceDirection::CodeToDocument,
-                            TraceSource::SpecDetail(d.clone()),
-                            dst.clone(),
+                        traces.entry(key).or_insert_with(|| Trace {
+                            direction,
+                            src_file: src.file.to_owned(),
+                            dst_file: dst.file.to_owned(),
+                            src: src.annotation.clone(),
+                            dst: dst.annotation.clone().into(),
                             kind,
-                        );
+                        });
                     }
-                }
-                if let Some(dst) = doc_index.get(&d.id.0) {
-                    push_trace(
-                        TraceDirection::CodeToDocument,
-                        TraceSource::SpecDetail(d.clone()),
-                        dst.clone(),
-                        kind,
-                    );
-                }
-            }
-            for i in &code.implementations {
-                for link in &i.links {
-                    let (target_id, layer) = link.target();
-                    if let Some(dst) = doc_index.get(target_id).filter(|dst| dst.layer() == layer) {
-                        push_trace(
-                            TraceDirection::CodeToDocument,
-                            TraceSource::Implementation(i.clone()),
-                            dst.clone(),
-                            TraceKind::Implements,
-                        );
-                    }
-                }
-                if let Some(dst) = doc_index.get(&i.id.0) {
-                    push_trace(
-                        TraceDirection::CodeToDocument,
-                        TraceSource::Implementation(i.clone()),
-                        dst.clone(),
-                        TraceKind::Implements,
-                    );
-                }
+                });
             }
         }
-
-        // 2. Explicit links from document annotations to code annotations
-        for doc in documents {
-            for m in &doc.metas {
-                for target_id in &m.links {
-                    if let Some(dst) = code_index
-                        .get(&target_id.0)
-                        .filter(|dst| dst.layer() == Layer::Meta)
-                    {
-                        push_trace(
-                            TraceDirection::DocumentToCode,
-                            TraceSource::Meta(m.clone()),
-                            dst.clone(),
-                            TraceKind::Derives,
-                        );
-                    }
-                }
-            }
-            for a in &doc.abstracts {
-                for link in &a.links {
-                    let (target_id, layer) = link.target();
-                    if let Some(dst) = code_index.get(target_id).filter(|dst| dst.layer() == layer)
-                    {
-                        push_trace(
-                            TraceDirection::DocumentToCode,
-                            TraceSource::Abstract(a.clone()),
-                            dst.clone(),
-                            TraceKind::Refines,
-                        );
-                    }
-                }
-            }
-            for d in &doc.details {
-                for link in &d.links {
-                    let (target_id, layer) = link.target();
-                    let kind = if layer == Layer::Abstract {
-                        TraceKind::Refines
-                    } else {
-                        TraceKind::Implements
-                    };
-                    if let Some(dst) = code_index.get(target_id).filter(|dst| dst.layer() == layer)
-                    {
-                        push_trace(
-                            TraceDirection::DocumentToCode,
-                            TraceSource::SpecDetail(d.clone()),
-                            dst.clone(),
-                            kind,
-                        );
-                    }
-                }
-            }
-            for i in &doc.implementations {
-                for link in &i.links {
-                    let (target_id, layer) = link.target();
-                    if let Some(dst) = code_index.get(target_id).filter(|dst| dst.layer() == layer)
-                    {
-                        push_trace(
-                            TraceDirection::DocumentToCode,
-                            TraceSource::Implementation(i.clone()),
-                            dst.clone(),
-                            TraceKind::Implements,
-                        );
-                    }
-                }
-            }
-        }
-
-        traces.sort_by(|(dir_a, a), (dir_b, b)| {
-            a.src
-                .id()
-                .cmp(b.src.id())
-                .then_with(|| a.dst.id().cmp(b.dst.id()))
-                .then_with(|| a.kind.cmp(&b.kind))
-                .then_with(|| dir_a.cmp(dir_b))
-        });
-
-        traces.into_iter().map(|(_, trace)| trace).collect()
+        traces.into_values().collect()
     }
 }
 
@@ -383,7 +291,7 @@ mod tests {
             implementations: vec![],
         };
 
-        let code = CodeAnnotation {
+        let mut code = CodeAnnotation {
             source_file: "src/meta.rs".to_string(),
             metas: vec![
                 MetaAnnotation {
@@ -412,6 +320,11 @@ mod tests {
             implementations: vec![],
         };
 
+        // A second annotation with the same ID at a different line is a separate endpoint.
+        code.metas.push(MetaAnnotation {
+            line: LineNumber(21),
+            ..code.metas[1].clone()
+        });
         let traces = TraceResolver::resolve(&[doc], &[code]);
         let x_to_y: Vec<_> = traces
             .iter()
@@ -420,12 +333,17 @@ mod tests {
 
         // Both Code(meta-x) -> Doc(meta-y) and Doc(meta-x) -> Code(meta-y) are kept;
         // duplicate Code(meta-x) -> Doc(meta-y) is deduplicated.
-        assert_eq!(x_to_y.len(), 2);
+        assert_eq!(x_to_y.len(), 3);
         assert_eq!(x_to_y[0].src.name(), "Code X");
         assert_eq!(x_to_y[0].dst.name(), "Doc Y");
         assert_eq!(x_to_y[0].kind, TraceKind::Derives);
         assert_eq!(x_to_y[1].src.name(), "Doc X");
         assert_eq!(x_to_y[1].dst.name(), "Code Y");
         assert_eq!(x_to_y[1].kind, TraceKind::Derives);
+        assert_eq!(x_to_y[0].direction, TraceDirection::CodeToDocument);
+        assert_eq!(x_to_y[1].direction, TraceDirection::DocumentToCode);
+        assert_eq!(x_to_y[2].direction, TraceDirection::DocumentToCode);
+        assert_eq!(x_to_y[1].dst.line(), LineNumber(20));
+        assert_eq!(x_to_y[2].dst.line(), LineNumber(21));
     }
 }

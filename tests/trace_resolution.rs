@@ -25,11 +25,15 @@ fn explicit_links_require_the_resolved_layer_but_matching_ids_can_cross_layers()
         &["--target", "all", "--view", "detail"],
     );
     let traces = show["traces"].as_array().unwrap();
-    assert_eq!(traces.len(), 1);
-    assert_eq!(traces[0]["src_id"], "T");
-    assert_eq!(traces[0]["src_layer"], "Implementation");
-    assert_eq!(traces[0]["dst_id"], "T");
-    assert_eq!(traces[0]["dst_layer"], "Meta");
+    assert_eq!(traces.len(), 2);
+    let shared_id = traces.iter().find(|t| t["src_id"] == "T").unwrap();
+    assert_eq!(shared_id["src_layer"], "Implementation");
+    assert_eq!(shared_id["dst_id"], "T");
+    assert_eq!(shared_id["dst_layer"], "Meta");
+
+    let explicit = traces.iter().find(|t| t["src_id"] == "D").unwrap();
+    assert_eq!(explicit["src_line"], 3);
+    assert_eq!(explicit["dst_id"], "C");
 
     let check = cli_json(
         env!("CARGO_BIN_EXE_check"),
@@ -40,4 +44,40 @@ fn explicit_links_require_the_resolved_layer_but_matching_ids_can_cross_layers()
     assert_eq!(issues.len(), 1);
     assert_eq!(issues[0]["type"], "unimplemented_spec");
     assert_eq!(issues[0]["spec_id"], "D");
+    assert_eq!(issues[0]["line"], 2);
+}
+
+#[test]
+fn sample_keeps_both_implementations_for_each_document_location() {
+    let show = cli_json(
+        env!("CARGO_BIN_EXE_show"),
+        "src/config/simple_sample.toml",
+        &["--target", "all", "--view", "detail"],
+    );
+    let edges: Vec<_> = show["traces"]
+        .as_array()
+        .unwrap()
+        .iter()
+        .filter(|t| t["dst_id"] == "ss-simple-sample" && t["kind"] == "Implements")
+        .map(|t| {
+            assert_eq!(t["src_space"], "code");
+            assert_eq!(t["dst_space"], "document");
+            assert_eq!(t["src_line"], 1);
+            assert_eq!(t["dst_line"], 3);
+            let root = "samples/rust/simple_sample/";
+            (
+                t["src_file"].as_str().unwrap().strip_prefix(root).unwrap(),
+                t["dst_file"].as_str().unwrap().strip_prefix(root).unwrap(),
+            )
+        })
+        .collect();
+    assert_eq!(
+        edges,
+        [
+            ("src/application.rs", "README.md"),
+            ("src/application.rs", "spec.md"),
+            ("src/domain.rs", "README.md"),
+            ("src/domain.rs", "spec.md"),
+        ]
+    );
 }
