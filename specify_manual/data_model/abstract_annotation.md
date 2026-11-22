@@ -19,13 +19,18 @@ Abstract-layer annotations represent conceptual units and structures of the syst
   - `BackgroundComponent`
   - `Structure`
   - `Convention`
+/// [@st-manual-data-model-abstract-annotation-abstract-link] layer: abstract, type: Structure, name: AbstractLink
+- `AbstractLink`
+  - `Meta(MetaAnnotationId)`
+  - `Abstract(AbstractAnnotationId)`
+  - `SpecDetail(SpecDetailAnnotationId)`
 /// [@st-manual-data-model-abstract-annotation-abstract-annotation] layer: abstract, type: Structure, name: AbstractAnnotation
 - `AbstractAnnotation`
   - `id: AbstractAnnotationId`
   - `name: AbstractName`
   - `type: AbstractType`
   - `layer: Layer` (typically `Layer::Abstract`)
-  - `links: Vec<SpecDetailAnnotation>`
+  - `links: Vec<AbstractLink>`
 
 ## Relationships
-`links` points to associated `SpecDetailAnnotation` values.
+`links` points to associated `MetaAnnotation`, `AbstractAnnotation`, or `SpecDetailAnnotation` identifiers.

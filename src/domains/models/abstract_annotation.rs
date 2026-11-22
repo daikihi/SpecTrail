@@ -3,6 +3,7 @@
 /// This file defines the abstract-layer annotations, representing high-level conceptual units of the system.
 use crate::domains::models::layer::Layer;
 use crate::domains::models::line_number::LineNumber;
+use crate::domains::models::meta::MetaAnnotationId;
 use crate::domains::models::spec_detail::SpecDetailAnnotationId;
 
 /// [@st-code-domain-models-abstract-annotation-abstract-annotation-id] layer: abstract, type: Structure, name: AbstractAnnotationId
@@ -45,6 +46,15 @@ impl std::str::FromStr for AbstractType {
     }
 }
 
+/// [@st-code-domain-models-abstract-annotation-abstract-link] layer: abstract, type: Structure, name: AbstractLink
+/// This enum represents the link type for abstract annotation as described in the specification.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum AbstractLink {
+    Meta(MetaAnnotationId),
+    Abstract(AbstractAnnotationId),
+    SpecDetail(SpecDetailAnnotationId),
+}
+
 /// [@st-code-domain-models-abstract-annotation-abstract-annotation] layer: abstract, type: Structure, name: AbstractAnnotation
 /// This struct represents the abstract annotation model as described in the specification.
 #[derive(Debug, Clone)]
@@ -53,6 +63,6 @@ pub struct AbstractAnnotation {
     pub name: AbstractName,
     pub r#type: Option<AbstractType>,
     pub layer: Layer,
-    pub links: Vec<SpecDetailAnnotationId>,
+    pub links: Vec<AbstractLink>,
     pub line: LineNumber,
 }

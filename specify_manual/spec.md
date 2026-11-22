@@ -4,7 +4,7 @@
 /// [@st-manual-spec-overview] layer: abstract, type: Convention, name: Overview
 ## 1. Overview
 
-/// [@st-manual-spec-goal] layer: abstract, type: Philosophy, name: Goal of SpecTrail, links: [@st-manual-meta-model-doc]
+/// [@st-manual-spec-goal] layer: meta, type: Philosophy, name: Goal of SpecTrail, links: [@st-manual-meta-model-doc]
 ### 1.1 Goal of SpecTrail
 
 The goal of SpecTrail is supporting for a team of software developers and designers.
@@ -103,7 +103,7 @@ Basically, both of those annotations should be exact same name for readability t
 /// [@st-manual-spec-functional-specs] layer: abstract, type: Structure, name: Functional Specifications
 ## 2. Functional Specifications
 
-/// [@st-manual-spec-cli] layer: spec-detail, type: Rule, name: Command Line Interface, links: [@st-manual-spec-components]
+/// [@st-manual-spec-cli] layer: abstract, type: Structure, name: Command Line Interface, links: [@st-manual-spec-components]
 ### 2.1 Command Line Interface
 
 /// [@st-manual-spec-cli-check-command] layer: spec-detail, type: Func, name: check-command, links: [@st-manual-spec-cli]
@@ -140,7 +140,7 @@ Basically, both of those annotations should be exact same name for readability t
 - **入出力**: JSONファイル → Web UI
 - **レイヤ**: service / view
 
-/// [@st-manual-spec-annotation-parser] layer: spec-detail, type: Func, name: Annotation Parser, links: [@st-manual-spec-components]
+/// [@st-manual-spec-annotation-parser] layer: abstract, type: BackgroundComponent, name: Annotation Parser, links: [@st-manual-spec-components]
 ### 2.2 Annotation Parser
 
 /// [@st-manual-spec-parser-code-annotations] layer: spec-detail, type: Func, name: parse-code-annotations, links: [@st-manual-spec-annotation-parser]
@@ -156,7 +156,7 @@ Basically, both of those annotations should be exact same name for readability t
 - **概要**: `specify_manual/*.md` から仕様IDとメタ情報を抽出
 - **レイヤ**: usecase
 
-/// [@st-manual-spec-mapping-engine] layer: spec-detail, type: Func, name: Mapping Engine, links: [@st-manual-spec-components]
+/// [@st-manual-spec-mapping-engine] layer: abstract, type: BackgroundComponent, name: Mapping Engine, links: [@st-manual-spec-components]
 ### 2.3 Mapping Engine
 
 /// [@st-manual-spec-mapping-match-spec-to-code] layer: spec-detail, type: Func, name: match-spec-to-code, links: [@st-manual-spec-mapping-engine]
@@ -203,7 +203,7 @@ Represents high-level philosophies, guidelines, and rules.
 #### AbstractAnnotation
 Represents conceptual units of the system.
 - **Types**: Page, Application, BackgroundComponent, Structure, Convention, Philosophy, Guideline
-- **Links**: Links to `SpecDetailAnnotation`s.
+- **Links**: Links to `MetaAnnotation`, `AbstractAnnotation`, or `SpecDetailAnnotation`.
 
 #### SpecDetailAnnotation
 Represents concrete functional or structural specifications.

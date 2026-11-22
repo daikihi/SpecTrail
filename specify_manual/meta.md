@@ -18,13 +18,13 @@
 
 Status: Draft (Conceptually stable, subject to naming refinements)
 
-/// [@st-manual-meta-specification] layer: abstract, type: Structure, name: Specification
+/// [@st-manual-meta-specification] layer: meta, type: Structure, name: Specification
 ## Specification
 
-/// [@st-manual-meta-spectrail-annotation] layer: abstract, type: Structure, name: SpecTrailAnnotation
+/// [@st-manual-meta-spectrail-annotation] layer: meta, type: Structure, name: SpecTrailAnnotation
 ### 1. SpecTrailAnnotation
 
-/// [@st-manual-meta-spectrail-unit] layer: abstract, type: Convention, name: SpecTrailUnit
+/// [@st-manual-meta-spectrail-unit] layer: meta, type: Convention, name: SpecTrailUnit
 #### 1.1 SpecTrailUnit
 
 SpecTrail defines two parallel annotation domains that share a common structural schema:
@@ -152,8 +152,13 @@ A = {a₁, ..., aₙ}
     na ∈ AbstractName
     ta ∈ AbstractType
     l ∈ Layer
-    link ⊆ SpecDetailAnnotation
+    link ⊆ {MetaAnnotation ∪ AbstractAnnotation ∪ SpecDetailAnnotation}
 ```
+
+An `AbstractAnnotation` may link to:
+- `MetaAnnotation` — foundational philosophy, guidelines, or metamodel definitions that ground the concept
+- `AbstractAnnotation` — parent or related higher-level conceptual units
+- `SpecDetailAnnotation` — concrete specifications owned by this concept
 
 #### 1.2.5 SpecDetailAnnotation
 
@@ -304,6 +309,8 @@ classDiagram
         +layer : Layer
     }
 
+    AbstractAnnotation "0..*" --> "0..*" MetaAnnotation : link
+    AbstractAnnotation "0..*" --> "0..*" AbstractAnnotation : link
     AbstractAnnotation "1" --> "0..*" SpecDetailAnnotation : link
 
     %% -------------------------
