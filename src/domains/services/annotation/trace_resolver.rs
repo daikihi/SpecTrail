@@ -8,6 +8,12 @@ use crate::domains::models::spec_detail::{SpecDetailLink, SpecDetailType};
 use crate::domains::models::trace::{Trace, TraceDestination, TraceKind, TraceSource};
 use std::collections::{HashMap, HashSet};
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
+enum TraceDirection {
+    CodeToDocument,
+    DocumentToCode,
+}
+
 /// [@st-code-domain-services-annotation-trace-resolver] layer: abstract, type: Structure, name: TraceResolver, links: [@st-manual-spec-mapping-match-spec-to-code]
 /// Builds `Trace` links connecting code annotations and document annotations via explicit links or matching IDs.
 pub struct TraceResolver;
@@ -47,26 +53,37 @@ impl TraceResolver {
             }
         }
 
-        let mut traces = Vec::new();
-        let mut seen: HashSet<(String, String, TraceKind)> = HashSet::new();
+        let mut traces: Vec<(TraceDirection, Trace)> = Vec::new();
+        let mut seen: HashSet<(TraceDirection, String, String, TraceKind)> = HashSet::new();
 
-        let mut push_trace = |src: TraceSource, dst: TraceDestination, kind: TraceKind| {
-            let key = (src.id().to_string(), dst.id().to_string(), kind);
-            if seen.insert(key) {
-                traces.push(Trace { src, dst, kind });
-            }
-        };
+        let mut push_trace =
+            |direction: TraceDirection, src: TraceSource, dst: TraceDestination, kind: TraceKind| {
+                let key = (direction, src.id().to_string(), dst.id().to_string(), kind);
+                if seen.insert(key) {
+                    traces.push((direction, Trace { src, dst, kind }));
+                }
+            };
 
         // 1. Explicit links from code annotations to document annotations
         for code in codes {
             for m in &code.metas {
                 for target_id in &m.links {
                     if let Some(dst) = doc_index.get(&target_id.0) {
-                        push_trace(TraceSource::Meta(m.clone()), dst.clone(), TraceKind::Derives);
+                        push_trace(
+                            TraceDirection::CodeToDocument,
+                            TraceSource::Meta(m.clone()),
+                            dst.clone(),
+                            TraceKind::Derives,
+                        );
                     }
                 }
                 if let Some(dst) = doc_index.get(&m.id.0) {
-                    push_trace(TraceSource::Meta(m.clone()), dst.clone(), TraceKind::Derives);
+                    push_trace(
+                        TraceDirection::CodeToDocument,
+                        TraceSource::Meta(m.clone()),
+                        dst.clone(),
+                        TraceKind::Derives,
+                    );
                 }
             }
             for a in &code.abstracts {
@@ -77,11 +94,17 @@ impl TraceResolver {
                         AbstractLink::SpecDetail(id) => (&id.0, TraceKind::Implements),
                     };
                     if let Some(dst) = doc_index.get(target_id) {
-                        push_trace(TraceSource::Abstract(a.clone()), dst.clone(), kind);
+                        push_trace(
+                            TraceDirection::CodeToDocument,
+                            TraceSource::Abstract(a.clone()),
+                            dst.clone(),
+                            kind,
+                        );
                     }
                 }
                 if let Some(dst) = doc_index.get(&a.id.0) {
                     push_trace(
+                        TraceDirection::CodeToDocument,
                         TraceSource::Abstract(a.clone()),
                         dst.clone(),
                         TraceKind::Implements,
@@ -100,11 +123,21 @@ impl TraceResolver {
                         SpecDetailLink::Implementation(id) => &id.0,
                     };
                     if let Some(dst) = doc_index.get(target_id) {
-                        push_trace(TraceSource::SpecDetail(d.clone()), dst.clone(), kind);
+                        push_trace(
+                            TraceDirection::CodeToDocument,
+                            TraceSource::SpecDetail(d.clone()),
+                            dst.clone(),
+                            kind,
+                        );
                     }
                 }
                 if let Some(dst) = doc_index.get(&d.id.0) {
-                    push_trace(TraceSource::SpecDetail(d.clone()), dst.clone(), kind);
+                    push_trace(
+                        TraceDirection::CodeToDocument,
+                        TraceSource::SpecDetail(d.clone()),
+                        dst.clone(),
+                        kind,
+                    );
                 }
             }
             for i in &code.implementations {
@@ -115,6 +148,7 @@ impl TraceResolver {
                     };
                     if let Some(dst) = doc_index.get(target_id) {
                         push_trace(
+                            TraceDirection::CodeToDocument,
                             TraceSource::Implementation(i.clone()),
                             dst.clone(),
                             TraceKind::Implements,
@@ -123,6 +157,7 @@ impl TraceResolver {
                 }
                 if let Some(dst) = doc_index.get(&i.id.0) {
                     push_trace(
+                        TraceDirection::CodeToDocument,
                         TraceSource::Implementation(i.clone()),
                         dst.clone(),
                         TraceKind::Implements,
@@ -136,7 +171,12 @@ impl TraceResolver {
             for m in &doc.metas {
                 for target_id in &m.links {
                     if let Some(dst) = code_index.get(&target_id.0) {
-                        push_trace(TraceSource::Meta(m.clone()), dst.clone(), TraceKind::Derives);
+                        push_trace(
+                            TraceDirection::DocumentToCode,
+                            TraceSource::Meta(m.clone()),
+                            dst.clone(),
+                            TraceKind::Derives,
+                        );
                     }
                 }
             }
@@ -149,6 +189,7 @@ impl TraceResolver {
                     };
                     if let Some(dst) = code_index.get(target_id) {
                         push_trace(
+                            TraceDirection::DocumentToCode,
                             TraceSource::Abstract(a.clone()),
                             dst.clone(),
                             TraceKind::Refines,
@@ -163,7 +204,12 @@ impl TraceResolver {
                         SpecDetailLink::Implementation(id) => (&id.0, TraceKind::Implements),
                     };
                     if let Some(dst) = code_index.get(target_id) {
-                        push_trace(TraceSource::SpecDetail(d.clone()), dst.clone(), kind);
+                        push_trace(
+                            TraceDirection::DocumentToCode,
+                            TraceSource::SpecDetail(d.clone()),
+                            dst.clone(),
+                            kind,
+                        );
                     }
                 }
             }
@@ -175,6 +221,7 @@ impl TraceResolver {
                     };
                     if let Some(dst) = code_index.get(target_id) {
                         push_trace(
+                            TraceDirection::DocumentToCode,
                             TraceSource::Implementation(i.clone()),
                             dst.clone(),
                             TraceKind::Implements,
@@ -184,15 +231,16 @@ impl TraceResolver {
             }
         }
 
-        traces.sort_by(|a, b| {
+        traces.sort_by(|(dir_a, a), (dir_b, b)| {
             a.src
                 .id()
                 .cmp(b.src.id())
                 .then_with(|| a.dst.id().cmp(b.dst.id()))
                 .then_with(|| a.kind.cmp(&b.kind))
+                .then_with(|| dir_a.cmp(dir_b))
         });
 
-        traces
+        traces.into_iter().map(|(_, trace)| trace).collect()
     }
 }
 
@@ -306,5 +354,78 @@ mod tests {
         assert_eq!(traces[0].dst.id(), "ss-req-1");
         assert_eq!(traces[0].dst.layer(), Layer::Abstract);
         assert_eq!(traces[0].kind, TraceKind::Implements);
+    }
+
+    #[test]
+    fn preserves_distinct_directions_for_shared_ids_while_deduplicating_same_direction() {
+        let doc = DocumentAnnotation {
+            source_file: "specify_manual/meta.md".to_string(),
+            metas: vec![
+                MetaAnnotation {
+                    id: MetaAnnotationId("meta-x".to_string()),
+                    name: MetaName("Doc X".to_string()),
+                    r#type: None,
+                    layer: Layer::Meta,
+                    links: vec![MetaAnnotationId("meta-y".to_string())],
+                    line: LineNumber(1),
+                },
+                MetaAnnotation {
+                    id: MetaAnnotationId("meta-y".to_string()),
+                    name: MetaName("Doc Y".to_string()),
+                    r#type: None,
+                    layer: Layer::Meta,
+                    links: vec![],
+                    line: LineNumber(2),
+                },
+            ],
+            abstracts: vec![],
+            details: vec![],
+            implementations: vec![],
+        };
+
+        let code = CodeAnnotation {
+            source_file: "src/meta.rs".to_string(),
+            metas: vec![
+                MetaAnnotation {
+                    id: MetaAnnotationId("meta-x".to_string()),
+                    name: MetaName("Code X".to_string()),
+                    r#type: None,
+                    layer: Layer::Meta,
+                    // Repeated link in same direction must be deduplicated
+                    links: vec![
+                        MetaAnnotationId("meta-y".to_string()),
+                        MetaAnnotationId("meta-y".to_string()),
+                    ],
+                    line: LineNumber(10),
+                },
+                MetaAnnotation {
+                    id: MetaAnnotationId("meta-y".to_string()),
+                    name: MetaName("Code Y".to_string()),
+                    r#type: None,
+                    layer: Layer::Meta,
+                    links: vec![],
+                    line: LineNumber(20),
+                },
+            ],
+            abstracts: vec![],
+            details: vec![],
+            implementations: vec![],
+        };
+
+        let traces = TraceResolver::resolve(&[doc], &[code]);
+        let x_to_y: Vec<_> = traces
+            .iter()
+            .filter(|t| t.src.id() == "meta-x" && t.dst.id() == "meta-y")
+            .collect();
+
+        // Both Code(meta-x) -> Doc(meta-y) and Doc(meta-x) -> Code(meta-y) are kept;
+        // duplicate Code(meta-x) -> Doc(meta-y) is deduplicated.
+        assert_eq!(x_to_y.len(), 2);
+        assert_eq!(x_to_y[0].src.name(), "Code X");
+        assert_eq!(x_to_y[0].dst.name(), "Doc Y");
+        assert_eq!(x_to_y[0].kind, TraceKind::Derives);
+        assert_eq!(x_to_y[1].src.name(), "Doc X");
+        assert_eq!(x_to_y[1].dst.name(), "Code Y");
+        assert_eq!(x_to_y[1].kind, TraceKind::Derives);
     }
 }

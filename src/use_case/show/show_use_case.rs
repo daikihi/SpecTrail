@@ -81,6 +81,15 @@ mod tests {
         assert!(!response.code_annotations.is_empty());
         assert!(response.document_annotations.is_empty());
         assert!(
+            !response.traces.is_empty(),
+            "expected cross-space traces to be resolved even when target is code"
+        );
+        assert!(
+            response.warnings.is_empty(),
+            "expected no false broken-link warnings when target is code, got: {:?}",
+            response.warnings
+        );
+        assert!(
             response
                 .code_annotations
                 .iter()
@@ -97,6 +106,15 @@ mod tests {
 
         assert!(response.code_annotations.is_empty());
         assert!(!response.document_annotations.is_empty());
+        assert!(
+            !response.traces.is_empty(),
+            "expected cross-space traces to be resolved even when target is document"
+        );
+        assert!(
+            response.warnings.is_empty(),
+            "expected no warnings when target is document, got: {:?}",
+            response.warnings
+        );
         assert!(
             response
                 .document_annotations
@@ -156,31 +174,49 @@ impl ShowUseCase {
             .unwrap_or_else(|| String::from("src/config/default.toml"));
         let config = SpecTrailConfig::from_file(config_path)?;
 
-        let code_path = if request.target == "all" || request.target == "code" {
-            Path::new(&config.source.head)
-        } else {
-            Path::new("")
-        };
-
-        let doc_path = if request.target == "all" || request.target == "document" {
-            Path::new(&config.document.head)
-        } else {
-            Path::new("")
-        };
-
         let ignored_prefixes = config.scanner.effective_ignored_prefixes();
         let scan_result = AnnotationScanner::scan_with_ignored_prefixes(
-            code_path,
+            Path::new(&config.source.head),
             &config.source.extension,
-            doc_path,
+            Path::new(&config.document.head),
             &config.document.extension,
             &ignored_prefixes,
         )?;
 
-        let code_annotations = scan_result.code_annotations;
-        let document_annotations = scan_result.document_annotations;
-        let traces = TraceResolver::resolve(&document_annotations, &code_annotations);
-        let warnings = scan_result.warnings;
+        let traces = TraceResolver::resolve(
+            &scan_result.document_annotations,
+            &scan_result.code_annotations,
+        );
+
+        let include_code = request.target == "all" || request.target == "code";
+        let include_document = request.target == "all" || request.target == "document";
+
+        let code_annotations = if include_code {
+            scan_result.code_annotations
+        } else {
+            Vec::new()
+        };
+        let document_annotations = if include_document {
+            scan_result.document_annotations
+        } else {
+            Vec::new()
+        };
+        let warnings = if include_code && include_document {
+            scan_result.warnings
+        } else {
+            scan_result
+                .warnings
+                .into_iter()
+                .filter(|warning| {
+                    let source_file = match warning {
+                        ScanWarning::Parse(pw) => pw.source_file.as_str(),
+                        ScanWarning::Resolve(rw) => rw.source_file.as_str(),
+                    };
+                    (include_code && source_file.starts_with(&config.source.head))
+                        || (include_document && source_file.starts_with(&config.document.head))
+                })
+                .collect()
+        };
 
         Ok(ShowUseCaseResponseDto {
             document_annotations,
