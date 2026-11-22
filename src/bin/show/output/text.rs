@@ -1,4 +1,4 @@
-use super::{format_type, layer_name, AnnotationFile};
+use super::{AnnotationFile, format_type, layer_name};
 use crate::dto::ShowView;
 use crate::show_response_adapter::ShowResponseView;
 use spec_trail::domains::models::abstract_annotation::AbstractLink;
@@ -29,7 +29,10 @@ pub fn print_warnings(warnings: &[ScanWarning]) {
             }
             ScanWarning::Resolve(rw) => {
                 if rw.line.as_usize() > 0 {
-                    eprintln!("WARNING [resolve] {}:{}: {}", rw.source_file, rw.line, rw.message);
+                    eprintln!(
+                        "WARNING [resolve] {}:{}: {}",
+                        rw.source_file, rw.line, rw.message
+                    );
                 } else {
                     eprintln!("WARNING [resolve] {}", rw.message);
                 }
@@ -49,7 +52,10 @@ pub fn render_summary(view_model: &ShowResponseView) {
     println!("Show summary");
     println!("  code files: {}", view_model.code_annotations.len());
     println!("  code annotations: {}", code_totals);
-    println!("  document files: {}", view_model.document_annotations.len());
+    println!(
+        "  document files: {}",
+        view_model.document_annotations.len()
+    );
     println!("  document annotations: {}", document_totals);
     println!("  traces: {}", view_model.traces.len());
     println!("  warnings: {}", view_model.warnings.len());
@@ -95,7 +101,12 @@ pub fn render_group(view_model: &ShowResponseView) {
         .document_annotations
         .iter()
         .map(|d| d as &dyn AnnotationFile)
-        .chain(view_model.code_annotations.iter().map(|c| c as &dyn AnnotationFile))
+        .chain(
+            view_model
+                .code_annotations
+                .iter()
+                .map(|c| c as &dyn AnnotationFile),
+        )
         .collect();
 
     for file in files {
@@ -105,28 +116,44 @@ pub fn render_group(view_model: &ShowResponseView) {
                 .or_default()
                 .entry(format_type(m.r#type.as_ref()))
                 .or_default()
-                .push(GroupItem { id: &m.id.0, name: &m.name.0, file: f });
+                .push(GroupItem {
+                    id: &m.id.0,
+                    name: &m.name.0,
+                    file: f,
+                });
         }
         for a in file.abstracts() {
             tree.entry(layer_name(a.layer))
                 .or_default()
                 .entry(format_type(a.r#type.as_ref()))
                 .or_default()
-                .push(GroupItem { id: &a.id.0, name: &a.name.0, file: f });
+                .push(GroupItem {
+                    id: &a.id.0,
+                    name: &a.name.0,
+                    file: f,
+                });
         }
         for d in file.details() {
             tree.entry(layer_name(d.layer))
                 .or_default()
                 .entry(format_type(d.r#type.as_ref()))
                 .or_default()
-                .push(GroupItem { id: &d.id.0, name: &d.name.0, file: f });
+                .push(GroupItem {
+                    id: &d.id.0,
+                    name: &d.name.0,
+                    file: f,
+                });
         }
         for i in file.implementations() {
             tree.entry(layer_name(i.layer))
                 .or_default()
                 .entry(format_type(i.r#type.as_ref()))
                 .or_default()
-                .push(GroupItem { id: &i.id.0, name: &i.name.0, file: f });
+                .push(GroupItem {
+                    id: &i.id.0,
+                    name: &i.name.0,
+                    file: f,
+                });
         }
     }
 
@@ -174,13 +201,20 @@ pub(super) fn format_implementation_line(
 }
 
 pub(super) fn format_trace_line(trace: &Trace) -> String {
+    let (src_space, dst_space) = trace.direction.spaces();
     format!(
-        "  [@{}] ({}) --{}--> [@{}] ({})",
+        "  [@{}] ({}; {} {}:{}) --{}--> [@{}] ({}; {} {}:{})",
         trace.src.id(),
         layer_name(trace.src.layer()),
+        src_space,
+        trace.src_file,
+        trace.src.line(),
         trace.kind,
         trace.dst.id(),
-        layer_name(trace.dst.layer())
+        layer_name(trace.dst.layer()),
+        dst_space,
+        trace.dst_file,
+        trace.dst.line()
     )
 }
 

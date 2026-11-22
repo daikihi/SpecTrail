@@ -50,6 +50,15 @@ pub enum ImplementationLink {
     Abstract(AbstractAnnotationId),
 }
 
+impl ImplementationLink {
+    pub fn target(&self) -> (&str, Layer) {
+        match self {
+            Self::SpecDetail(id) => (&id.0, Layer::SpecDetail),
+            Self::Abstract(id) => (&id.0, Layer::Abstract),
+        }
+    }
+}
+
 /// [@st-code-domain-models-implementation-implementation-artifact] layer: abstract, type: Structure, name: ImplementationArtifact
 /// This struct represents the artifact for implementation annotation as described in the specification.
 #[derive(Debug, Clone)]

@@ -56,13 +56,9 @@ mod tests {
                 .iter()
                 .all(|a| a.source_file.starts_with("src/") && a.source_file.ends_with(".rs"))
         );
-        assert!(
-            response
-                .document_annotations
-                .iter()
-                .all(|a| a.source_file.starts_with("specify_manual/")
-                    && a.source_file.ends_with(".md"))
-        );
+        assert!(response.document_annotations.iter().all(|a| {
+            a.source_file.starts_with("specify_manual/") && a.source_file.ends_with(".md")
+        }));
         assert!(
             !response.traces.is_empty(),
             "expected at least one resolved trace between code and document annotations"
@@ -115,13 +111,9 @@ mod tests {
             "expected no warnings when target is document, got: {:?}",
             response.warnings
         );
-        assert!(
-            response
-                .document_annotations
-                .iter()
-                .all(|a| a.source_file.starts_with("specify_manual/")
-                    && a.source_file.ends_with(".md"))
-        );
+        assert!(response.document_annotations.iter().all(|a| {
+            a.source_file.starts_with("specify_manual/") && a.source_file.ends_with(".md")
+        }));
     }
 }
 

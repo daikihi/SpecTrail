@@ -50,6 +50,15 @@ pub enum SpecDetailLink {
     Implementation(ImplementationAnnotationId),
 }
 
+impl SpecDetailLink {
+    pub fn target(&self) -> (&str, Layer) {
+        match self {
+            Self::Abstract(id) => (&id.0, Layer::Abstract),
+            Self::Implementation(id) => (&id.0, Layer::Implementation),
+        }
+    }
+}
+
 /// [@st-code-domain-models-spec-detail-spec-detail-annotation] layer: abstract, type: Structure, name: SpecDetailAnnotation, links: [@st-manual-data-model-spec-detail-spec-detail-annotation]
 /// This struct represents the spec detail annotation model as described in the specification.
 #[derive(Debug, Clone)]

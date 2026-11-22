@@ -1,8 +1,8 @@
 /// [@st-code-bin-show-main-file] layer: abstract, type: File, name: main.rs, links: [@st-manual-spec-cli-show-command]
 mod dto;
+mod output;
 mod show_request_adapter;
 mod show_response_adapter;
-mod output;
 
 use dto::ShowRequestDto;
 use show_request_adapter::adapt_request;

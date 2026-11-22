@@ -1,7 +1,7 @@
-use super::{format_type, layer_name, AnnotationFile};
+use super::{AnnotationFile, format_type, layer_name};
 use crate::dto::ShowView;
 use crate::show_response_adapter::ShowResponseView;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use spec_trail::domains::models::abstract_annotation::{AbstractAnnotation, AbstractLink};
 use spec_trail::domains::models::implementation::{ImplementationAnnotation, ImplementationLink};
 use spec_trail::domains::models::meta::MetaAnnotation;
@@ -184,7 +184,11 @@ fn link_to_json(id: &str, layer: &str) -> Value {
 }
 
 fn meta_to_json(m: &MetaAnnotation) -> Value {
-    let links: Vec<_> = m.links.iter().map(|id| link_to_json(&id.0, "Meta")).collect();
+    let links: Vec<_> = m
+        .links
+        .iter()
+        .map(|id| link_to_json(&id.0, "Meta"))
+        .collect();
     json!({
         "id": m.id.0,
         "name": m.name.0,
@@ -256,7 +260,14 @@ fn implementation_to_json(i: &ImplementationAnnotation) -> Value {
 }
 
 fn trace_to_json(t: &Trace) -> Value {
+    let (src_space, dst_space) = t.direction.spaces();
     json!({
+        "src_space": src_space,
+        "src_file": t.src_file,
+        "src_line": t.src.line().as_usize(),
+        "dst_space": dst_space,
+        "dst_file": t.dst_file,
+        "dst_line": t.dst.line().as_usize(),
         "src_id": t.src.id(),
         "src_layer": layer_name(t.src.layer()),
         "dst_id": t.dst.id(),

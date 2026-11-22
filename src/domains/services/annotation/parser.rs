@@ -170,8 +170,7 @@ mod tests {
 
     #[test]
     fn test_parse_with_links() {
-        let content =
-            "/// [@_fixture_bar] layer: abstract, type: Page, name: Bar, links: [@_fixture_foo, @_fixture_baz]";
+        let content = "/// [@_fixture_bar] layer: abstract, type: Page, name: Bar, links: [@_fixture_foo, @_fixture_baz]";
         let result = AnnotationParser::parse(content, "src/bar.rs").unwrap();
         assert_eq!(result.annotations.len(), 1);
         let anno = &result.annotations[0];
@@ -181,7 +180,8 @@ mod tests {
 
     #[test]
     fn test_parse_multiline_line_number() {
-        let content = "line 1\nline 2\n/// [@st-line3] layer: meta, type: Philosophy, name: Line3\nline 4";
+        let content =
+            "line 1\nline 2\n/// [@st-line3] layer: meta, type: Philosophy, name: Line3\nline 4";
         let result = AnnotationParser::parse(content, "src/test.rs").unwrap();
         assert_eq!(result.annotations.len(), 1);
         assert_eq!(result.annotations[0].line, LineNumber::new(3));

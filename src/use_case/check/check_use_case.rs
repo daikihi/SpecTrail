@@ -2,6 +2,7 @@ use super::dto::{CheckIssue, CheckSeverity, CheckUseCaseRequestDto, CheckUseCase
 use crate::config::SpecTrailConfig;
 use crate::domains::models::annotation::code_annotation::CodeAnnotation;
 use crate::domains::models::annotation::document_annotation::DocumentAnnotation;
+use crate::domains::models::trace::TraceDirection;
 use crate::domains::services::annotation::scanner::{AnnotationScanner, ScanWarning};
 use crate::domains::services::annotation::trace_resolver::TraceResolver;
 use std::collections::HashSet;
@@ -34,55 +35,50 @@ fn find_unimplemented_spec_issues(
 ) -> Vec<CheckIssue> {
     let traces = TraceResolver::resolve(documents, codes);
 
-    let mut traced_ids: HashSet<&str> = HashSet::new();
-    for trace in &traces {
-        traced_ids.insert(trace.src.id());
-        traced_ids.insert(trace.dst.id());
-    }
+    let traced_documents: HashSet<_> = traces
+        .iter()
+        .map(|trace| match trace.direction {
+            TraceDirection::CodeToDocument => (
+                trace.dst_file.as_str(),
+                trace.dst.line(),
+                trace.dst.layer(),
+                trace.dst.id(),
+            ),
+            TraceDirection::DocumentToCode => (
+                trace.src_file.as_str(),
+                trace.src.line(),
+                trace.src.layer(),
+                trace.src.id(),
+            ),
+        })
+        .collect();
 
     let mut issues = Vec::new();
     for doc in documents {
-        for a in &doc.abstracts {
-            if !traced_ids.contains(a.id.0.as_str()) {
+        let specs = doc
+            .abstracts
+            .iter()
+            .map(|a| (&a.id.0, &a.name.0, a.layer, a.line))
+            .chain(
+                doc.details
+                    .iter()
+                    .map(|d| (&d.id.0, &d.name.0, d.layer, d.line)),
+            )
+            .chain(
+                doc.implementations
+                    .iter()
+                    .map(|i| (&i.id.0, &i.name.0, i.layer, i.line)),
+            );
+        for (id, name, layer, line) in specs {
+            if !traced_documents.contains(&(doc.source_file.as_str(), line, layer, id.as_str())) {
                 issues.push(CheckIssue {
                     severity: CheckSeverity::Warning,
                     issue_type: "unimplemented_spec".to_string(),
                     file: doc.source_file.clone(),
-                    line: a.line.as_usize(),
-                    spec_id: Some(a.id.0.clone()),
+                    line: line.as_usize(),
+                    spec_id: Some(id.clone()),
                     message: format!(
-                        "Unimplemented Spec: '@{}' ({}) is not referenced in code",
-                        a.id.0, a.name.0
-                    ),
-                });
-            }
-        }
-        for d in &doc.details {
-            if !traced_ids.contains(d.id.0.as_str()) {
-                issues.push(CheckIssue {
-                    severity: CheckSeverity::Warning,
-                    issue_type: "unimplemented_spec".to_string(),
-                    file: doc.source_file.clone(),
-                    line: d.line.as_usize(),
-                    spec_id: Some(d.id.0.clone()),
-                    message: format!(
-                        "Unimplemented Spec: '@{}' ({}) is not referenced in code",
-                        d.id.0, d.name.0
-                    ),
-                });
-            }
-        }
-        for i in &doc.implementations {
-            if !traced_ids.contains(i.id.0.as_str()) {
-                issues.push(CheckIssue {
-                    severity: CheckSeverity::Warning,
-                    issue_type: "unimplemented_spec".to_string(),
-                    file: doc.source_file.clone(),
-                    line: i.line.as_usize(),
-                    spec_id: Some(i.id.0.clone()),
-                    message: format!(
-                        "Unimplemented Spec: '@{}' ({}) is not referenced in code",
-                        i.id.0, i.name.0
+                        "Unimplemented Spec: '@{id}' ({name}) is not referenced in code"
                     ),
                 });
             }
@@ -321,10 +317,7 @@ mod tests {
 
         let issues = find_unimplemented_spec_issues(&[doc], &[code]);
         assert_eq!(issues.len(), 2);
-        let ids: Vec<_> = issues
-            .iter()
-            .filter_map(|i| i.spec_id.as_deref())
-            .collect();
+        let ids: Vec<_> = issues.iter().filter_map(|i| i.spec_id.as_deref()).collect();
         assert_eq!(ids, vec!["st-abs-unimplemented", "st-detail-missing"]);
         assert!(issues.iter().all(|i| i.severity == CheckSeverity::Warning));
         assert!(issues.iter().all(|i| i.issue_type == "unimplemented_spec"));

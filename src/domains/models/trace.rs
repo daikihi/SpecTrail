@@ -103,6 +103,32 @@ impl TraceDestination {
     }
 }
 
+impl From<TraceSource> for TraceDestination {
+    fn from(annotation: TraceSource) -> Self {
+        match annotation {
+            TraceSource::Meta(a) => Self::Meta(a),
+            TraceSource::Abstract(a) => Self::Abstract(a),
+            TraceSource::SpecDetail(d) => Self::SpecDetail(d),
+            TraceSource::Implementation(i) => Self::Implementation(i),
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub enum TraceDirection {
+    CodeToDocument,
+    DocumentToCode,
+}
+
+impl TraceDirection {
+    pub fn spaces(self) -> (&'static str, &'static str) {
+        match self {
+            Self::CodeToDocument => ("code", "document"),
+            Self::DocumentToCode => ("document", "code"),
+        }
+    }
+}
+
 /// [@st-code-domain-models-trace-trace-kind] layer: spec-detail, type: Func, name: TraceKind
 /// This enum represents the kind of traceability relationship as described in the specification.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -128,6 +154,9 @@ impl std::fmt::Display for TraceKind {
 /// This struct represents the traceability mapping between specification and implementation.
 #[derive(Debug, Clone)]
 pub struct Trace {
+    pub direction: TraceDirection,
+    pub src_file: String,
+    pub dst_file: String,
     pub src: TraceSource,
     pub dst: TraceDestination,
     pub kind: TraceKind,

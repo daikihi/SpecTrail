@@ -204,23 +204,20 @@ impl ShowRequestDto {
             match arg.as_str() {
                 "--mode" => {
                     mode = Some(ShowMode::from_str(
-                        &args.next().ok_or("--mode requires a value")?
+                        &args.next().ok_or("--mode requires a value")?,
                     )?);
                 }
                 "--target" => {
                     target = Some(ShowTarget::from_str(
-                        &args.next().ok_or("--target requires a value")?
+                        &args.next().ok_or("--target requires a value")?,
                     )?);
                 }
                 "--view" => {
-                    view = ShowView::from_str(
-                        &args.next().ok_or("--view requires a value")?
-                    )?;
+                    view = ShowView::from_str(&args.next().ok_or("--view requires a value")?)?;
                 }
                 "--format" => {
-                    format = ShowFormat::from_str(
-                        &args.next().ok_or("--format requires a value")?
-                    )?;
+                    format =
+                        ShowFormat::from_str(&args.next().ok_or("--format requires a value")?)?;
                 }
                 "--scope" => {
                     scope = Some(args.next().ok_or("--scope requires a value")?.to_string());
@@ -268,7 +265,8 @@ mod tests {
 
     #[test]
     fn from_args_defaults_view_to_list_and_format_to_text() {
-        let result = ShowRequestDto::from_args(&args(&["show", "--mode", "list", "--target", "all"]));
+        let result =
+            ShowRequestDto::from_args(&args(&["show", "--mode", "list", "--target", "all"]));
         assert!(result.is_ok());
         let req = result.unwrap();
         assert_eq!(req.mode, ShowMode::List);
@@ -281,15 +279,7 @@ mod tests {
     #[test]
     fn from_args_succeeds_with_view_and_format() {
         let result = ShowRequestDto::from_args(&args(&[
-            "show",
-            "--mode",
-            "list",
-            "--target",
-            "all",
-            "--view",
-            "detail",
-            "--format",
-            "json",
+            "show", "--mode", "list", "--target", "all", "--view", "detail", "--format", "json",
         ]));
         assert!(result.is_ok());
         let req = result.unwrap();
@@ -299,7 +289,8 @@ mod tests {
 
     #[test]
     fn from_args_succeeds_with_document_target() {
-        let result = ShowRequestDto::from_args(&args(&["show", "--mode", "list", "--target", "document"]));
+        let result =
+            ShowRequestDto::from_args(&args(&["show", "--mode", "list", "--target", "document"]));
         assert!(result.is_ok());
         let req = result.unwrap();
         assert_eq!(req.target, ShowTarget::Document);
@@ -307,7 +298,8 @@ mod tests {
 
     #[test]
     fn from_args_succeeds_with_code_target() {
-        let result = ShowRequestDto::from_args(&args(&["show", "--mode", "list", "--target", "code"]));
+        let result =
+            ShowRequestDto::from_args(&args(&["show", "--mode", "list", "--target", "code"]));
         assert!(result.is_ok());
         let req = result.unwrap();
         assert_eq!(req.target, ShowTarget::Code);
@@ -345,31 +337,50 @@ mod tests {
     #[test]
     fn from_args_fails_with_unknown_argument() {
         let result = ShowRequestDto::from_args(&args(&[
-            "show", "--mode", "list", "--target", "all", "--unknown",
+            "show",
+            "--mode",
+            "list",
+            "--target",
+            "all",
+            "--unknown",
         ]));
         assert!(result.is_err());
-        assert_eq!(result.unwrap_err().to_string(), "Unknown argument: --unknown");
+        assert_eq!(
+            result.unwrap_err().to_string(),
+            "Unknown argument: --unknown"
+        );
     }
 
     #[test]
     fn from_args_fails_with_invalid_mode_value() {
-        let result = ShowRequestDto::from_args(&args(&["show", "--mode", "invalid", "--target", "all"]));
+        let result =
+            ShowRequestDto::from_args(&args(&["show", "--mode", "invalid", "--target", "all"]));
         assert!(result.is_err());
-        assert!(result.unwrap_err().to_string().contains("Invalid mode: invalid"));
+        assert!(
+            result
+                .unwrap_err()
+                .to_string()
+                .contains("Invalid mode: invalid")
+        );
     }
 
     #[test]
     fn from_args_fails_with_invalid_target_value() {
-        let result = ShowRequestDto::from_args(&args(&["show", "--mode", "list", "--target", "invalid"]));
+        let result =
+            ShowRequestDto::from_args(&args(&["show", "--mode", "list", "--target", "invalid"]));
         assert!(result.is_err());
-        assert!(result.unwrap_err().to_string().contains("Invalid target: invalid"));
+        assert!(
+            result
+                .unwrap_err()
+                .to_string()
+                .contains("Invalid target: invalid")
+        );
     }
 
     #[test]
     fn show_mode_displays_list() {
         assert_eq!(ShowMode::List.to_string(), "list");
     }
-
 
     #[test]
     fn show_target_displays_all() {
@@ -386,7 +397,6 @@ mod tests {
         assert_eq!(ShowTarget::Code.to_string(), "code");
     }
 
-
     #[test]
     fn show_request_dto_new_has_no_scope() {
         let req = ShowRequestDto::new(ShowMode::List, ShowTarget::All);
@@ -397,8 +407,8 @@ mod tests {
 
     #[test]
     fn show_request_dto_with_scope_sets_scope() {
-        let req = ShowRequestDto::new(ShowMode::List, ShowTarget::All)
-            .with_scope("@st-bar".to_string());
+        let req =
+            ShowRequestDto::new(ShowMode::List, ShowTarget::All).with_scope("@st-bar".to_string());
         assert_eq!(req.scope, Some("@st-bar".to_string()));
     }
 
@@ -406,7 +416,6 @@ mod tests {
     fn show_mode_from_str_parses_list() {
         assert_eq!("list".parse::<ShowMode>().unwrap(), ShowMode::List);
     }
-
 
     #[test]
     fn show_mode_from_str_rejects_unknown() {
@@ -416,7 +425,10 @@ mod tests {
     #[test]
     fn show_target_from_str_parses_all_variants() {
         assert_eq!("all".parse::<ShowTarget>().unwrap(), ShowTarget::All);
-        assert_eq!("document".parse::<ShowTarget>().unwrap(), ShowTarget::Document);
+        assert_eq!(
+            "document".parse::<ShowTarget>().unwrap(),
+            ShowTarget::Document
+        );
         assert_eq!("code".parse::<ShowTarget>().unwrap(), ShowTarget::Code);
     }
 
@@ -446,12 +458,7 @@ mod tests {
     #[test]
     fn from_args_fails_when_config_has_no_value() {
         let result = ShowRequestDto::from_args(&args(&[
-            "show",
-            "--mode",
-            "list",
-            "--target",
-            "all",
-            "--config",
+            "show", "--mode", "list", "--target", "all", "--config",
         ]));
         assert!(result.is_err());
         assert_eq!(result.unwrap_err().to_string(), "--config requires a value");
@@ -480,29 +487,47 @@ mod tests {
 
     #[test]
     fn from_args_fails_when_view_has_no_value() {
-        let result = ShowRequestDto::from_args(&args(&["show", "--mode", "list", "--target", "all", "--view"]));
+        let result = ShowRequestDto::from_args(&args(&[
+            "show", "--mode", "list", "--target", "all", "--view",
+        ]));
         assert!(result.is_err());
         assert_eq!(result.unwrap_err().to_string(), "--view requires a value");
     }
 
     #[test]
     fn from_args_fails_with_invalid_view_value() {
-        let result = ShowRequestDto::from_args(&args(&["show", "--mode", "list", "--target", "all", "--view", "invalid"]));
+        let result = ShowRequestDto::from_args(&args(&[
+            "show", "--mode", "list", "--target", "all", "--view", "invalid",
+        ]));
         assert!(result.is_err());
-        assert!(result.unwrap_err().to_string().contains("Invalid view: invalid"));
+        assert!(
+            result
+                .unwrap_err()
+                .to_string()
+                .contains("Invalid view: invalid")
+        );
     }
 
     #[test]
     fn from_args_fails_when_format_has_no_value() {
-        let result = ShowRequestDto::from_args(&args(&["show", "--mode", "list", "--target", "all", "--format"]));
+        let result = ShowRequestDto::from_args(&args(&[
+            "show", "--mode", "list", "--target", "all", "--format",
+        ]));
         assert!(result.is_err());
         assert_eq!(result.unwrap_err().to_string(), "--format requires a value");
     }
 
     #[test]
     fn from_args_fails_with_invalid_format_value() {
-        let result = ShowRequestDto::from_args(&args(&["show", "--mode", "list", "--target", "all", "--format", "invalid"]));
+        let result = ShowRequestDto::from_args(&args(&[
+            "show", "--mode", "list", "--target", "all", "--format", "invalid",
+        ]));
         assert!(result.is_err());
-        assert!(result.unwrap_err().to_string().contains("Invalid format: invalid"));
+        assert!(
+            result
+                .unwrap_err()
+                .to_string()
+                .contains("Invalid format: invalid")
+        );
     }
 }

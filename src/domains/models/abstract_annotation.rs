@@ -54,6 +54,16 @@ pub enum AbstractLink {
     SpecDetail(SpecDetailAnnotationId),
 }
 
+impl AbstractLink {
+    pub fn target(&self) -> (&str, Layer) {
+        match self {
+            Self::Meta(id) => (&id.0, Layer::Meta),
+            Self::Abstract(id) => (&id.0, Layer::Abstract),
+            Self::SpecDetail(id) => (&id.0, Layer::SpecDetail),
+        }
+    }
+}
+
 /// [@st-code-domain-models-abstract-annotation-abstract-annotation] layer: abstract, type: Structure, name: AbstractAnnotation, links: [@st-manual-data-model-abstract-annotation-abstract-annotation]
 /// This struct represents the abstract annotation model as described in the specification.
 #[derive(Debug, Clone)]
