@@ -43,10 +43,37 @@ fn annotation_regex() -> &'static Regex {
     static RE: OnceLock<Regex> = OnceLock::new();
     RE.get_or_init(|| {
         Regex::new(
-            r"\[@(?P<id>[^\]]+)\]\s*layer:\s*(?P<layer>[^,\n]+),\s*type:\s*(?P<type>[^,\n]+),\s*name:\s*(?P<name>[^,\n]+)(?P<rest>[^\n]*)",
+            r"^\[@(?P<id>[^\]]+)\]\s*layer:\s*(?P<layer>[^,\n]+),\s*type:\s*(?P<type>[^,\n]+),\s*name:\s*(?P<name>[^,\n]+)(?P<rest>[^\n]*)",
         )
         .expect("annotation regex must be valid")
     })
+}
+
+fn parse_fence_marker(trimmed_line: &str) -> Option<(char, usize, &str)> {
+    let first = trimmed_line.chars().next()?;
+    if first != '`' && first != '~' {
+        return None;
+    }
+    let count = trimmed_line.chars().take_while(|&c| c == first).count();
+    if count >= 3 {
+        Some((first, count, &trimmed_line[count..]))
+    } else {
+        None
+    }
+}
+
+fn extract_annotation_candidate(line: &str) -> Option<&str> {
+    let trimmed = line.trim_start();
+    let body = if let Some(rest) = trimmed.strip_prefix("///") {
+        rest.trim_start()
+    } else {
+        trimmed
+    };
+    if body.starts_with("[@") {
+        Some(body)
+    } else {
+        None
+    }
 }
 
 fn parse_optional_fields(rest: &str) -> (Vec<String>, Option<String>, Option<String>) {
@@ -104,44 +131,60 @@ fn split_next_field(s: &str) -> (&str, &str) {
 impl AnnotationParser {
     /* Parses all annotations from the given content string.
      *
-     * This method uses regular expressions to find annotation tags and extract their
-     * metadata fields (layer, type, name, and optional links, artifact, and status). */
+     * Scans line-by-line, skips Markdown fenced code blocks and non-annotation lines
+     * (such as inline code examples or string literals), and extracts annotation metadata
+     * fields (layer, type, name, and optional links, artifact, and status). */
     pub fn parse(content: &str, source_file: &str) -> Result<ParseResult, ParseError> {
         let mut annotations = Vec::new();
         let warnings = Vec::new();
 
         let re = annotation_regex();
+        let mut active_fence: Option<(char, usize)> = None;
 
-        let mut previous_end = 0;
-        let mut line_idx = 1;
-        for cap in re.captures_iter(content) {
-            let full_match = cap.get(0).unwrap();
-            line_idx += content[previous_end..full_match.start()]
-                .chars()
-                .filter(|&c| c == '\n')
-                .count();
-            previous_end = full_match.start();
-            let line = LineNumber::new(line_idx);
+        for (idx, raw_line) in content.lines().enumerate() {
+            let line_text = raw_line.trim_end_matches('\r');
+            let trimmed = line_text.trim_start();
 
-            let id = cap["id"].trim().to_string();
-            let layer = cap["layer"].trim().to_string();
-            let annotation_type = cap["type"].trim().to_string();
-            let name = cap["name"].trim().to_string();
+            if let Some((fence_char, fence_len)) = active_fence {
+                if let Some((ch, count, rest)) = parse_fence_marker(trimmed) {
+                    if ch == fence_char && count >= fence_len && rest.trim().is_empty() {
+                        active_fence = None;
+                    }
+                }
+                continue;
+            }
 
-            let rest = cap.name("rest").map(|m| m.as_str()).unwrap_or("");
-            let (links, artifact, status) = parse_optional_fields(rest);
+            if let Some((ch, count, _)) = parse_fence_marker(trimmed) {
+                active_fence = Some((ch, count));
+                continue;
+            }
 
-            annotations.push(RawAnnotation {
-                id,
-                layer,
-                annotation_type,
-                name,
-                links,
-                artifact,
-                status,
-                source_file: source_file.to_string(),
-                line,
-            });
+            let Some(candidate) = extract_annotation_candidate(line_text) else {
+                continue;
+            };
+
+            let line = LineNumber::new(idx + 1);
+            if let Some(cap) = re.captures(candidate) {
+                let id = cap["id"].trim().to_string();
+                let layer = cap["layer"].trim().to_string();
+                let annotation_type = cap["type"].trim().to_string();
+                let name = cap["name"].trim().to_string();
+
+                let rest = cap.name("rest").map(|m| m.as_str()).unwrap_or("");
+                let (links, artifact, status) = parse_optional_fields(rest);
+
+                annotations.push(RawAnnotation {
+                    id,
+                    layer,
+                    annotation_type,
+                    name,
+                    links,
+                    artifact,
+                    status,
+                    source_file: source_file.to_string(),
+                    line,
+                });
+            }
         }
 
         Ok(ParseResult {
@@ -211,5 +254,71 @@ mod tests {
         assert!(third.links.is_empty());
         assert_eq!(third.status, None);
         assert_eq!(third.artifact, None);
+    }
+
+    #[test]
+    fn test_ignores_annotations_inside_markdown_fenced_code_blocks() {
+        let content = concat!(
+            "/// [@st-before] layer: meta, type: Philosophy, name: Before\n",
+            "```rust\n",
+            "/// [@st-inside-backticks] layer: abstract, type: Structure, name: InsideBackticks\n",
+            "```\n",
+            "~~~\n",
+            "/// [@st-inside-tildes] layer: abstract, type: Structure, name: InsideTildes\n",
+            "~~~\n",
+            "/// [@st-after] layer: abstract, type: Structure, name: After\n"
+        );
+        let result = AnnotationParser::parse(content, "docs/spec.md").unwrap();
+        let ids: Vec<&str> = result.annotations.iter().map(|a| a.id.as_str()).collect();
+        assert_eq!(ids, vec!["st-before", "st-after"]);
+        assert_eq!(result.annotations[0].line, LineNumber::new(1));
+        assert_eq!(result.annotations[1].line, LineNumber::new(8));
+        assert!(result.warnings.is_empty());
+    }
+
+    #[test]
+    fn test_ignores_longer_nested_fence_until_matching_close() {
+        let content = concat!(
+            "````markdown\n",
+            "```\n",
+            "/// [@st-still-inside] layer: meta, type: Rule, name: StillInside\n",
+            "```\n",
+            "````\n",
+            "/// [@st-outside] layer: meta, type: Rule, name: Outside\n"
+        );
+        let result = AnnotationParser::parse(content, "docs/spec.md").unwrap();
+        let ids: Vec<&str> = result.annotations.iter().map(|a| a.id.as_str()).collect();
+        assert_eq!(ids, vec!["st-outside"]);
+        assert_eq!(result.annotations[0].line, LineNumber::new(6));
+    }
+
+    #[test]
+    fn test_ignores_inline_code_and_string_literals_and_prose() {
+        let content = concat!(
+            "let s = \"/// [@st-in-string] layer: meta, type: Philosophy, name: InString\";\n",
+            "- Example: `/// [@st-in-inline-code] layer: abstract, type: Structure, name: InInline`\n",
+            "/// Mentioning [@st-in-prose] layer: abstract, type: Structure, name: InProse\n",
+            "    /// [@st-indented] layer: abstract, type: Structure, name: Indented\n",
+            "[@st-bare] layer: meta, type: Rule, name: Bare\n"
+        );
+        let result = AnnotationParser::parse(content, "src/example.rs").unwrap();
+        let ids: Vec<&str> = result.annotations.iter().map(|a| a.id.as_str()).collect();
+        assert_eq!(ids, vec!["st-indented", "st-bare"]);
+        assert_eq!(result.annotations[0].line, LineNumber::new(4));
+        assert_eq!(result.annotations[1].line, LineNumber::new(5));
+    }
+
+    #[test]
+    fn test_handles_crlf_line_endings_and_empty_input() {
+        let empty = AnnotationParser::parse("", "src/empty.rs").unwrap();
+        assert!(empty.annotations.is_empty());
+        assert!(empty.warnings.is_empty());
+
+        let crlf = "line1\r\n/// [@st-crlf] layer: abstract, type: Structure, name: Crlf\r\n";
+        let result = AnnotationParser::parse(crlf, "src/crlf.rs").unwrap();
+        assert_eq!(result.annotations.len(), 1);
+        assert_eq!(result.annotations[0].id, "st-crlf");
+        assert_eq!(result.annotations[0].name, "Crlf");
+        assert_eq!(result.annotations[0].line, LineNumber::new(2));
     }
 }
