@@ -31,7 +31,7 @@ pub enum ScanWarning {
 pub struct AnnotationScanner;
 
 impl AnnotationScanner {
-/* Performs a full scan of code and document directories.
+    /* Performs a full scan of code and document directories.
      *
      * This method traverses both directories, parses all matching files for annotations,
      * resolves links between them, and then categorizes the results based on their source path. */
@@ -92,15 +92,16 @@ impl AnnotationScanner {
             let source_file = resolved.source_file().to_string();
 
             if !code_path_str.is_empty() && source_file.starts_with(code_path_str) {
-                let container = code_map
-                    .entry(source_file.clone())
-                    .or_insert_with(|| CodeAnnotation {
-                        source_file: source_file.clone(),
-                        metas: vec![],
-                        abstracts: vec![],
-                        details: vec![],
-                        implementations: vec![],
-                    });
+                let container =
+                    code_map
+                        .entry(source_file.clone())
+                        .or_insert_with(|| CodeAnnotation {
+                            source_file: source_file.clone(),
+                            metas: vec![],
+                            abstracts: vec![],
+                            details: vec![],
+                            implementations: vec![],
+                        });
                 match resolved {
                     ResolvedAnnotation::Meta(a, _) => container.metas.push(a),
                     ResolvedAnnotation::Abstract(a, _) => container.abstracts.push(a),
@@ -108,15 +109,16 @@ impl AnnotationScanner {
                     ResolvedAnnotation::Implementation(a, _) => container.implementations.push(a),
                 }
             } else if !doc_path_str.is_empty() && source_file.starts_with(doc_path_str) {
-                let container = doc_map
-                    .entry(source_file.clone())
-                    .or_insert_with(|| DocumentAnnotation {
-                        source_file: source_file.clone(),
-                        metas: vec![],
-                        abstracts: vec![],
-                        details: vec![],
-                        implementations: vec![],
-                    });
+                let container =
+                    doc_map
+                        .entry(source_file.clone())
+                        .or_insert_with(|| DocumentAnnotation {
+                            source_file: source_file.clone(),
+                            metas: vec![],
+                            abstracts: vec![],
+                            details: vec![],
+                            implementations: vec![],
+                        });
                 match resolved {
                     ResolvedAnnotation::Meta(a, _) => container.metas.push(a),
                     ResolvedAnnotation::Abstract(a, _) => container.abstracts.push(a),

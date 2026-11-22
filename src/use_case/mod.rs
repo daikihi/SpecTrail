@@ -1,2 +1,2 @@
-pub mod show;
 pub mod check;
+pub mod show;

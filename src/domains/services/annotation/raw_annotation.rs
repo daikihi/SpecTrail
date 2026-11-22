@@ -1,6 +1,5 @@
 /// [@st-code-domain-services-annotation-raw-annotation-file] layer: abstract, type: File, name: raw_annotation.rs
 /// This file defines the raw representation of an annotation as extracted during the initial parsing phase.
-
 use crate::domains::models::line_number::LineNumber;
 
 /// [@st-code-domain-services-annotation-raw-annotation-raw-annotation] layer: abstract, type: Structure, name: RawAnnotation
@@ -10,9 +9,9 @@ pub struct RawAnnotation {
     pub layer: String,
     pub annotation_type: String,
     pub name: String,
-    pub links: Vec<String>,       /* Raw ID strings, e.g., ["@st-foo", "@st-bar"] */
+    pub links: Vec<String>, /* Raw ID strings, e.g., ["@st-foo", "@st-bar"] */
     pub artifact: Option<String>, /* Optional explicit artifact path/identifier */
-    pub status: Option<String>,   /* Optional raw implementation status, e.g., "Completed" */
-    pub source_file: String,      /* Path to the file where this annotation was found */
+    pub status: Option<String>, /* Optional raw implementation status, e.g., "Completed" */
+    pub source_file: String, /* Path to the file where this annotation was found */
     pub line: LineNumber,
 }

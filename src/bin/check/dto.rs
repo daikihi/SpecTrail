@@ -80,7 +80,10 @@ impl CheckRequestDto {
         }
 
         let format = format_opt.unwrap_or_else(|| {
-            if env::var("GITHUB_ACTIONS").map(|v| v == "true").unwrap_or(false) {
+            if env::var("GITHUB_ACTIONS")
+                .map(|v| v == "true")
+                .unwrap_or(false)
+            {
                 CheckFormat::Github
             } else {
                 CheckFormat::Text
@@ -106,7 +109,13 @@ mod tests {
 
     #[test]
     fn parses_flags_correctly() {
-        let args = to_args(&["check", "--strict", "--warn-unimplemented", "--format", "json"]);
+        let args = to_args(&[
+            "check",
+            "--strict",
+            "--warn-unimplemented",
+            "--format",
+            "json",
+        ]);
         let req = CheckRequestDto::from_args(&args).unwrap();
         assert!(req.strict);
         assert!(req.warn_unimplemented);

@@ -317,10 +317,7 @@ mod tests {
 
         let issues = find_unimplemented_spec_issues(&[doc], &[code]);
         assert_eq!(issues.len(), 2);
-        let ids: Vec<_> = issues
-            .iter()
-            .filter_map(|i| i.spec_id.as_deref())
-            .collect();
+        let ids: Vec<_> = issues.iter().filter_map(|i| i.spec_id.as_deref()).collect();
         assert_eq!(ids, vec!["st-abs-unimplemented", "st-detail-missing"]);
         assert!(issues.iter().all(|i| i.severity == CheckSeverity::Warning));
         assert!(issues.iter().all(|i| i.issue_type == "unimplemented_spec"));

@@ -1,7 +1,7 @@
-use super::{format_type, layer_name, AnnotationFile};
+use super::{AnnotationFile, format_type, layer_name};
 use crate::dto::ShowView;
 use crate::show_response_adapter::ShowResponseView;
-use serde_json::{json, Value};
+use serde_json::{Value, json};
 use spec_trail::domains::models::abstract_annotation::{AbstractAnnotation, AbstractLink};
 use spec_trail::domains::models::implementation::{ImplementationAnnotation, ImplementationLink};
 use spec_trail::domains::models::meta::MetaAnnotation;
@@ -184,7 +184,11 @@ fn link_to_json(id: &str, layer: &str) -> Value {
 }
 
 fn meta_to_json(m: &MetaAnnotation) -> Value {
-    let links: Vec<_> = m.links.iter().map(|id| link_to_json(&id.0, "Meta")).collect();
+    let links: Vec<_> = m
+        .links
+        .iter()
+        .map(|id| link_to_json(&id.0, "Meta"))
+        .collect();
     json!({
         "id": m.id.0,
         "name": m.name.0,

@@ -218,9 +218,8 @@ impl AnnotationResolver {
                         let link_id_stripped = link_id.strip_prefix('@').unwrap_or(link_id);
                         if let Some(target) = index.get(link_id_stripped) {
                             match target.layer.as_str() {
-                                "meta" => links.push(AbstractLink::Meta(
-                                    MetaAnnotationId(target.id.clone()),
-                                )),
+                                "meta" => links
+                                    .push(AbstractLink::Meta(MetaAnnotationId(target.id.clone()))),
                                 "abstract" => links.push(AbstractLink::Abstract(
                                     AbstractAnnotationId(target.id.clone()),
                                 )),
@@ -447,19 +446,17 @@ mod tests {
 
     #[test]
     fn test_ignores_fixture_prefix_by_default() {
-        let raw = vec![
-            RawAnnotation {
-                id: "_fixture_bar".to_string(),
-                layer: "abstract".to_string(),
-                annotation_type: "Page".to_string(),
-                name: "Bar".to_string(),
-                links: vec!["@_fixture_foo".to_string()],
-                artifact: None,
-                status: None,
-                source_file: "src/bar.rs".to_string(),
-                line: LineNumber::new(1),
-            },
-        ];
+        let raw = vec![RawAnnotation {
+            id: "_fixture_bar".to_string(),
+            layer: "abstract".to_string(),
+            annotation_type: "Page".to_string(),
+            name: "Bar".to_string(),
+            links: vec!["@_fixture_foo".to_string()],
+            artifact: None,
+            status: None,
+            source_file: "src/bar.rs".to_string(),
+            line: LineNumber::new(1),
+        }];
 
         let result = AnnotationResolver::resolve(raw);
         // Annotation itself is ignored and not returned in resolved annotations
@@ -470,19 +467,17 @@ mod tests {
 
     #[test]
     fn test_ignores_broken_links_to_fixture() {
-        let raw = vec![
-            RawAnnotation {
-                id: "st-valid".to_string(),
-                layer: "abstract".to_string(),
-                annotation_type: "Page".to_string(),
-                name: "Valid".to_string(),
-                links: vec!["@_fixture_target".to_string()],
-                artifact: None,
-                status: None,
-                source_file: "src/valid.rs".to_string(),
-                line: LineNumber::new(1),
-            },
-        ];
+        let raw = vec![RawAnnotation {
+            id: "st-valid".to_string(),
+            layer: "abstract".to_string(),
+            annotation_type: "Page".to_string(),
+            name: "Valid".to_string(),
+            links: vec!["@_fixture_target".to_string()],
+            artifact: None,
+            status: None,
+            source_file: "src/valid.rs".to_string(),
+            line: LineNumber::new(1),
+        }];
 
         let result = AnnotationResolver::resolve(raw);
         assert_eq!(result.annotations.len(), 1);
@@ -492,24 +487,19 @@ mod tests {
 
     #[test]
     fn test_ignores_custom_prefixes() {
-        let raw = vec![
-            RawAnnotation {
-                id: "mock_spec".to_string(),
-                layer: "abstract".to_string(),
-                annotation_type: "Page".to_string(),
-                name: "Mock".to_string(),
-                links: vec!["@dummy_target".to_string()],
-                artifact: None,
-                status: None,
-                source_file: "src/mock.rs".to_string(),
-                line: LineNumber::new(1),
-            },
-        ];
+        let raw = vec![RawAnnotation {
+            id: "mock_spec".to_string(),
+            layer: "abstract".to_string(),
+            annotation_type: "Page".to_string(),
+            name: "Mock".to_string(),
+            links: vec!["@dummy_target".to_string()],
+            artifact: None,
+            status: None,
+            source_file: "src/mock.rs".to_string(),
+            line: LineNumber::new(1),
+        }];
 
-        let result = AnnotationResolver::resolve_with_ignored_prefixes(
-            raw,
-            &["mock_", "dummy_"],
-        );
+        let result = AnnotationResolver::resolve_with_ignored_prefixes(raw, &["mock_", "dummy_"]);
         assert_eq!(result.annotations.len(), 0);
         assert_eq!(result.warnings.len(), 0);
     }
