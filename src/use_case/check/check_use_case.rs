@@ -236,6 +236,7 @@ mod tests {
             (ResolveWarningKind::BrokenLink, "broken_link"),
             (ResolveWarningKind::UnknownLayer, "unknown_layer"),
             (ResolveWarningKind::UnknownType, "unknown_type"),
+            (ResolveWarningKind::UnknownStatus, "unknown_status"),
             (
                 ResolveWarningKind::UnsupportedLinkLayer,
                 "unsupported_link_layer",

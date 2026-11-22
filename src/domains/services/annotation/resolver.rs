@@ -56,6 +56,7 @@ pub struct ResolveResult {
 pub enum ResolveWarningKind {
     UnknownLayer,
     UnknownType,
+    UnknownStatus,
     BrokenLink,
     UnsupportedLinkLayer,
 }
@@ -65,6 +66,7 @@ impl ResolveWarningKind {
         match self {
             ResolveWarningKind::UnknownLayer => "unknown_layer",
             ResolveWarningKind::UnknownType => "unknown_type",
+            ResolveWarningKind::UnknownStatus => "unknown_status",
             ResolveWarningKind::BrokenLink => "broken_link",
             ResolveWarningKind::UnsupportedLinkLayer => "unsupported_link_layer",
         }
@@ -372,6 +374,31 @@ impl AnnotationResolver {
                         }
                     }
 
+                    let impl_status = match raw.status.as_deref() {
+                        Some(status_str) => match ImplementationStatus::from_str(status_str) {
+                            Ok(s) => Some(s),
+                            Err(_) => {
+                                warnings.push(ResolveWarning {
+                                    kind: ResolveWarningKind::UnknownStatus,
+                                    source_annotation_id: raw.id.clone(),
+                                    source_file: raw.source_file.clone(),
+                                    line: raw.line,
+                                    message: format!(
+                                        "Unknown ImplementationStatus '{}' for @{}",
+                                        status_str, raw.id
+                                    ),
+                                });
+                                None
+                            }
+                        },
+                        None => None,
+                    };
+
+                    let artifact = raw
+                        .artifact
+                        .clone()
+                        .unwrap_or_else(|| raw.source_file.clone());
+
                     annotations.push(ResolvedAnnotation::Implementation(
                         ImplementationAnnotation {
                             id: ImplementationAnnotationId(raw.id.clone()),
@@ -379,8 +406,8 @@ impl AnnotationResolver {
                             r#type: impl_type,
                             layer: Layer::Implementation,
                             links,
-                            artifact: ImplementationArtifact(raw.source_file.clone()),
-                            status: ImplementationStatus::from_str(&raw.annotation_type).ok(),
+                            artifact: ImplementationArtifact(artifact),
+                            status: impl_status,
                             line: raw.line,
                         },
                         raw.source_file.clone(),
@@ -427,6 +454,8 @@ mod tests {
                 annotation_type: "Page".to_string(),
                 name: "Bar".to_string(),
                 links: vec!["@_fixture_foo".to_string()],
+                artifact: None,
+                status: None,
                 source_file: "src/bar.rs".to_string(),
                 line: LineNumber::new(1),
             },
@@ -448,6 +477,8 @@ mod tests {
                 annotation_type: "Page".to_string(),
                 name: "Valid".to_string(),
                 links: vec!["@_fixture_target".to_string()],
+                artifact: None,
+                status: None,
                 source_file: "src/valid.rs".to_string(),
                 line: LineNumber::new(1),
             },
@@ -468,6 +499,8 @@ mod tests {
                 annotation_type: "Page".to_string(),
                 name: "Mock".to_string(),
                 links: vec!["@dummy_target".to_string()],
+                artifact: None,
+                status: None,
                 source_file: "src/mock.rs".to_string(),
                 line: LineNumber::new(1),
             },
@@ -490,6 +523,8 @@ mod tests {
                 annotation_type: "Page".to_string(),
                 name: "Fixture".to_string(),
                 links: vec![],
+                artifact: None,
+                status: None,
                 source_file: "src/fixture.rs".to_string(),
                 line: LineNumber::new(1),
             },
@@ -499,6 +534,8 @@ mod tests {
                 annotation_type: "Page".to_string(),
                 name: "Real".to_string(),
                 links: vec!["@_fixture_sample".to_string()],
+                artifact: None,
+                status: None,
                 source_file: "src/real.rs".to_string(),
                 line: LineNumber::new(2),
             },
@@ -523,6 +560,8 @@ mod tests {
             .to_string(),
             name: id.to_string(),
             links: links.iter().map(|link| (*link).to_string()).collect(),
+            artifact: None,
+            status: None,
             source_file: "src/annotations.rs".to_string(),
             line: LineNumber::new(1),
         };
@@ -598,5 +637,73 @@ mod tests {
             &implementation.links[1],
             ImplementationLink::SpecDetail(SpecDetailAnnotationId(id)) if id == "detail"
         ));
+    }
+
+    #[test]
+    fn resolves_implementation_status_and_artifact_from_dedicated_fields() {
+        let raw = vec![
+            RawAnnotation {
+                id: "impl-completed".to_string(),
+                layer: "implementation".to_string(),
+                annotation_type: "DomainEntity".to_string(),
+                name: "User".to_string(),
+                links: vec![],
+                artifact: Some("src/domain/user.rs".to_string()),
+                status: Some("Completed".to_string()),
+                source_file: "src/impls.rs".to_string(),
+                line: LineNumber::new(10),
+            },
+            RawAnnotation {
+                id: "impl-type-not-status".to_string(),
+                layer: "implementation".to_string(),
+                annotation_type: "Completed".to_string(),
+                name: "Misconfigured".to_string(),
+                links: vec![],
+                artifact: None,
+                status: None,
+                source_file: "src/impls.rs".to_string(),
+                line: LineNumber::new(20),
+            },
+            RawAnnotation {
+                id: "impl-invalid-status".to_string(),
+                layer: "implementation".to_string(),
+                annotation_type: "Structure".to_string(),
+                name: "BadStatus".to_string(),
+                links: vec![],
+                artifact: None,
+                status: Some("Done".to_string()),
+                source_file: "src/impls.rs".to_string(),
+                line: LineNumber::new(30),
+            },
+        ];
+
+        let result = AnnotationResolver::resolve(raw);
+        assert_eq!(result.annotations.len(), 3);
+        assert_eq!(result.warnings.len(), 2);
+        assert_eq!(result.warnings[0].kind, ResolveWarningKind::UnknownType);
+        assert_eq!(result.warnings[1].kind, ResolveWarningKind::UnknownStatus);
+
+        let ResolvedAnnotation::Implementation(first, _) = &result.annotations[0] else {
+            panic!("expected implementation annotation")
+        };
+        assert_eq!(first.r#type, Some(ImplementationType::DomainEntity));
+        assert_eq!(first.status, Some(ImplementationStatus::Completed));
+        assert_eq!(first.artifact.0, "src/domain/user.rs");
+
+        // Regression: status must NOT be parsed from annotation_type
+        let ResolvedAnnotation::Implementation(second, _) = &result.annotations[1] else {
+            panic!("expected implementation annotation")
+        };
+        assert_eq!(second.r#type, None);
+        assert_eq!(second.status, None);
+        assert_eq!(second.artifact.0, "src/impls.rs");
+
+        // Invalid status produces UnknownStatus warning and leaves status as None
+        let ResolvedAnnotation::Implementation(third, _) = &result.annotations[2] else {
+            panic!("expected implementation annotation")
+        };
+        assert_eq!(third.r#type, Some(ImplementationType::Structure));
+        assert_eq!(third.status, None);
+        assert_eq!(third.artifact.0, "src/impls.rs");
     }
 }

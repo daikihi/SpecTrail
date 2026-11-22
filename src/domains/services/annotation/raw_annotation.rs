@@ -10,7 +10,9 @@ pub struct RawAnnotation {
     pub layer: String,
     pub annotation_type: String,
     pub name: String,
-    pub links: Vec<String>,  /* Raw ID strings, e.g., ["@st-foo", "@st-bar"] */
-    pub source_file: String, /* Path to the file where this annotation was found */
+    pub links: Vec<String>,       /* Raw ID strings, e.g., ["@st-foo", "@st-bar"] */
+    pub artifact: Option<String>, /* Optional explicit artifact path/identifier */
+    pub status: Option<String>,   /* Optional raw implementation status, e.g., "Completed" */
+    pub source_file: String,      /* Path to the file where this annotation was found */
     pub line: LineNumber,
 }
