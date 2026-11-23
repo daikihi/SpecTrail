@@ -64,13 +64,27 @@ fn extract_annotation_candidate(line: &str) -> Option<&str> {
     }
 }
 
-fn split_fields(input: &str) -> Vec<&str> {
+fn split_fields(input: &str) -> Result<Vec<&str>, &'static str> {
     let mut parts = Vec::new();
     let mut bracket_depth: usize = 0;
+    let mut in_quotes = false;
+    let mut escaped = false;
     let mut start = 0;
 
     for (idx, ch) in input.char_indices() {
+        if in_quotes {
+            if escaped {
+                escaped = false;
+            } else if ch == '\\' {
+                escaped = true;
+            } else if ch == '"' {
+                in_quotes = false;
+            }
+            continue;
+        }
+
         match ch {
+            '"' => in_quotes = true,
             '[' => bracket_depth += 1,
             ']' => bracket_depth = bracket_depth.saturating_sub(1),
             ',' if bracket_depth == 0 => {
@@ -80,8 +94,44 @@ fn split_fields(input: &str) -> Vec<&str> {
             _ => {}
         }
     }
+
+    if in_quotes {
+        return Err("unterminated quoted string");
+    }
+
     parts.push(&input[start..]);
-    parts
+    Ok(parts)
+}
+
+fn unquote_value(raw: &str) -> Result<String, &'static str> {
+    if !raw.starts_with('"') {
+        return Ok(raw.to_string());
+    }
+    if raw.len() < 2 || !raw.ends_with('"') {
+        return Err("malformed quoted value");
+    }
+
+    let inner = &raw[1..raw.len() - 1];
+    let mut out = String::with_capacity(inner.len());
+    let mut chars = inner.chars();
+    while let Some(ch) = chars.next() {
+        if ch == '\\' {
+            match chars.next() {
+                Some('"') => out.push('"'),
+                Some('\\') => out.push('\\'),
+                Some(other) => {
+                    out.push('\\');
+                    out.push(other);
+                }
+                None => return Err("dangling escape in quoted value"),
+            }
+        } else if ch == '"' {
+            return Err("unexpected unescaped quote inside value");
+        } else {
+            out.push(ch);
+        }
+    }
+    Ok(out)
 }
 
 fn push_parse_warning(
@@ -140,7 +190,21 @@ fn parse_candidate_line(
     let mut status: Option<String> = None;
 
     if !fields_str.is_empty() {
-        for segment in split_fields(fields_str) {
+        let segments = match split_fields(fields_str) {
+            Ok(segs) => segs,
+            Err(reason) => {
+                push_parse_warning(
+                    warnings,
+                    source_file,
+                    line,
+                    raw_line,
+                    format!("Malformed annotation @{}: {}", id, reason),
+                );
+                return None;
+            }
+        };
+
+        for segment in segments {
             let trimmed = segment.trim();
             if trimmed.is_empty() {
                 push_parse_warning(
@@ -231,7 +295,27 @@ fn parse_candidate_line(
                             format!("Empty value for required field 'name' in @{}", id),
                         );
                     } else {
-                        name = Some(val.to_string());
+                        match unquote_value(val) {
+                            Ok(parsed) if parsed.trim().is_empty() => {
+                                push_parse_warning(
+                                    warnings,
+                                    source_file,
+                                    line,
+                                    raw_line,
+                                    format!("Empty value for required field 'name' in @{}", id),
+                                );
+                            }
+                            Ok(parsed) => name = Some(parsed),
+                            Err(reason) => {
+                                push_parse_warning(
+                                    warnings,
+                                    source_file,
+                                    line,
+                                    raw_line,
+                                    format!("Malformed field 'name' in @{}: {}", id, reason),
+                                );
+                            }
+                        }
                     }
                 }
                 "links" => {
@@ -306,7 +390,27 @@ fn parse_candidate_line(
                             format!("Empty value for field 'artifact' in @{}", id),
                         );
                     } else {
-                        artifact = Some(val.to_string());
+                        match unquote_value(val) {
+                            Ok(parsed) if parsed.trim().is_empty() => {
+                                push_parse_warning(
+                                    warnings,
+                                    source_file,
+                                    line,
+                                    raw_line,
+                                    format!("Empty value for field 'artifact' in @{}", id),
+                                );
+                            }
+                            Ok(parsed) => artifact = Some(parsed),
+                            Err(reason) => {
+                                push_parse_warning(
+                                    warnings,
+                                    source_file,
+                                    line,
+                                    raw_line,
+                                    format!("Malformed field 'artifact' in @{}: {}", id, reason),
+                                );
+                            }
+                        }
                     }
                 }
                 _ => {
@@ -377,10 +481,12 @@ impl AnnotationParser {
             let trimmed = line_text.trim_start();
 
             if let Some((fence_char, fence_len)) = active_fence {
-                if let Some((ch, count, rest)) = parse_fence_marker(trimmed) {
-                    if ch == fence_char && count >= fence_len && rest.trim().is_empty() {
-                        active_fence = None;
-                    }
+                if let Some((ch, count, rest)) = parse_fence_marker(trimmed)
+                    && ch == fence_char
+                    && count >= fence_len
+                    && rest.trim().is_empty()
+                {
+                    active_fence = None;
                 }
                 continue;
             }
@@ -683,5 +789,48 @@ mod tests {
         assert_eq!(result.warnings.len(), 1);
         assert_eq!(result.warnings[0].line, LineNumber::new(2));
         assert_eq!(result.warnings[0].source_file, "src/mixed.rs");
+    }
+
+    #[test]
+    fn test_parses_quoted_values_with_commas_and_escapes() {
+        let content = concat!(
+            "/// [@st-comma] layer: abstract, type: Structure, name: \"Auth, Session, and Tokens\", links: [@st-x]\n",
+            "/// [@st-escaped] layer: implementation, type: DomainEntity, name: \"Quote \\\"Hero\\\"\", artifact: \"src/a, b/hero.rs\", status: Completed\n"
+        );
+        let result = AnnotationParser::parse(content, "src/quoted.rs").unwrap();
+        assert!(result.warnings.is_empty(), "got warnings: {:?}", result.warnings);
+        assert_eq!(result.annotations.len(), 2);
+
+        assert_eq!(result.annotations[0].name, "Auth, Session, and Tokens");
+        assert_eq!(result.annotations[0].links, vec!["@st-x"]);
+
+        assert_eq!(result.annotations[1].name, "Quote \"Hero\"");
+        assert_eq!(
+            result.annotations[1].artifact.as_deref(),
+            Some("src/a, b/hero.rs")
+        );
+        assert_eq!(result.annotations[1].status.as_deref(), Some("Completed"));
+    }
+
+    #[test]
+    fn test_emits_warning_for_unterminated_or_empty_quoted_values() {
+        let content = concat!(
+            "/// [@st-unterm] layer: abstract, type: Structure, name: \"Unclosed\n",
+            "/// [@st-empty-quote] layer: abstract, type: Structure, name: \"   \"\n",
+            "/// [@st-trailing-quote] layer: abstract, type: Structure, name: \"Foo\" bar\n"
+        );
+        let result = AnnotationParser::parse(content, "src/bad_quotes.rs").unwrap();
+        assert!(result.annotations.is_empty());
+
+        assert!(result.warnings.iter().any(|w| {
+            w.line == LineNumber::new(1) && w.message.contains("unterminated quoted string")
+        }));
+        assert!(result.warnings.iter().any(|w| {
+            w.line == LineNumber::new(2)
+                && w.message.contains("Empty value for required field 'name'")
+        }));
+        assert!(result.warnings.iter().any(|w| {
+            w.line == LineNumber::new(3) && w.message.contains("Malformed field 'name'")
+        }));
     }
 }
